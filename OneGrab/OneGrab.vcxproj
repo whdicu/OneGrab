@@ -11,17 +11,51 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\BtnBar.cpp" />
+    <ClCompile Include="src\DSystemTrayMenu.cpp" />
+    <ClCompile Include="src\hook.cpp" />
+    <ClCompile Include="src\LabelIsland.cpp" />
+    <ClCompile Include="src\LabelMask.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\OneGrab.cpp" />
+    <ClCompile Include="src\SettingHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="src\OneGrab.h" />
   </ItemGroup>
   <ItemGroup>
+    <QtUic Include="src\BtnBar.ui" />
     <QtUic Include="src\OneGrab.ui" />
   </ItemGroup>
   <ItemGroup>
     <QtRcc Include="res\res.qrc" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="src\LabelMask.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="src\BtnBar.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="src\DSystemTrayMenu.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="src\hook.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="src\SettingHandler.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="src\LabelIsland.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="OneGrab.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="icon.ico" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{618C4362-2A52-4252-B244-0DF499344BE1}</ProjectGuid>
@@ -60,7 +94,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>D:\Projects\OneDer\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Projects\OneDer\src;.\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="QtSettings">

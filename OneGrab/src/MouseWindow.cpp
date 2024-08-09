@@ -5,6 +5,7 @@
 
 MouseWindow::MouseWindow(QWidget *parent)
 	: QWidget(parent, Qt::FramelessWindowHint | Qt::Tool | Qt::WindowStaysOnTopHint)
+	, fullPixmapRect_(0, 0, 0, 0)
 {
 	ui.setupUi(this);
 	setMouseTracking(true);
@@ -21,6 +22,7 @@ void MouseWindow::moveAndRefresh(const QPoint& pos, const QRect& fullPixmapRect)
 {
 	emit sigNeedRefresh(pos);
 
+	fullPixmapRect_ = fullPixmapRect;
 	QPoint toPos = pos + QPoint(15, 0);
 	if (toPos.x() < fullPixmapRect.left())
 		toPos.setX(fullPixmapRect.left());
@@ -51,5 +53,16 @@ QSize MouseWindow::getWindowSize()
 
 void MouseWindow::mouseMoveEvent(QMouseEvent* event)
 {
-	move(pos() + event->pos() + QPoint(15, 0));
+	QPoint toPos = pos() + event->pos() + QPoint(15, 0);
+	if (toPos.x() < fullPixmapRect_.left())
+		toPos.setX(fullPixmapRect_.left());
+	else if (toPos.x() > fullPixmapRect_.right() - width())
+		toPos.setX(fullPixmapRect_.right() - width());
+
+	if (toPos.y() < fullPixmapRect_.top())
+		toPos.setY(fullPixmapRect_.top());
+	else if (toPos.y() > fullPixmapRect_.bottom() - height())
+		toPos.setY(fullPixmapRect_.bottom() - height());
+
+	move(toPos);
 }

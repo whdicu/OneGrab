@@ -21,4 +21,5 @@ private:
 	void mouseMoveEvent(QMouseEvent* event) override;
 
 	Ui::MouseWindow ui;
+	QRect fullPixmapRect_;
 };

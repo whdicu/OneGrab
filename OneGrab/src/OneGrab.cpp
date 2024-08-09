@@ -3,6 +3,7 @@
 #include "HDCore/DGlobal.h"
 #include "LabelIsland.h"
 #include "LabelMask.h"
+#include "MouseWindow.h"
 #include <QClipboard>
 #include <QDateTime>
 #include <QDebug>
@@ -21,19 +22,22 @@ OneGrab::OneGrab(QWidget *parent)
     : QWidget(parent, Qt::FramelessWindowHint | Qt::Tool | Qt::WindowStaysOnTopHint)
 	, btnBar_(new BtnBar)
 	, labelMask_(nullptr)
+	, mouseWindow_(new MouseWindow)
 	, mouseState_(FreeState)
 	, selectionStart_(0, 0)
 	, selectionEnd_(0, 0)
 {
     ui.setupUi(this);
 	setAttribute(Qt::WA_TranslucentBackground);
-	setMouseTracking(true);
 	labelMask_ = new LabelMask(ui.label);
+	setMouseTracking(true);
+	ui.label->setMouseTracking(true);
 
 	connect(btnBar_, &BtnBar::sigFixed, this, &OneGrab::slotFixed);
 	connect(btnBar_, &BtnBar::sigSave, this, &OneGrab::slotSave);
 	connect(btnBar_, &BtnBar::sigCopy, this, &OneGrab::slotCopy);
 	connect(labelMask_, &LabelMask::sigSelectionChanged, this, &OneGrab::slotSelectionChanged);
+	connect(mouseWindow_, &MouseWindow::sigNeedRefresh, this, &OneGrab::slotRefreshPixelInfo);
 }
 
 void OneGrab::doGrab()
@@ -47,6 +51,14 @@ void OneGrab::doGrab()
 	ui.label->setPixmap(fullPixmap_);
 	setGeometry(screenRect);
 	show();
+
+	mouseWindow_->moveAndRefresh(QCursor::pos(), geometry());
+	mouseWindow_->show();
+}
+
+QColor OneGrab::getPixelColor(const QPoint& pos)
+{
+	return fullPixmap_.toImage().pixelColor(pos);
 }
 
 void OneGrab::slotKeyPressed(DWORD key)
@@ -66,8 +78,7 @@ void OneGrab::slotKeyPressed(DWORD key)
 void OneGrab::slotFixed()
 {
 	QPixmap croppedPixmap = getSelectionPixmap();
-	LabelIsland* island = new LabelIsland(croppedPixmap);
-	island->move(labelMask_->getSelectionRect().topLeft() + pos());
+	LabelIsland* island = new LabelIsland(croppedPixmap, labelMask_->getSelectionRect().topLeft() + pos());
 	island->show();
 	finishGrab();
 }
@@ -115,6 +126,23 @@ void OneGrab::slotSelectionChanged(QRect rect)
 	btnBar_->setSizeLabelText(rect.size());
 }
 
+void OneGrab::slotRefreshPixelInfo(const QPoint& mousePos)
+{
+	QColor color = getPixelColor(mousePos - pos());
+
+	// 8倍放大
+	QSize windowSize = mouseWindow_->getWindowSize() / 8;
+	QPixmap windowPixmap = fullPixmap_.copy(QRect(mousePos - pos()
+		- QPoint(windowSize.width() / 2, windowSize.height() / 2), windowSize));
+
+	// 画鼠标所在像素的矩形框
+	QPainter painter(&windowPixmap);
+	painter.setPen(QPen(QColor(255, 102, 102), 1));
+	painter.drawRect(QRect(windowSize.width() / 2 - 1, windowSize.height() / 2 - 1, 2, 2));
+	
+	mouseWindow_->refreshInfo(mousePos, color, windowPixmap.scaled(windowSize * 8));
+}
+
 QPixmap OneGrab::getFullPixmap(QRect& screenRect)
 {
 	QList<QScreen*> screens = QGuiApplication::screens();
@@ -151,6 +179,7 @@ QPixmap OneGrab::getSelectionPixmap()
 void OneGrab::finishGrab()
 {
 	labelMask_->clearSelectionRect();
+	mouseWindow_->hide();
 	btnBar_->hide();
 	hide();
 }
@@ -165,6 +194,8 @@ void OneGrab::mousePressEvent(QMouseEvent* event)
 {
 	if (event->button() == Qt::LeftButton)
 	{
+		mouseWindow_->hide();
+
 		selectionStart_ = event->pos();
 		selectionEnd_ = event->pos();
 		
@@ -211,8 +242,8 @@ void OneGrab::mousePressEvent(QMouseEvent* event)
 
 void OneGrab::mouseMoveEvent(QMouseEvent* event)
 {
-	//static int i = 0;
-	//btnBar_->setTestText(QString("test: %1").arg(++i));
+	mouseWindow_->moveAndRefresh(event->globalPos(), geometry());
+
 	//QRect selectionRect = labelMask_->getSelectionRect();
 	//int isInBorder = 0;
 	//if (dAbs(selectionRect.left() - event->pos().x()) < DRAG_SPACE)
@@ -312,6 +343,7 @@ void OneGrab::mouseReleaseEvent(QMouseEvent* event)
 	if (event->button() == Qt::LeftButton)
 	{
 		mouseState_ = FreeState;
+		mouseWindow_->show();
 		btnBar_->show();
 	}
 }

@@ -4,6 +4,7 @@
 #include <windows.h>
 
 class LabelMask;
+class MouseWindow;
 class BtnBar;
 
 enum MouseState
@@ -24,6 +25,7 @@ class OneGrab : public QWidget
 public:
     OneGrab(QWidget *parent = Q_NULLPTR);
 	void doGrab();
+	QColor getPixelColor(const QPoint& pos);
 
 public slots:
 	void slotKeyPressed(DWORD key);
@@ -33,6 +35,7 @@ private slots:
 	void slotSave();
 	void slotCopy();
 	void slotSelectionChanged(QRect rect);
+	void slotRefreshPixelInfo(const QPoint& mousePos);
 
 private:
 	// 获取所有显示器组成的一张图片
@@ -48,6 +51,7 @@ private:
     Ui::OneGrabClass ui;
 	BtnBar* btnBar_;
 	LabelMask* labelMask_;
+	MouseWindow* mouseWindow_;
 	int mouseState_;
 	QPoint selectionStart_;
 	QPoint selectionEnd_;

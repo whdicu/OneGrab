@@ -17,6 +17,7 @@
     <ClCompile Include="src\LabelIsland.cpp" />
     <ClCompile Include="src\LabelMask.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\MouseWindow.cpp" />
     <ClCompile Include="src\OneGrab.cpp" />
     <ClCompile Include="src\SettingHandler.cpp" />
   </ItemGroup>
@@ -25,6 +26,7 @@
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="src\BtnBar.ui" />
+    <QtUic Include="src\MouseWindow.ui" />
     <QtUic Include="src\OneGrab.ui" />
   </ItemGroup>
   <ItemGroup>
@@ -50,6 +52,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
+    <QtMoc Include="src\MouseWindow.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="OneGrab.rc" />

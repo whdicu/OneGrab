@@ -48,6 +48,9 @@
     <ClCompile Include="src\LabelIsland.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\MouseWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="src\OneGrab.h">
@@ -71,12 +74,18 @@
     <QtMoc Include="src\LabelIsland.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="src\MouseWindow.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="src\OneGrab.ui">
       <Filter>Form Files</Filter>
     </QtUic>
     <QtUic Include="src\BtnBar.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="src\MouseWindow.ui">
       <Filter>Form Files</Filter>
     </QtUic>
   </ItemGroup>

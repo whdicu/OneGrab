@@ -5,6 +5,14 @@
 #include <QObject>
 #include "windows.h"
 
+struct KeyInfo
+{
+	DWORD key;
+	bool ctrlPressed;
+	bool shiftPressed;
+};
+Q_DECLARE_METATYPE(KeyInfo)
+
 class Hook : public QObject
 {
 	Q_OBJECT
@@ -12,10 +20,10 @@ public:
 	static Hook* getInstance();
 	void installHook();
 	void unInstallHook();
-    void sendSignal(DWORD key);
+    void sendSignal(const KeyInfo& info);
 
 signals:
-	void sendKeyType(DWORD);
+	void sendKeyType(const KeyInfo& info);
 
 private:
 	Hook();

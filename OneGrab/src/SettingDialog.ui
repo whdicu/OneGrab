@@ -1,0 +1,641 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>SettingDialog</class>
+ <widget class="QWidget" name="SettingDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>700</width>
+    <height>500</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>SettingDialog</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">#widget_top {
+	background-color: #5c5c66;
+	border: 1px solid #5c5c66;
+	border-top-left-radius: 20px;
+	border-top-right-radius: 20px;
+}
+
+#widget_bottom {
+	background-color: rgb(255, 255, 255);
+	border: 1px solid #5c5c66;
+	border-bottom-left-radius: 20px;
+	border-bottom-right-radius: 20px;
+}
+
+#btn_min {
+	border: 1px solid #5c5c66;
+	border-radius: 10px;
+	background-color: #55ee55;
+}
+#btn_min:hover {
+	background-color: #33aa33;
+}
+
+#btn_max {
+	border: 1px solid #5c5c66;
+	border-radius: 10px;
+	background-color: #5555ee;
+}
+#btn_max:hover {
+	background-color: #3333aa;
+}
+
+#btn_close {
+	border: 1px solid #5c5c66;
+	border-radius: 10px;
+	background-color: #ee5555;
+}
+#btn_close:hover {
+	background-color: #aa3333;
+}
+
+#widget_left {
+	background-color: white;
+	border-radius: 10px;
+}
+
+#widget_left&gt;QPushButton {
+	color: white;
+	background-color: #5c5c66;
+	border-radius: 10px;
+}
+
+#stackedWidget {
+	border-radius: 10px;
+	background-color: white;
+}
+</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="spacing">
+    <number>0</number>
+   </property>
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="QWidget" name="widget_top" native="true">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>40</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>40</height>
+      </size>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <property name="spacing">
+       <number>10</number>
+      </property>
+      <property name="leftMargin">
+       <number>10</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>10</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>574</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btn_close">
+        <property name="minimumSize">
+         <size>
+          <width>20</width>
+          <height>20</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>20</width>
+          <height>20</height>
+         </size>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="flat">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QWidget" name="widget_bottom" native="true">
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <property name="spacing">
+       <number>10</number>
+      </property>
+      <property name="leftMargin">
+       <number>10</number>
+      </property>
+      <property name="topMargin">
+       <number>10</number>
+      </property>
+      <property name="rightMargin">
+       <number>10</number>
+      </property>
+      <property name="bottomMargin">
+       <number>10</number>
+      </property>
+      <item>
+       <widget class="QWidget" name="widget_left" native="true">
+        <property name="minimumSize">
+         <size>
+          <width>160</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>160</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <property name="spacing">
+          <number>10</number>
+         </property>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QPushButton" name="btn_style">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>40</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>40</height>
+            </size>
+           </property>
+           <property name="cursor">
+            <cursorShape>PointingHandCursor</cursorShape>
+           </property>
+           <property name="text">
+            <string>外观设置</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btn_other">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>40</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>40</height>
+            </size>
+           </property>
+           <property name="cursor">
+            <cursorShape>PointingHandCursor</cursorShape>
+           </property>
+           <property name="text">
+            <string>其他设置</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="verticalSpacer">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>387</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btn_about">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>40</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>40</height>
+            </size>
+           </property>
+           <property name="cursor">
+            <cursorShape>PointingHandCursor</cursorShape>
+           </property>
+           <property name="text">
+            <string>关于OneGrab</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QStackedWidget" name="stackedWidget">
+        <property name="currentIndex">
+         <number>0</number>
+        </property>
+        <widget class="QWidget" name="style_page">
+         <widget class="QLabel" name="label">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>10</y>
+            <width>100</width>
+            <height>30</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>导航栏高度</string>
+          </property>
+         </widget>
+         <widget class="QSlider" name="horizontalSlider_widget_hight">
+          <property name="geometry">
+           <rect>
+            <x>170</x>
+            <y>10</y>
+            <width>410</width>
+            <height>30</height>
+           </rect>
+          </property>
+          <property name="maximum">
+           <number>300</number>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="invertedAppearance">
+           <bool>false</bool>
+          </property>
+          <property name="invertedControls">
+           <bool>false</bool>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_2">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>50</y>
+            <width>100</width>
+            <height>30</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>导航栏底部间距</string>
+          </property>
+         </widget>
+         <widget class="QSlider" name="horizontalSlider_margin_bottom">
+          <property name="geometry">
+           <rect>
+            <x>170</x>
+            <y>50</y>
+            <width>410</width>
+            <height>30</height>
+           </rect>
+          </property>
+          <property name="maximum">
+           <number>600</number>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_3">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>90</y>
+            <width>100</width>
+            <height>30</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>导航栏圆角半径</string>
+          </property>
+         </widget>
+         <widget class="QSlider" name="horizontalSlider_radius">
+          <property name="geometry">
+           <rect>
+            <x>170</x>
+            <y>90</y>
+            <width>410</width>
+            <height>30</height>
+           </rect>
+          </property>
+          <property name="maximum">
+           <number>150</number>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+         <widget class="QSlider" name="horizontalSlider_lnk_size">
+          <property name="geometry">
+           <rect>
+            <x>170</x>
+            <y>210</y>
+            <width>410</width>
+            <height>30</height>
+           </rect>
+          </property>
+          <property name="maximum">
+           <number>300</number>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_4">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>210</y>
+            <width>100</width>
+            <height>30</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>图标大小</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_5">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>130</y>
+            <width>100</width>
+            <height>30</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>导航栏背景颜色</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_6">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>170</y>
+            <width>100</width>
+            <height>30</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>导航栏边框颜色</string>
+          </property>
+         </widget>
+         <widget class="QSpinBox" name="spinBox_widget_height">
+          <property name="geometry">
+           <rect>
+            <x>120</x>
+            <y>10</y>
+            <width>40</width>
+            <height>30</height>
+           </rect>
+          </property>
+          <property name="maximum">
+           <number>300</number>
+          </property>
+         </widget>
+         <widget class="QSpinBox" name="spinBox_margin_bottom">
+          <property name="geometry">
+           <rect>
+            <x>120</x>
+            <y>50</y>
+            <width>40</width>
+            <height>30</height>
+           </rect>
+          </property>
+          <property name="maximum">
+           <number>600</number>
+          </property>
+         </widget>
+         <widget class="QSpinBox" name="spinBox_radius">
+          <property name="geometry">
+           <rect>
+            <x>120</x>
+            <y>90</y>
+            <width>40</width>
+            <height>30</height>
+           </rect>
+          </property>
+          <property name="maximum">
+           <number>150</number>
+          </property>
+         </widget>
+         <widget class="QSpinBox" name="spinBox_lnk_size">
+          <property name="geometry">
+           <rect>
+            <x>120</x>
+            <y>210</y>
+            <width>40</width>
+            <height>30</height>
+           </rect>
+          </property>
+          <property name="maximum">
+           <number>300</number>
+          </property>
+         </widget>
+         <widget class="QPushButton" name="btn_save">
+          <property name="geometry">
+           <rect>
+            <x>520</x>
+            <y>520</y>
+            <width>60</width>
+            <height>30</height>
+           </rect>
+          </property>
+          <property name="cursor">
+           <cursorShape>PointingHandCursor</cursorShape>
+          </property>
+          <property name="text">
+           <string>保存</string>
+          </property>
+          <property name="flat">
+           <bool>true</bool>
+          </property>
+         </widget>
+         <widget class="QCheckBox" name="cb_clock">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>250</y>
+            <width>570</width>
+            <height>30</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>导航栏右侧显示时钟</string>
+          </property>
+          <property name="tristate">
+           <bool>false</bool>
+          </property>
+         </widget>
+         <widget class="QSpinBox" name="sb_back_time">
+          <property name="geometry">
+           <rect>
+            <x>540</x>
+            <y>290</y>
+            <width>40</width>
+            <height>30</height>
+           </rect>
+          </property>
+          <property name="maximum">
+           <number>30</number>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_7">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>290</y>
+            <width>520</width>
+            <height>30</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>用户临时拖拽窗口，返回原位的延时(秒)</string>
+          </property>
+         </widget>
+        </widget>
+        <widget class="QWidget" name="other_page">
+         <widget class="QCheckBox" name="cb_start">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>10</y>
+            <width>570</width>
+            <height>30</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>开机启动OneDesktop</string>
+          </property>
+          <property name="tristate">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </widget>
+        <widget class="QWidget" name="about_page">
+         <widget class="QLabel" name="label_about">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>520</y>
+            <width>570</width>
+            <height>30</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>官方网站:http://wanghd.icu    QQ:1467058574</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+         <widget class="QPushButton" name="btn_visti_website">
+          <property name="geometry">
+           <rect>
+            <x>235</x>
+            <y>480</y>
+            <width>120</width>
+            <height>30</height>
+           </rect>
+          </property>
+          <property name="cursor">
+           <cursorShape>PointingHandCursor</cursorShape>
+          </property>
+          <property name="text">
+           <string>访问官网</string>
+          </property>
+          <property name="flat">
+           <bool>true</bool>
+          </property>
+         </widget>
+         <widget class="QPushButton" name="btn_check_update">
+          <property name="geometry">
+           <rect>
+            <x>235</x>
+            <y>440</y>
+            <width>120</width>
+            <height>30</height>
+           </rect>
+          </property>
+          <property name="cursor">
+           <cursorShape>PointingHandCursor</cursorShape>
+          </property>
+          <property name="text">
+           <string>检查更新</string>
+          </property>
+          <property name="flat">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </widget>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources/>
+ <connections/>
+</ui>

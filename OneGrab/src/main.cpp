@@ -3,6 +3,7 @@
 #include "OneGrab.h"
 #include <QApplication>
 #include <QSystemTrayIcon>
+#include "SettingDialog.h"
 #include "SettingHandler.h"
 
 
@@ -24,6 +25,7 @@ int main(int argc, char *argv[])
 		case QSystemTrayIcon::Context:
 			break;
 		case QSystemTrayIcon::DoubleClick:
+			QApplication::quit();
 			break;
 		case QSystemTrayIcon::Trigger:
 			w.doGrab();
@@ -38,7 +40,7 @@ int main(int argc, char *argv[])
 	// ¥¥Ω®Õ–≈Ã≤Àµ•
 	DSystemTrayMenu trayMenu;
 	QObject::connect(&trayMenu, &DSystemTrayMenu::sigGrab, &w, &OneGrab::doGrab);
-	//QObject::connect(&trayMenu, &DSystemTrayMenu::sigSetting, &w, &QApplication::quit);
+	QObject::connect(&trayMenu, &DSystemTrayMenu::sigSetting, SettingDialog::getInstance(), &SettingDialog::show);
 	QObject::connect(&trayMenu, &DSystemTrayMenu::sigQuit, &a, &QApplication::quit);
 
 	trayIcon.setContextMenu(&trayMenu);

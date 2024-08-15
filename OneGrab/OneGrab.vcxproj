@@ -14,11 +14,15 @@
     <ClCompile Include="src\BtnBar.cpp" />
     <ClCompile Include="src\DSystemTrayMenu.cpp" />
     <ClCompile Include="src\hook.cpp" />
+    <ClCompile Include="src\DGrabView.cpp" />
+    <ClCompile Include="src\MaskItem.cpp" />
     <ClCompile Include="src\LabelIsland.cpp" />
     <ClCompile Include="src\LabelMask.cpp" />
+    <ClCompile Include="src\MaskLabel.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\MouseWindow.cpp" />
     <ClCompile Include="src\OneGrab.cpp" />
+    <ClCompile Include="src\SettingDialog.cpp" />
     <ClCompile Include="src\SettingHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -28,12 +32,14 @@
     <QtUic Include="src\BtnBar.ui" />
     <QtUic Include="src\MouseWindow.ui" />
     <QtUic Include="src\OneGrab.ui" />
+    <QtUic Include="src\SettingDialog.ui" />
   </ItemGroup>
   <ItemGroup>
     <QtRcc Include="res\res.qrc" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="src\LabelMask.h" />
+    <QtMoc Include="src\MaskLabel.h" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="src\BtnBar.h" />
@@ -52,6 +58,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
+    <ClInclude Include="src\DGraphicsItem.h" />
+    <ClInclude Include="src\MaskItem.h" />
+    <QtMoc Include="src\DGrabView.h" />
+    <QtMoc Include="src\SettingDialog.h" />
     <QtMoc Include="src\MouseWindow.h" />
   </ItemGroup>
   <ItemGroup>

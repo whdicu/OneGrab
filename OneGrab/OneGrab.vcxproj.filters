@@ -22,6 +22,9 @@
       <Extensions>qrc;*</Extensions>
       <ParseFiles>false</ParseFiles>
     </Filter>
+    <Filter Include="Widgets">
+      <UniqueIdentifier>{0053c6dc-6cc5-42f6-91b2-35ce537f2918}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -31,25 +34,35 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\LabelMask.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\BtnBar.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\DSystemTrayMenu.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\hook.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\SettingHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\LabelIsland.cpp">
+    <ClCompile Include="src\SettingDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\LabelIsland.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BtnBar.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DGrabView.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DSystemTrayMenu.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
     <ClCompile Include="src\MouseWindow.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MaskItem.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MaskLabel.cpp">
+      <Filter>Widgets</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -57,36 +70,46 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="src\LabelMask.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
-    <QtMoc Include="src\BtnBar.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
-    <QtMoc Include="src\DSystemTrayMenu.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
     <QtMoc Include="src\hook.h">
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="src\SettingHandler.h">
       <Filter>Header Files</Filter>
     </QtMoc>
-    <QtMoc Include="src\LabelIsland.h">
+    <QtMoc Include="src\SettingDialog.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="src\LabelIsland.h">
+      <Filter>Widgets</Filter>
+    </QtMoc>
+    <QtMoc Include="src\BtnBar.h">
+      <Filter>Widgets</Filter>
+    </QtMoc>
+    <QtMoc Include="src\DGrabView.h">
+      <Filter>Widgets</Filter>
+    </QtMoc>
+    <QtMoc Include="src\DSystemTrayMenu.h">
+      <Filter>Widgets</Filter>
+    </QtMoc>
     <QtMoc Include="src\MouseWindow.h">
-      <Filter>Header Files</Filter>
+      <Filter>Widgets</Filter>
+    </QtMoc>
+    <QtMoc Include="src\MaskLabel.h">
+      <Filter>Widgets</Filter>
     </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="src\OneGrab.ui">
       <Filter>Form Files</Filter>
     </QtUic>
-    <QtUic Include="src\BtnBar.ui">
-      <Filter>Form Files</Filter>
-    </QtUic>
     <QtUic Include="src\MouseWindow.ui">
       <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="src\SettingDialog.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="src\BtnBar.ui">
+      <Filter>Widgets</Filter>
     </QtUic>
   </ItemGroup>
   <ItemGroup>
@@ -97,6 +120,12 @@
   <ItemGroup>
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\DGraphicsItem.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MaskItem.h">
+      <Filter>Widgets</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

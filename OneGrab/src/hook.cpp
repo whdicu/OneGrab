@@ -19,19 +19,22 @@ LRESULT CALLBACK keyProc(int nCode, WPARAM wParam, LPARAM lParam)
 	KBDLLHOOKSTRUCT* pkbhs = (KBDLLHOOKSTRUCT*)lParam;
 	if (wParam == WM_KEYDOWN)
 	{
+		KeyInfo info;
+		info.key = pkbhs->vkCode;
+		info.ctrlPressed = GetAsyncKeyState(VK_CONTROL);
+		info.shiftPressed = GetAsyncKeyState(VK_SHIFT);
+
         switch (pkbhs->vkCode)
         {
         case 112ul:
-            Hook::getInstance()->sendSignal(pkbhs->vkCode);
+            Hook::getInstance()->sendSignal(info);
             return true;
 		case 27ul:
-			Hook::getInstance()->sendSignal(pkbhs->vkCode);
+		case 46ul:  // delete
+		case 90ul:
+			Hook::getInstance()->sendSignal(info);
 			break;
         }
-		//if (pkbhs->vkCode == 0x31 && GetAsyncKeyState(VK_CONTROL))
-		//{//按下Ctrl+1
-		//	Hook::getInstance().sendSignal(Hook::CHANGE);
-        //}
 	}
     return CallNextHookEx(keyHook, nCode, wParam, lParam);//继续原有的事件队列
 }
@@ -47,9 +50,9 @@ void Hook::unInstallHook()
 	keyHook = nullptr;
 }
 
-void Hook::sendSignal(DWORD key)
+void Hook::sendSignal(const KeyInfo& info)
 {
-	emit sendKeyType(key);
+	emit sendKeyType(info);
 }
 
 Hook::Hook()

@@ -23,7 +23,7 @@ void MouseWindow::moveAndRefresh(const QPoint& pos, const QRect& fullPixmapRect)
 	emit sigNeedRefresh(pos);
 
 	fullPixmapRect_ = fullPixmapRect;
-	QPoint toPos = pos + QPoint(15, 0);
+	QPoint toPos = pos + QPoint(15, 0) + fullPixmapRect.topLeft();
 	if (toPos.x() < fullPixmapRect.left())
 		toPos.setX(fullPixmapRect.left());
 	else if (toPos.x() > fullPixmapRect.right() - width())

@@ -16,7 +16,7 @@
 const static int MARGIN = 5;
 
 OneGrab::OneGrab(QWidget *parent)
-    : QWidget(parent, Qt::FramelessWindowHint | Qt::Tool/* | Qt::WindowStaysOnTopHint*/)
+    : QWidget(parent, Qt::FramelessWindowHint | Qt::Tool | Qt::WindowStaysOnTopHint)
 	, btnBar_(new BtnBar)
 	, mouseWindow_(new MouseWindow)
 {

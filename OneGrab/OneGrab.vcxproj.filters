@@ -33,7 +33,6 @@
     <ClCompile Include="src\OneGrab.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\LabelMask.cpp">
     <ClCompile Include="src\hook.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -64,12 +63,14 @@
     <ClCompile Include="src\MaskLabel.cpp">
       <Filter>Widgets</Filter>
     </ClCompile>
+    <ClCompile Include="src\LabelMask.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="src\OneGrab.h">
       <Filter>Header Files</Filter>
     </QtMoc>
-    <QtMoc Include="src\LabelMask.h">
     <QtMoc Include="src\hook.h">
       <Filter>Header Files</Filter>
     </QtMoc>
@@ -95,6 +96,9 @@
       <Filter>Widgets</Filter>
     </QtMoc>
     <QtMoc Include="src\MaskLabel.h">
+      <Filter>Widgets</Filter>
+    </QtMoc>
+    <QtMoc Include="src\LabelMask.h">
       <Filter>Widgets</Filter>
     </QtMoc>
   </ItemGroup>

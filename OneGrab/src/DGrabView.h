@@ -11,9 +11,11 @@ enum MouseState
 	FreeState = 0,
 	SelectState = 1,
 	MoveState = 2,
-	DrawRect = 3,
-	DrawArrow = 4,
-	MoveItem = 5,
+	DrawRectS = 3,
+	DrawArrowS = 4,
+	DrawPenS = 5,
+	DrawTextS = 6,
+	MoveItem = 7,
 	dragLeft = 0x10,
 	dragTop = 0x20,
 	dragRight = 0x40,
@@ -58,6 +60,7 @@ signals:
 
 private:
 	void addRect(const QRect& rect, const QColor& color);
+	void addArrow(const QRect& rect, const QColor& color);
 	void clearItems();
 
 	QGraphicsPixmapItem* imgItem_;

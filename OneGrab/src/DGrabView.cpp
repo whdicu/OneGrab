@@ -67,10 +67,16 @@ void DGrabView::setDrawingState(int isDrawing)
 	switch (isDrawing)
 	{
 	case 1:  // »­¾ØÐÎ
-		mouseState_ = DrawRect;
+		mouseState_ = DrawRectS;
 		break;
 	case 2:  // »­¼ýÍ·
-		mouseState_ = DrawArrow;
+		mouseState_ = DrawArrowS;
+		break;
+	case 3:  // Ëæ±ã»­
+		mouseState_ = DrawPenS;
+		break;
+	case 4:  // »­ÎÄ×Ö
+		mouseState_ = DrawTextS;
 		break;
 	default:
 		mouseState_ = FreeState;
@@ -115,10 +121,15 @@ void DGrabView::mousePressEvent(QMouseEvent *event)
 	selectionStart_ = event->pos();
 	switch (mouseState_)
 	{
-	case DrawRect:  // »­¾ØÐÎ
+	case DrawRectS:  // »­¾ØÐÎ
 		addRect(QRect(selectionStart_, selectionStart_), QColor(255, 0, 0));
 		break;
-	case DrawArrow:  // »­¼ýÍ·
+	case DrawArrowS:  // »­¼ýÍ·
+		addArrow(QRect(selectionStart_, selectionStart_), QColor(255, 0, 0));
+		break;
+	case DrawPenS:  // Ëæ±ã»­
+		break;
+	case DrawTextS:  // Ëæ±ã»­
 		break;
 	default:
 		mousePosBeforeMove_ = event->pos();
@@ -182,7 +193,8 @@ void DGrabView::mouseMoveEvent(QMouseEvent* event)
 			hoverItem_->dMove(dPos);
 		break;
 	}
-	case DrawRect:
+	case DrawRectS:  // »­¾ØÐÎ
+	case DrawArrowS:  // »­¼ýÍ·
 	{
 		if (nullptr != editingItem_)
 		{
@@ -190,7 +202,11 @@ void DGrabView::mouseMoveEvent(QMouseEvent* event)
 		}
 		break;
 	}
-	case DrawArrow:
+	case DrawPenS:  // Ëæ±ã»­
+	{
+		break;
+	}
+	case DrawTextS:  // »­ÎÄ×Ö
 	{
 		break;
 	}
@@ -287,7 +303,7 @@ void DGrabView::mouseReleaseEvent(QMouseEvent *event)
 
 	if (event->button() == Qt::LeftButton)
 	{
-		if (mouseState_ != DrawRect && mouseState_ != DrawArrow)
+		if (mouseState_ != DrawRectS && mouseState_ != DrawArrowS)
 			mouseState_ = FreeState;
 		editingItem_ = nullptr;
 		emit sigMouseReleased();
@@ -308,6 +324,13 @@ void DGrabView::closeEvent(QCloseEvent *evt)
 void DGrabView::addRect(const QRect& rect, const QColor& color)
 {
 	editingItem_ = new DGraphicsRectItem(rect, color, this, imgItem_);
+	itemList_.enqueue(editingItem_);
+	removedList_.clear();
+}
+
+void DGrabView::addArrow(const QRect& rect, const QColor& color)
+{
+	editingItem_ = new DGraphicsArrowItem(rect, color, this, imgItem_);
 	itemList_.enqueue(editingItem_);
 	removedList_.clear();
 }

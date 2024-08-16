@@ -13,6 +13,7 @@ QPushButton:hover
 BtnBar::BtnBar(QWidget *parent)
 	: QWidget(parent, Qt::FramelessWindowHint | Qt::Tool | Qt::WindowStaysOnTopHint)
 	, isDrawing_(false)
+	, choosedBtn_(nullptr)
 {
 	ui.setupUi(this);
 	setAttribute(Qt::WA_TranslucentBackground);
@@ -40,9 +41,22 @@ void BtnBar::onFinishGrab()
 
 void BtnBar::on_btn_rect_clicked()
 {
-	isDrawing_ = (1 == isDrawing_) ? 0 : 1;
-	ui.btn_rect->setStyleSheet(isDrawing_ ? "background-color: #ff6666;" : NORMAL_STYLE);
-	emit sigDrawing(isDrawing_);
+	drawBtnClicked(ui.btn_rect, 1);
+}
+
+void BtnBar::on_btn_arrow_clicked()
+{
+	drawBtnClicked(ui.btn_arrow, 2);
+}
+
+void BtnBar::on_btn_pen_clicked()
+{
+	drawBtnClicked(ui.btn_pen, 3);
+}
+
+void BtnBar::on_btn_text_clicked()
+{
+	drawBtnClicked(ui.btn_text, 4);
 }
 
 void BtnBar::on_btn_close_clicked()
@@ -63,4 +77,14 @@ void BtnBar::on_btn_save_clicked()
 void BtnBar::on_btn_copy_clicked()
 {
 	emit sigCopy();
+}
+
+void BtnBar::drawBtnClicked(QPushButton* btn, int drawType)
+{
+	if (nullptr != choosedBtn_)
+		choosedBtn_->setStyleSheet(NORMAL_STYLE);
+	choosedBtn_ = btn;
+	isDrawing_ = (drawType == isDrawing_) ? 0 : drawType;
+	btn->setStyleSheet(isDrawing_ ? "background-color: #ff6666;" : NORMAL_STYLE);
+	emit sigDrawing(isDrawing_);
 }

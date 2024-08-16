@@ -101,6 +101,25 @@ public:
 };
 
 
+class DGraphicsArrowItem : public DGraphicsItem
+{
+public:
+	DGraphicsArrowItem(const QRectF& r, const QColor& color = QColor(255, 0, 0), ViewType* imgView = nullptr, QGraphicsItem* parent = nullptr)
+		: DGraphicsItem(r, color, imgView, parent) {}
+
+	void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override
+	{
+		QPen pen(color_, penScale_ * 2);
+		painter->setRenderHint(QPainter::Antialiasing);
+		painter->setPen(pen);
+		painter->drawLine(rect_.topLeft(), rect_.bottomRight());
+		QPoint p1 = ;
+		QPoint p2 = ;
+		painter->drawPolygon(QPolygon({ rect_.bottomRight().toPoint(), p1, p2}));
+	}
+};
+
+
 class DGraphicsEllipseItem : public DGraphicsItem
 {
 public:

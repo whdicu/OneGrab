@@ -96,6 +96,6 @@ void MaskItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, 
 	region -= selectionRect_;
 	painter->setRenderHint(QPainter::Antialiasing);
 	painter->setClipRegion(region);
-	painter->setBrush(QColor(0, 0, 0, 128));
+	painter->setBrush(QColor(0, 0, 0, 192));
 	painter->drawRect(fullRect_);
 }

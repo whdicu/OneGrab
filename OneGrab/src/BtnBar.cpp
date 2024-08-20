@@ -36,6 +36,7 @@ void BtnBar::setSizeLabelText(const QSize& sz)
 void BtnBar::onFinishGrab()
 {
 	ui.btn_rect->setStyleSheet(NORMAL_STYLE);
+	isDrawing_ = 0;
 	hide();
 }
 

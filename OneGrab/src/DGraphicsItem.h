@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "DGrabView.h"
 #include <QGraphicsItem>
 #include <QPainter>
@@ -104,18 +104,34 @@ public:
 class DGraphicsArrowItem : public DGraphicsItem
 {
 public:
+	const static int ARROW_LENGTH = 10;  // 箭头长度倍数
+	const static int ARROW_WIDTH = 4;  // 箭头两边宽度倍数
+
 	DGraphicsArrowItem(const QRectF& r, const QColor& color = QColor(255, 0, 0), ViewType* imgView = nullptr, QGraphicsItem* parent = nullptr)
 		: DGraphicsItem(r, color, imgView, parent) {}
 
 	void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override
 	{
-		QPen pen(color_, penScale_ * 2);
+		int al = penScale_ * ARROW_LENGTH;
+		int aw = penScale_ * ARROW_WIDTH;
+
+		QPointF dp = rect_.bottomRight() - rect_.topLeft();
+		double bei1 = al / std::pow((dp.x() * dp.x() + dp.y() * dp.y()), 0.5);
+		QPointF arrowCenter = rect_.bottomRight() - bei1 * dp;
+
+		double bei2 = bei1 / al * aw;
+		QPointF p2 = arrowCenter - QPointF(bei2 * dp.y(), -bei2 * dp.x());
+		QPointF p3 = arrowCenter + QPointF(bei2 * dp.y(), -bei2 * dp.x());
+
+		QPen pen1(color_, penScale_ * 2);
+		painter->setPen(pen1);
 		painter->setRenderHint(QPainter::Antialiasing);
-		painter->setPen(pen);
-		painter->drawLine(rect_.topLeft(), rect_.bottomRight());
-		QPoint p1 = ;
-		QPoint p2 = ;
-		painter->drawPolygon(QPolygon({ rect_.bottomRight().toPoint(), p1, p2}));
+		painter->drawLine(rect_.topLeft(), arrowCenter);
+
+		QPen pen2(color_, 0);
+		painter->setPen(pen2);
+		painter->setBrush(color_);
+		painter->drawPolygon(QPolygonF({ rect_.bottomRight(), p2, p3}));
 	}
 };
 

@@ -104,8 +104,8 @@ public:
 class DGraphicsArrowItem : public DGraphicsItem
 {
 public:
-	const static int ARROW_LENGTH = 10;  // 箭头长度倍数
-	const static int ARROW_WIDTH = 4;  // 箭头两边宽度倍数
+	const static int ARROW_LENGTH = 8;  // 箭头长度倍数
+	const static int ARROW_WIDTH = 3;  // 箭头两边宽度倍数
 
 	DGraphicsArrowItem(const QRectF& r, const QColor& color = QColor(255, 0, 0), ViewType* imgView = nullptr, QGraphicsItem* parent = nullptr)
 		: DGraphicsItem(r, color, imgView, parent) {}
@@ -123,7 +123,7 @@ public:
 		QPointF p2 = arrowCenter - QPointF(bei2 * dp.y(), -bei2 * dp.x());
 		QPointF p3 = arrowCenter + QPointF(bei2 * dp.y(), -bei2 * dp.x());
 
-		QPen pen1(color_, penScale_ * 2);
+		QPen pen1(color_, penScale_);
 		painter->setPen(pen1);
 		painter->setRenderHint(QPainter::Antialiasing);
 		painter->drawLine(rect_.topLeft(), arrowCenter);

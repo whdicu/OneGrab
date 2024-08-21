@@ -30,7 +30,7 @@ public:
 		setPos(pos() + dPos);
 	}
 
-	void setBoudingRect(const QRectF& r)
+	virtual void setBoudingRect(const QRectF& r)
 	{
 		rect_ = r;
 		//update();
@@ -133,6 +133,44 @@ public:
 		painter->setBrush(color_);
 		painter->drawPolygon(QPolygonF({ rect_.bottomRight(), p2, p3}));
 	}
+};
+
+
+class DGraphicsLinesItem : public DGraphicsItem
+{
+public:
+	DGraphicsLinesItem(const QPointF& point, const QColor& color = QColor(255, 0, 0), ViewType* imgView = nullptr, QGraphicsItem* parent = nullptr)
+		: DGraphicsItem(QRectF(point, point), color, imgView, parent) {}
+
+	virtual void setBoudingRect(const QRectF& r) override
+	{
+		addPoint(r.bottomRight());
+	}
+
+	void addPoint(const QPointF& point)
+	{
+		if (point.x() < rect_.left())
+			rect_.setLeft(point.x());
+		else if (point.x() > rect_.right())
+			rect_.setRight(point.x());
+		if (point.y() < rect_.top())
+			rect_.setTop(point.y());
+		else if (point.y() > rect_.bottom())
+			rect_.setBottom(point.y());
+		
+		points_.push_back(point);
+	}
+
+	void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override
+	{
+		QPen pen(color_, penScale_);
+		painter->setPen(pen);
+		painter->setRenderHint(QPainter::Antialiasing);
+		painter->drawPolyline(points_);
+	}
+
+private:
+	QPolygonF points_;
 };
 
 

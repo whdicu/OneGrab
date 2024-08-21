@@ -61,6 +61,7 @@ signals:
 private:
 	void addRect(const QRect& rect, const QColor& color);
 	void addArrow(const QRect& rect, const QColor& color);
+	void addLines(const QPoint& point, const QColor& color);
 	void clearItems();
 
 	QGraphicsPixmapItem* imgItem_;

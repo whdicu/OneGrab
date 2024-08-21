@@ -128,6 +128,7 @@ void DGrabView::mousePressEvent(QMouseEvent *event)
 		addArrow(QRect(selectionStart_, selectionStart_), QColor(255, 0, 0));
 		break;
 	case DrawPenS:  // Ëæ±ã»­
+		addLines(selectionStart_, QColor(255, 0, 0));
 		break;
 	case DrawTextS:  // Ëæ±ã»­
 		break;
@@ -204,6 +205,10 @@ void DGrabView::mouseMoveEvent(QMouseEvent* event)
 	}
 	case DrawPenS:  // Ëæ±ã»­
 	{
+		if (nullptr != editingItem_)
+		{
+			editingItem_->setBoudingRect(QRect(selectionStart_, event->pos()));
+		}
 		break;
 	}
 	case DrawTextS:  // »­ÎÄ×Ö
@@ -303,8 +308,18 @@ void DGrabView::mouseReleaseEvent(QMouseEvent *event)
 
 	if (event->button() == Qt::LeftButton)
 	{
-		if (mouseState_ != DrawRectS && mouseState_ != DrawArrowS)
+		switch (mouseState_)
+		{
+		case DrawRectS:
+		case DrawArrowS:
+		case DrawPenS:
+		case DrawTextS:
+			break;
+		default:
 			mouseState_ = FreeState;
+			break;
+		}
+			
 		editingItem_ = nullptr;
 		emit sigMouseReleased();
 	}
@@ -331,6 +346,13 @@ void DGrabView::addRect(const QRect& rect, const QColor& color)
 void DGrabView::addArrow(const QRect& rect, const QColor& color)
 {
 	editingItem_ = new DGraphicsArrowItem(rect, color, this, imgItem_);
+	itemList_.enqueue(editingItem_);
+	removedList_.clear();
+}
+
+void DGrabView::addLines(const QPoint& point, const QColor& color)
+{
+	editingItem_ = new DGraphicsLinesItem(point, color, this, imgItem_);
 	itemList_.enqueue(editingItem_);
 	removedList_.clear();
 }

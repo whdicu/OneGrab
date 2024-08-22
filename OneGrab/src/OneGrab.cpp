@@ -32,6 +32,9 @@ OneGrab::OneGrab(QWidget *parent)
 	connect(btnBar_, &BtnBar::sigSave, this, &OneGrab::slotSave);
 	connect(btnBar_, &BtnBar::sigCopy, this, &OneGrab::slotCopy);
 	connect(mouseWindow_, &MouseWindow::sigNeedRefresh, this, &OneGrab::slotRefreshPixelInfo);
+	connect(mouseWindow_, &MouseWindow::sigMousePress, this, &OneGrab::slotMouseEventInWindow);
+	connect(mouseWindow_, &MouseWindow::sigMouseMove, this, &OneGrab::slotMouseEventInWindow);
+	connect(mouseWindow_, &MouseWindow::sigMouseRelease, this, &OneGrab::slotMouseEventInWindow);
 	connect(ui.view, &DGrabView::sigMousePressed, this, [this]()
 	{
 		mouseWindow_->hide();
@@ -165,6 +168,25 @@ void OneGrab::slotRefreshPixelInfo(const QPoint& mousePos)
 	painter.drawRect(QRect(windowSize.width() / 2 - 1, windowSize.height() / 2 - 1, 2, 2));
 	
 	mouseWindow_->refreshInfo(mousePos, color, windowPixmap.scaled(windowSize * 8));
+}
+
+void OneGrab::slotMouseEventInWindow(QMouseEvent* event)
+{
+	QMouseEvent* newEvent = new QMouseEvent(event->type(), event->localPos() + mouseWindow_->pos() - pos(), event->screenPos(),
+		event->button(), event->buttons(), event->modifiers());
+	
+	switch (event->type())
+	{
+	case QMouseEvent::MouseButtonPress:
+		ui.view->mousePressEvent(newEvent);
+		break;
+	case QMouseEvent::MouseMove:
+		ui.view->mouseMoveEvent(newEvent);
+		break;
+	case QMouseEvent::MouseButtonRelease:
+		ui.view->mouseReleaseEvent(newEvent);
+		break;
+	}
 }
 
 void OneGrab::slotPosChanged(const QPoint& pos)

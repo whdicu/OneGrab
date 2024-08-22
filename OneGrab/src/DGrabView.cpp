@@ -120,7 +120,7 @@ void DGrabView::mousePressEvent(QMouseEvent *event)
 		QGraphicsView::mousePressEvent(event);
 		return;
 	}
-
+	
 	selectionStart_ = event->pos();
 	switch (mouseState_)
 	{

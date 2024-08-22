@@ -16,9 +16,14 @@ public:
 
 signals:
 	void sigNeedRefresh(const QPoint& mousePos);
+	void sigMousePress(QMouseEvent* event);
+	void sigMouseMove(QMouseEvent* event);
+	void sigMouseRelease(QMouseEvent* event);
 
 private:
-	void mouseMoveEvent(QMouseEvent* event) override;
+	virtual void mousePressEvent(QMouseEvent* event) override;
+	virtual void mouseMoveEvent(QMouseEvent* event) override;
+	virtual void mouseReleaseEvent(QMouseEvent* event) override;
 
 	Ui::MouseWindow ui;
 	QRect fullPixmapRect_;

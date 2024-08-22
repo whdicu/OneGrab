@@ -8,10 +8,16 @@ MouseWindow::MouseWindow(QWidget *parent)
 	, fullPixmapRect_(0, 0, 0, 0)
 {
 	ui.setupUi(this);
+	setAttribute(Qt::WA_TransparentForMouseEvents, true);
 	setMouseTracking(true);
 	ui.label_img->setMouseTracking(true);
 	ui.widget_color->setMouseTracking(true);
+	ui.label_color->setMouseTracking(true);
 	ui.label_pos->setMouseTracking(true);
+	ui.label_img->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+	ui.widget_color->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+	ui.label_color->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+	ui.label_pos->setAttribute(Qt::WA_TransparentForMouseEvents, true);
 }
 
 MouseWindow::~MouseWindow()
@@ -51,6 +57,11 @@ QSize MouseWindow::getWindowSize()
 	return ui.label_img->size();
 }
 
+void MouseWindow::mousePressEvent(QMouseEvent* event)
+{
+	emit sigMousePress(event);
+}
+
 void MouseWindow::mouseMoveEvent(QMouseEvent* event)
 {
 	QPoint toPos = pos() + event->pos() + QPoint(15, 0);
@@ -65,4 +76,10 @@ void MouseWindow::mouseMoveEvent(QMouseEvent* event)
 		toPos.setY(fullPixmapRect_.bottom() - height());
 
 	move(toPos);
+	emit sigMouseMove(event);
+}
+
+void MouseWindow::mouseReleaseEvent(QMouseEvent* event)
+{
+	emit sigMouseRelease(event);
 }

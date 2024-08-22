@@ -24,6 +24,7 @@ private slots:
 	void slotCopy();
 	void slotSelectionChanged(const QRectF& rect);
 	void slotRefreshPixelInfo(const QPoint& mousePos);
+	void slotMouseEventInWindow(QMouseEvent* event);
 	void slotPosChanged(const QPoint& pos);
 
 private:

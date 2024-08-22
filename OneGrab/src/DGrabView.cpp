@@ -20,6 +20,8 @@ DGrabView::DGrabView(QWidget* parent)
 	, choosedBorder_(0)
 {
 	setMouseTracking(true);
+	setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+	setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 	QGraphicsScene* sc = new QGraphicsScene;
 	setScene(sc);
 }
@@ -38,6 +40,7 @@ QGraphicsPixmapItem* DGrabView::setImg(const QPixmap& img)
 void DGrabView::onFinishGrab()
 {
 	mouseState_ = FreeState;
+	hoverItem_ = nullptr;
 	clearItems();
 }
 

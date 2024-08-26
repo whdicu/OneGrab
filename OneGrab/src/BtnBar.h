@@ -13,6 +13,7 @@ public:
 	void dMove(int dX, int dY);
 	void setSizeLabelText(const QSize& sz);
 	void onFinishGrab();
+	int getDrawingType() { return isDrawing_; }
 
 signals:
 	void sigDrawing(int isDrawing);

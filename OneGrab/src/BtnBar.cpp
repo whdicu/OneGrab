@@ -1,4 +1,5 @@
 #include "BtnBar.h"
+#include "DGrabView.h"
 
 const static QString NORMAL_STYLE = R"(QPushButton
 {
@@ -44,22 +45,22 @@ void BtnBar::onFinishGrab()
 
 void BtnBar::on_btn_rect_clicked()
 {
-	drawBtnClicked(ui.btn_rect, 1);
+	drawBtnClicked(ui.btn_rect, DrawRectS);
 }
 
 void BtnBar::on_btn_arrow_clicked()
 {
-	drawBtnClicked(ui.btn_arrow, 2);
+	drawBtnClicked(ui.btn_arrow, DrawArrowS);
 }
 
 void BtnBar::on_btn_pen_clicked()
 {
-	drawBtnClicked(ui.btn_pen, 3);
+	drawBtnClicked(ui.btn_pen, DrawPenS);
 }
 
 void BtnBar::on_btn_text_clicked()
 {
-	drawBtnClicked(ui.btn_text, 4);
+	drawBtnClicked(ui.btn_text, DrawTextS);
 }
 
 void BtnBar::on_btn_close_clicked()

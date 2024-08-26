@@ -37,8 +37,8 @@ OneGrab::OneGrab(QWidget *parent)
 	connect(mouseWindow_, &MouseWindow::sigMouseRelease, this, &OneGrab::slotMouseEventInWindow);
 	connect(ui.view, &DGrabView::sigMousePressed, this, [this]()
 	{
-		mouseWindow_->hide();
-		mouseWindow_->show();
+		//mouseWindow_->hide();
+		//mouseWindow_->show();
 	});
 	connect(ui.view, &DGrabView::sigMouseReleased, this, [this]()
 	{
@@ -49,6 +49,10 @@ OneGrab::OneGrab(QWidget *parent)
 	});
 	connect(ui.view, &DGrabView::sigPosChanged, this, &OneGrab::slotPosChanged);
 	connect(ui.view, &DGrabView::sigSelectionChanged, this, &OneGrab::slotSelectionChanged);
+	connect(ui.view, &DGrabView::sigResetDrawingState, this, [this]()
+	{
+		ui.view->setDrawingState(btnBar_->getDrawingType());
+	});
 }
 
 void OneGrab::doGrab()

@@ -1,4 +1,4 @@
-#include "DGrabView.h"
+ï»¿#include "DGrabView.h"
 #include "DGraphicsItem.h"
 #include "HDCore/DGlobal.h"
 #include "MaskItem.h"
@@ -7,7 +7,7 @@
 #include <QDebug>
 
 
-const static int DRAG_SPACE = 15;  // Êó±ê·Åµ½¾ØÐÎ±ßÔµ£¬¿ÉÒÔ¿ªÊ¼ÍÏ¶¯µÄ×óÓÒÁô°×
+const static int DRAG_SPACE = 15;  // é¼ æ ‡æ”¾åˆ°çŸ©å½¢è¾¹ç¼˜ï¼Œå¯ä»¥å¼€å§‹æ‹–åŠ¨çš„å·¦å³ç•™ç™½
 
 DGrabView::DGrabView(QWidget* parent)
     : QGraphicsView(parent)
@@ -67,24 +67,7 @@ void DGrabView::zItem(bool shift /*= false*/)
 
 void DGrabView::setDrawingState(int isDrawing)
 {
-	switch (isDrawing)
-	{
-	case 1:  // »­¾ØÐÎ
-		mouseState_ = DrawRectS;
-		break;
-	case 2:  // »­¼ýÍ·
-		mouseState_ = DrawArrowS;
-		break;
-	case 3:  // Ëæ±ã»­
-		mouseState_ = DrawPenS;
-		break;
-	case 4:  // »­ÎÄ×Ö
-		mouseState_ = DrawTextS;
-		break;
-	default:
-		mouseState_ = FreeState;
-		break;
-	}
+	mouseState_ = isDrawing;
 }
 
 QPixmap DGrabView::getSelectionPixmap(QRect& rect)
@@ -122,28 +105,28 @@ void DGrabView::mousePressEvent(QMouseEvent *event)
 	}
 	
 	selectionStart_ = event->pos();
-	switch (mouseState_)
+	if (hoverItem_)  // ç§»åŠ¨å·²ç»ç”»å¥½çš„item
 	{
-	case DrawRectS:  // »­¾ØÐÎ
-		addRect(QRect(selectionStart_, selectionStart_), QColor(255, 0, 0));
-		break;
-	case DrawArrowS:  // »­¼ýÍ·
-		addArrow(QRect(selectionStart_, selectionStart_), QColor(255, 0, 0));
-		break;
-	case DrawPenS:  // Ëæ±ã»­
-		addLines(selectionStart_, QColor(255, 0, 0));
-		break;
-	case DrawTextS:  // Ëæ±ã»­
-		break;
-	default:
-		mousePosBeforeMove_ = event->pos();
-		if (hoverItem_)  // ÒÆ¶¯ÒÑ¾­»­ºÃµÄitem
+		mouseState_ = MoveItem;
+	}
+	else
+	{
+		switch (mouseState_)
 		{
-			mouseState_ = MoveItem;
-		}
-		else
-		{
-			if (choosedBorder_)  // ÒªÍÏ¶¯±ß¿ò
+		case DrawRectS:  // ç”»çŸ©å½¢
+			addRect(QRect(selectionStart_, selectionStart_), QColor(255, 0, 0));
+			break;
+		case DrawArrowS:  // ç”»ç®­å¤´
+			addArrow(QRect(selectionStart_, selectionStart_), QColor(255, 0, 0));
+			break;
+		case DrawPenS:  // éšä¾¿ç”»
+			addLines(selectionStart_, QColor(255, 0, 0));
+			break;
+		case DrawTextS:  // éšä¾¿ç”»
+			break;
+		default:
+			mousePosBeforeMove_ = event->pos();
+			if (choosedBorder_)  // è¦æ‹–åŠ¨è¾¹æ¡†
 			{
 				mouseState_ |= choosedBorder_;
 			}
@@ -152,16 +135,16 @@ void DGrabView::mousePressEvent(QMouseEvent *event)
 				QRectF selectionRect = maskItem_->getSelectionRect();
 				if (selectionRect.contains(event->pos()))
 				{
-					mouseState_ = MoveState;  // ÒÆ¶¯Ñ¡ÔñµÄ½ØÍ¼ÇøÓò
+					mouseState_ = MoveState;  // ç§»åŠ¨é€‰æ‹©çš„æˆªå›¾åŒºåŸŸ
 				}
-				else  // Ñ¡Ôñ½ØÍ¼ÇøÓò
+				else  // é€‰æ‹©æˆªå›¾åŒºåŸŸ
 				{
-					sigMousePressed();
+					emit sigMousePressed();
 					mouseState_ = SelectState;
 				}
 			}
+			break;
 		}
-		break;
 	}
 }
 
@@ -174,7 +157,7 @@ void DGrabView::mouseMoveEvent(QMouseEvent* event)
 		//	QPointF(mImgOriSize.width() / 2.0, mImgOriSize.height() / 2.0) + QPointF(-0.5, -0.5)).toPoint();
 	}
 
-	// ¸ù¾ÝÊó±êÎ»ÖÃÉèÖÃÊó±êÑùÊ½
+	// æ ¹æ®é¼ æ ‡ä½ç½®è®¾ç½®é¼ æ ‡æ ·å¼
 	unsetCursor();
 	switch (mouseState_)
 	{
@@ -197,8 +180,8 @@ void DGrabView::mouseMoveEvent(QMouseEvent* event)
 			hoverItem_->dMove(dPos);
 		break;
 	}
-	case DrawRectS:  // »­¾ØÐÎ
-	case DrawArrowS:  // »­¼ýÍ·
+	case DrawRectS:  // ç”»çŸ©å½¢
+	case DrawArrowS:  // ç”»ç®­å¤´
 	{
 		if (nullptr != editingItem_)
 		{
@@ -206,7 +189,7 @@ void DGrabView::mouseMoveEvent(QMouseEvent* event)
 		}
 		break;
 	}
-	case DrawPenS:  // Ëæ±ã»­
+	case DrawPenS:  // éšä¾¿ç”»
 	{
 		if (nullptr != editingItem_)
 		{
@@ -214,7 +197,7 @@ void DGrabView::mouseMoveEvent(QMouseEvent* event)
 		}
 		break;
 	}
-	case DrawTextS:  // »­ÎÄ×Ö
+	case DrawTextS:  // ç”»æ–‡å­—
 	{
 		break;
 	}
@@ -318,19 +301,17 @@ void DGrabView::mouseReleaseEvent(QMouseEvent *event)
 		case DrawPenS:
 		case DrawTextS:
 			break;
+		case MoveItem:
+			// å‘é€ä¿¡å·é‡è®¾ mouseState_
+			emit sigResetDrawingState();
+			break;
 		default:
 			mouseState_ = FreeState;
 			break;
 		}
-			
+		
 		editingItem_ = nullptr;
 		emit sigMouseReleased();
-	}
-
-	
-	if (event->button() == Qt::RightButton)
-	{
-		
 	}
 }
 

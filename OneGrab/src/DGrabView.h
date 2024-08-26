@@ -57,6 +57,7 @@ signals:
 	void sigPosChanged(const QPoint& pos);
 	void sigMouseReleased();
 	void sigSelectionChanged(const QRect& rect);
+	void sigResetDrawingState();
 
 private:
 	void addRect(const QRect& rect, const QColor& color);

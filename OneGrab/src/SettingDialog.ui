@@ -48,7 +48,7 @@
 
 #btn_close {
 	border: 1px solid #5c5c66;
-	border-radius: 10px;
+	border-radius: 13px;
 	background-color: #ee5555;
 }
 #btn_close:hover {
@@ -104,16 +104,16 @@
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout_2">
       <property name="spacing">
-       <number>10</number>
+       <number>7</number>
       </property>
       <property name="leftMargin">
-       <number>10</number>
+       <number>7</number>
       </property>
       <property name="topMargin">
        <number>0</number>
       </property>
       <property name="rightMargin">
-       <number>10</number>
+       <number>7</number>
       </property>
       <property name="bottomMargin">
        <number>0</number>
@@ -135,14 +135,14 @@
        <widget class="QPushButton" name="btn_close">
         <property name="minimumSize">
          <size>
-          <width>20</width>
-          <height>20</height>
+          <width>26</width>
+          <height>26</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>20</width>
-          <height>20</height>
+          <width>26</width>
+          <height>26</height>
          </size>
         </property>
         <property name="text">
@@ -511,7 +511,7 @@
            <bool>true</bool>
           </property>
          </widget>
-         <widget class="QCheckBox" name="cb_clock">
+         <widget class="QCheckBox" name="cb_start_by_pc">
           <property name="geometry">
            <rect>
             <x>10</x>
@@ -521,7 +521,7 @@
            </rect>
           </property>
           <property name="text">
-           <string>导航栏右侧显示时钟</string>
+           <string>开机启动OneGrab</string>
           </property>
           <property name="tristate">
            <bool>false</bool>

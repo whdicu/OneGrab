@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <QWidget>
 #include "ui_SettingDialog.h"
@@ -12,6 +12,7 @@ public:
 
 private slots:
 	void on_btn_close_clicked();
+	void on_cb_start_by_pc_clicked();
 
 private:
 	SettingDialog(QWidget *parent = Q_NULLPTR);

@@ -10,6 +10,7 @@ class LabelIsland : public QLabel
 public:
 	LabelIsland(const QPixmap& pixmap, const QPoint& pos, QWidget* parent = nullptr);
 	~LabelIsland();
+	void onRefreshSetting();
 
 private:
 	void keyPressEvent(QKeyEvent* event) override;

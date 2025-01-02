@@ -5,6 +5,7 @@
 #include <QWheelEvent>
 #include <QRectF>
 #include <QDebug>
+#include "SettingHandler.h"
 
 
 const static int DRAG_SPACE = 15;  // 鼠标放到矩形边缘，可以开始拖动的左右留白
@@ -111,18 +112,20 @@ void DGrabView::mousePressEvent(QMouseEvent *event)
 	}
 	else
 	{
+		QColor mainColor = SETTING->getMainColor();
 		switch (mouseState_)
 		{
 		case DrawRectS:  // 画矩形
-			addRect(QRect(selectionStart_, selectionStart_), QColor(255, 0, 0));
+			addRect(QRect(selectionStart_, selectionStart_), mainColor);
 			break;
 		case DrawArrowS:  // 画箭头
-			addArrow(QRect(selectionStart_, selectionStart_), QColor(255, 0, 0));
+			addArrow(QRect(selectionStart_, selectionStart_), mainColor);
 			break;
 		case DrawPenS:  // 随便画
-			addLines(selectionStart_, QColor(255, 0, 0));
+			addLines(selectionStart_, mainColor);
 			break;
-		case DrawTextS:  // 随便画
+		case DrawTextS:  // 画文字
+			addText(selectionStart_, mainColor);
 			break;
 		default:
 			mousePosBeforeMove_ = event->pos();
@@ -182,23 +185,13 @@ void DGrabView::mouseMoveEvent(QMouseEvent* event)
 	}
 	case DrawRectS:  // 画矩形
 	case DrawArrowS:  // 画箭头
-	{
-		if (nullptr != editingItem_)
-		{
-			editingItem_->setBoudingRect(QRect(selectionStart_, event->pos()));
-		}
-		break;
-	}
+	case DrawTextS:  // 画箭头
 	case DrawPenS:  // 随便画
 	{
 		if (nullptr != editingItem_)
 		{
-			editingItem_->setBoudingRect(QRect(selectionStart_, event->pos()));
+			editingItem_->setBoundingRect(QRect(selectionStart_, event->pos()));
 		}
-		break;
-	}
-	case DrawTextS:  // 画文字
-	{
 		break;
 	}
 	default:
@@ -299,7 +292,10 @@ void DGrabView::mouseReleaseEvent(QMouseEvent *event)
 		case DrawRectS:
 		case DrawArrowS:
 		case DrawPenS:
+			break;
 		case DrawTextS:
+			if (editingItem_)
+				editingItem_->onMouseRelese();
 			break;
 		case MoveItem:
 			// 发送信号重设 mouseState_
@@ -337,6 +333,13 @@ void DGrabView::addArrow(const QRect& rect, const QColor& color)
 void DGrabView::addLines(const QPoint& point, const QColor& color)
 {
 	editingItem_ = new DGraphicsLinesItem(point, color, this, imgItem_);
+	itemList_.enqueue(editingItem_);
+	removedList_.clear();
+}
+
+void DGrabView::addText(const QPoint& point, const QColor& color)
+{
+	editingItem_ = new DGraphicsTextItem(QRect(point, point), color, this, imgItem_);
 	itemList_.enqueue(editingItem_);
 	removedList_.clear();
 }

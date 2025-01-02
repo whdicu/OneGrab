@@ -1,9 +1,11 @@
 ﻿#pragma once
+#pragma execution_character_set("utf-8")
 #include "DGrabView.h"
 #include <QGraphicsItem>
 #include <QPainter>
 #include <QDebug>
 #include <QGraphicsSceneMouseEvent>
+#include <QTextCursor>
 
 
 using ViewType = DGrabView;
@@ -30,7 +32,9 @@ public:
 		setPos(pos() + dPos);
 	}
 
-	virtual void setBoudingRect(const QRectF& r)
+	virtual void onMouseRelese() {};
+
+	virtual void setBoundingRect(const QRectF& r)
 	{
 		rect_ = r;
 		//update();
@@ -142,7 +146,7 @@ public:
 	DGraphicsLinesItem(const QPointF& point, const QColor& color = QColor(255, 0, 0), ViewType* imgView = nullptr, QGraphicsItem* parent = nullptr)
 		: DGraphicsItem(QRectF(point, point), color, imgView, parent) {}
 
-	virtual void setBoudingRect(const QRectF& r) override
+	virtual void setBoundingRect(const QRectF& r) override
 	{
 		addPoint(r.bottomRight());
 	}
@@ -187,4 +191,79 @@ public:
 		painter->setPen(pen);
 		painter->drawEllipse(rect_);
 	}
+};
+
+
+class DGraphicsTextItem : public DGraphicsItem
+{
+	class TextItem : public QGraphicsTextItem
+	{
+	public:
+		TextItem(DGraphicsTextItem* parent) : QGraphicsTextItem(parent), parent_(parent) {}
+
+	protected:
+		void focusOutEvent(QFocusEvent* event) override
+		{
+			QGraphicsTextItem::focusOutEvent(event);
+			auto cursor = textCursor();
+			cursor.clearSelection();
+			setTextCursor(cursor);
+
+			QFontMetrics metrics(font());
+			int w = metrics.width(toPlainText() + '-') + 2;
+			QRectF r = parent_->boundingRect();
+			r.setWidth(w);
+			parent_->setBoundingRect(r);
+			setTextWidth(w);
+		}
+
+	private:
+		DGraphicsTextItem* parent_;
+	};
+
+public:
+	DGraphicsTextItem(const QRectF& r, const QColor& color = QColor(255, 0, 0), ViewType* imgView = nullptr, QGraphicsItem* parent = nullptr)
+		: DGraphicsItem(r, color, imgView, parent)
+	{
+		textItem_ = new TextItem(this);
+		textItem_->setTextInteractionFlags(Qt::TextEditorInteraction);
+		textItem_->setDefaultTextColor(color_);
+		textItem_->setPlainText("输入文字");
+		textItem_->setFont(QFont("Microsoft YaHei", 0));
+		textItem_->setPos(rect_.topLeft());
+		textItem_->setTextWidth(rect_.width());
+		textItem_->setFocus();
+	}
+
+	~DGraphicsTextItem()
+	{
+		if (textItem_)
+			delete textItem_;
+	}
+
+	void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override
+	{
+		//QPen pen(color_, penScale_);
+		//pen.setStyle(Qt::DashLine);
+		//painter->setPen(pen);
+		//painter->drawRect(rect_);
+	}
+
+	virtual void onMouseRelese()
+	{
+		auto cursor = textItem_->textCursor();
+		cursor.select(QTextCursor::Document);
+		textItem_->setTextCursor(cursor);
+	}
+
+	virtual void setBoundingRect(const QRectF& r) override
+	{
+		DGraphicsItem::setBoundingRect(r);
+		QRectF normalRect = r.normalized();
+		textItem_->setPos(normalRect.topLeft());
+		textItem_->setTextWidth(normalRect.width());
+		textItem_->setFont(QFont("Microsoft YaHei", normalRect.height() / 1.75976));
+	}
+
+	TextItem* textItem_;
 };

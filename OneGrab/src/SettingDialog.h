@@ -1,5 +1,5 @@
 ﻿#pragma once
-
+#pragma execution_character_set("utf-8")
 #include <QWidget>
 #include "ui_SettingDialog.h"
 
@@ -10,9 +10,15 @@ class SettingDialog : public QWidget
 public:
 	static SettingDialog* getInstance();
 
+signals:
+	void sigRefreshSetting();
+
 private slots:
 	void on_btn_close_clicked();
 	void on_cb_start_by_pc_clicked();
+	void on_btn_base_clicked();
+	void on_btn_about_clicked();
+	void on_btn_color_clicked();
 
 private:
 	SettingDialog(QWidget *parent = Q_NULLPTR);
@@ -20,6 +26,8 @@ private:
 	void mousePressEvent(QMouseEvent* event);
 	void mouseMoveEvent(QMouseEvent* event);
 	void mouseReleaseEvent(QMouseEvent* event);
+
+	QString convertDateFormat(const QString& strDate);
 
 	Ui::SettingDialog ui;
 	QPoint pressPos_;

@@ -1,5 +1,6 @@
 #ifndef SETTINGHANDLER_H
 #define SETTINGHANDLER_H
+#include <QColor>
 #include <QObject>
 #include <QReadWriteLock>
 
@@ -14,6 +15,7 @@
 struct SettingStruct
 {
 	QString LastSavePath;
+	QColor MainColor;
 };
 
 
@@ -29,6 +31,7 @@ public:
 
 	// 上一次保存路径
 	REG_GET_FUNC(LastSavePath)
+	REG_GET_FUNC(MainColor)
 
 private:
     SettingHandler();

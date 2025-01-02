@@ -10,6 +10,7 @@
 #include <QKeyEvent>
 #include <QPainter>
 #include <QScreen>
+#include "SettingDialog.h"
 #include "SettingHandler.h"
 
 
@@ -104,6 +105,7 @@ void OneGrab::slotFixed()
 	QRect croppedRect;
 	QPixmap croppedPixmap = ui.view->getSelectionPixmap(croppedRect);
 	LabelIsland* island = new LabelIsland(croppedPixmap, croppedRect.topLeft() + pos());
+	connect(SettingDialog::getInstance(), &SettingDialog::sigRefreshSetting, island, &LabelIsland::onRefreshSetting);
 	island->show();
 	finishGrab();
 }
@@ -167,8 +169,9 @@ void OneGrab::slotRefreshPixelInfo(const QPoint& mousePos)
 		- QPoint(windowSize.width() / 2, windowSize.height() / 2), windowSize));
 
 	// 画鼠标所在像素的矩形框
+	QColor mainColor = SETTING->getMainColor();
 	QPainter painter(&windowPixmap);
-	painter.setPen(QPen(QColor(255, 102, 102), 1));
+	painter.setPen(QPen(mainColor, 1));
 	painter.drawRect(QRect(windowSize.width() / 2 - 1, windowSize.height() / 2 - 1, 2, 2));
 	
 	mouseWindow_->refreshInfo(mousePos, color, windowPixmap.scaled(windowSize * 8));

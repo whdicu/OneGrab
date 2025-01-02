@@ -79,6 +79,11 @@ void SettingHandler::writeAll()
 	SettingStruct settingStruct = getSettingStruct();
 	wholeObject.insert("LastSavePath", settingStruct.LastSavePath);
 
+	int mainColor = (settingStruct.MainColor.red() << 16)
+		+ (settingStruct.MainColor.green() << 8)
+		+ settingStruct.MainColor.blue();
+	wholeObject.insert("MainColor", mainColor);
+
 	// 如果路径中有不存在的文件夹则创建
 	QFileInfo fileInfo(strFile);
 	QDir().mkpath(fileInfo.absolutePath());
@@ -122,6 +127,8 @@ void SettingHandler::readAll()
 	QJsonObject obj = jsonDoc.object();
 	SettingStruct settingStruct;
 	settingStruct.LastSavePath = obj["LastSavePath"].toString();
+	int mainColor = obj["MainColor"].toInt();
+	settingStruct.MainColor = QColor(mainColor >> 16, mainColor >> 8 & 0xff, mainColor & 0xff);
 
 	setSettingStruct(std::move(settingStruct));
 }

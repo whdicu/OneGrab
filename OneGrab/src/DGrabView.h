@@ -63,13 +63,14 @@ private:
 	void addRect(const QRect& rect, const QColor& color);
 	void addArrow(const QRect& rect, const QColor& color);
 	void addLines(const QPoint& point, const QColor& color);
+	void addText(const QPoint& point, const QColor& color);
 	void clearItems();
 
 	QGraphicsPixmapItem* imgItem_;
 	DGraphicsItem* editingItem_;
 	DGraphicsItem* hoverItem_;
-	DStack<DGraphicsItem*> itemList_;
-	DStack<DGraphicsItem*> removedList_;
+	DStack<QGraphicsItem*> itemList_;
+	DStack<QGraphicsItem*> removedList_;
 	MaskItem* maskItem_;
 	int mouseState_;
 	QPoint selectionStart_;

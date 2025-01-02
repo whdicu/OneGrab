@@ -1,5 +1,6 @@
 ﻿#include "SettingDialog.h"
 #include <mutex>
+#include <QColorDialog>
 #include <QDebug>
 #include <QMessageBox>
 #include <QMouseEvent>
@@ -20,11 +21,11 @@ SettingDialog* SettingDialog::getInstance()
 void SettingDialog::on_btn_close_clicked()
 {
 	hide();
+	emit sigRefreshSetting();
 }
 
 void SettingDialog::on_cb_start_by_pc_clicked()
 {
-	SettingStruct stru = SETTING->getSettingStruct();
 	bool startByPC = ui.cb_start_by_pc->isChecked();
 
 	QString applicationName = QApplication::applicationName();  // 获取应用名称
@@ -69,8 +70,32 @@ void SettingDialog::on_cb_start_by_pc_clicked()
 		else
 			settings.remove(applicationName);
 	}
-	
-	//SETTING->setSettingStruct(stru);
+}
+
+void SettingDialog::on_btn_base_clicked()
+{
+	ui.stackedWidget->setCurrentIndex(0);
+}
+
+void SettingDialog::on_btn_about_clicked()
+{
+	ui.stackedWidget->setCurrentIndex(2);
+}
+
+void SettingDialog::on_btn_color_clicked()
+{
+	SettingStruct stru = SETTING->getSettingStruct();
+
+	QColorDialog dlg;
+	dlg.setCurrentColor(stru.MainColor);
+	if (dlg.exec() != QDialog::Accepted)
+		return;
+
+	stru.MainColor = dlg.selectedColor();
+	SETTING->setSettingStruct(stru);
+
+	ui.btn_color->setStyleSheet(QString("border-radius: 4px; background-color: rgb(%1, %2, %3);")
+		.arg(stru.MainColor.red()).arg(stru.MainColor.green()).arg(stru.MainColor.blue()));
 }
 
 SettingDialog::SettingDialog(QWidget *parent)
@@ -81,11 +106,17 @@ SettingDialog::SettingDialog(QWidget *parent)
 	ui.setupUi(this);
 	setAttribute(Qt::WA_TranslucentBackground);
 
+	ui.stackedWidget->setCurrentIndex(0);
+	ui.label_version->setText(tr("软件版本：V%1").arg(convertDateFormat(__DATE__)));
+
 	QString applicationName = QApplication::applicationName();  // 获取应用名称
 	QSettings settings("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
 		QSettings::NativeFormat);
-
 	ui.cb_start_by_pc->setChecked(settings.allKeys().contains(applicationName));
+
+	QColor mainColor = SETTING->getMainColor();
+	ui.btn_color->setStyleSheet(QString("border-radius: 4px; background-color: rgb(%1, %2, %3);")
+		.arg(mainColor.red()).arg(mainColor.green()).arg(mainColor.blue()));
 }
 
 SettingDialog::~SettingDialog()
@@ -118,4 +149,78 @@ void SettingDialog::mouseMoveEvent(QMouseEvent* event)
 void SettingDialog::mouseReleaseEvent(QMouseEvent* event)
 {
 	isMoveWindow_ = false;
+}
+
+QString SettingDialog::convertDateFormat(const QString& strDate)
+{
+	QStringList strList = strDate.split(" ");
+	int iSize = strList.size();
+	if (3 != iSize &&
+		4 != iSize)
+	{
+		return QString();
+	}
+
+	//月
+	QString strMonth = strList.at(0);
+	if ("Jan" == strMonth)
+	{
+		strMonth = "01";
+	}
+	else if ("Feb" == strMonth)
+	{
+		strMonth = "02";
+	}
+	else if ("Mar" == strMonth)
+	{
+		strMonth = "03";
+	}
+	else if ("Apr" == strMonth)
+	{
+		strMonth = "04";
+	}
+	else if ("May" == strMonth)
+	{
+		strMonth = "05";
+	}
+	else if ("Jun" == strMonth)
+	{
+		strMonth = "06";
+	}
+	else if ("Jul" == strMonth)
+	{
+		strMonth = "07";
+	}
+	else if ("Aug" == strMonth)
+	{
+		strMonth = "08";
+	}
+	else if ("Sep" == strMonth)
+	{
+		strMonth = "09";
+	}
+	else if ("Oct" == strMonth)
+	{
+		strMonth = "10";
+	}
+	else if ("Nov" == strMonth)
+	{
+		strMonth = "11";
+	}
+	else if ("Dec" == strMonth)
+	{
+		strMonth = "12";
+	}
+
+	//日
+	QString strDay = strList.at(iSize - 2);
+	if (1 == strDay.length())
+	{
+		strDay = "0" + strDay;
+	}
+
+	//年
+	QString strYear = strList.at(iSize - 1);
+
+	return strYear + strMonth + strDay;
 }

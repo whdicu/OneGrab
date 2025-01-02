@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>700</width>
-    <height>500</height>
+    <width>663</width>
+    <height>446</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -205,7 +205,7 @@
           <number>0</number>
          </property>
          <item>
-          <widget class="QPushButton" name="btn_style">
+          <widget class="QPushButton" name="btn_base">
            <property name="minimumSize">
             <size>
              <width>0</width>
@@ -222,7 +222,7 @@
             <cursorShape>PointingHandCursor</cursorShape>
            </property>
            <property name="text">
-            <string>外观设置</string>
+            <string>基础设置</string>
            </property>
           </widget>
          </item>
@@ -291,207 +291,7 @@
         <property name="currentIndex">
          <number>0</number>
         </property>
-        <widget class="QWidget" name="style_page">
-         <widget class="QLabel" name="label">
-          <property name="geometry">
-           <rect>
-            <x>10</x>
-            <y>10</y>
-            <width>100</width>
-            <height>30</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>导航栏高度</string>
-          </property>
-         </widget>
-         <widget class="QSlider" name="horizontalSlider_widget_hight">
-          <property name="geometry">
-           <rect>
-            <x>170</x>
-            <y>10</y>
-            <width>410</width>
-            <height>30</height>
-           </rect>
-          </property>
-          <property name="maximum">
-           <number>300</number>
-          </property>
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="invertedAppearance">
-           <bool>false</bool>
-          </property>
-          <property name="invertedControls">
-           <bool>false</bool>
-          </property>
-         </widget>
-         <widget class="QLabel" name="label_2">
-          <property name="geometry">
-           <rect>
-            <x>10</x>
-            <y>50</y>
-            <width>100</width>
-            <height>30</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>导航栏底部间距</string>
-          </property>
-         </widget>
-         <widget class="QSlider" name="horizontalSlider_margin_bottom">
-          <property name="geometry">
-           <rect>
-            <x>170</x>
-            <y>50</y>
-            <width>410</width>
-            <height>30</height>
-           </rect>
-          </property>
-          <property name="maximum">
-           <number>600</number>
-          </property>
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-         </widget>
-         <widget class="QLabel" name="label_3">
-          <property name="geometry">
-           <rect>
-            <x>10</x>
-            <y>90</y>
-            <width>100</width>
-            <height>30</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>导航栏圆角半径</string>
-          </property>
-         </widget>
-         <widget class="QSlider" name="horizontalSlider_radius">
-          <property name="geometry">
-           <rect>
-            <x>170</x>
-            <y>90</y>
-            <width>410</width>
-            <height>30</height>
-           </rect>
-          </property>
-          <property name="maximum">
-           <number>150</number>
-          </property>
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-         </widget>
-         <widget class="QSlider" name="horizontalSlider_lnk_size">
-          <property name="geometry">
-           <rect>
-            <x>170</x>
-            <y>210</y>
-            <width>410</width>
-            <height>30</height>
-           </rect>
-          </property>
-          <property name="maximum">
-           <number>300</number>
-          </property>
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-         </widget>
-         <widget class="QLabel" name="label_4">
-          <property name="geometry">
-           <rect>
-            <x>10</x>
-            <y>210</y>
-            <width>100</width>
-            <height>30</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>图标大小</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="label_5">
-          <property name="geometry">
-           <rect>
-            <x>10</x>
-            <y>130</y>
-            <width>100</width>
-            <height>30</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>导航栏背景颜色</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="label_6">
-          <property name="geometry">
-           <rect>
-            <x>10</x>
-            <y>170</y>
-            <width>100</width>
-            <height>30</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>导航栏边框颜色</string>
-          </property>
-         </widget>
-         <widget class="QSpinBox" name="spinBox_widget_height">
-          <property name="geometry">
-           <rect>
-            <x>120</x>
-            <y>10</y>
-            <width>40</width>
-            <height>30</height>
-           </rect>
-          </property>
-          <property name="maximum">
-           <number>300</number>
-          </property>
-         </widget>
-         <widget class="QSpinBox" name="spinBox_margin_bottom">
-          <property name="geometry">
-           <rect>
-            <x>120</x>
-            <y>50</y>
-            <width>40</width>
-            <height>30</height>
-           </rect>
-          </property>
-          <property name="maximum">
-           <number>600</number>
-          </property>
-         </widget>
-         <widget class="QSpinBox" name="spinBox_radius">
-          <property name="geometry">
-           <rect>
-            <x>120</x>
-            <y>90</y>
-            <width>40</width>
-            <height>30</height>
-           </rect>
-          </property>
-          <property name="maximum">
-           <number>150</number>
-          </property>
-         </widget>
-         <widget class="QSpinBox" name="spinBox_lnk_size">
-          <property name="geometry">
-           <rect>
-            <x>120</x>
-            <y>210</y>
-            <width>40</width>
-            <height>30</height>
-           </rect>
-          </property>
-          <property name="maximum">
-           <number>300</number>
-          </property>
-         </widget>
+        <widget class="QWidget" name="base_page">
          <widget class="QPushButton" name="btn_save">
           <property name="geometry">
            <rect>
@@ -515,7 +315,7 @@
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>250</y>
+            <y>10</y>
             <width>570</width>
             <height>30</height>
            </rect>
@@ -540,18 +340,62 @@
            <number>30</number>
           </property>
          </widget>
-         <widget class="QLabel" name="label_7">
+         <widget class="QWidget" name="">
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>290</y>
-            <width>520</width>
-            <height>30</height>
+            <y>50</y>
+            <width>261</width>
+            <height>31</height>
            </rect>
           </property>
-          <property name="text">
-           <string>用户临时拖拽窗口，返回原位的延时(秒)</string>
-          </property>
+          <layout class="QHBoxLayout" name="horizontalLayout_5">
+           <item>
+            <widget class="QLabel" name="label_5">
+             <property name="text">
+              <string>主题颜色</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="btn_color">
+             <property name="minimumSize">
+              <size>
+               <width>24</width>
+               <height>24</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>24</width>
+               <height>24</height>
+              </size>
+             </property>
+             <property name="cursor">
+              <cursorShape>PointingHandCursor</cursorShape>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="flat">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_2">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
          </widget>
         </widget>
         <widget class="QWidget" name="other_page">
@@ -573,59 +417,99 @@
          </widget>
         </widget>
         <widget class="QWidget" name="about_page">
-         <widget class="QLabel" name="label_about">
+         <widget class="QWidget" name="layoutWidget">
+          <property name="geometry">
+           <rect>
+            <x>20</x>
+            <y>20</y>
+            <width>421</width>
+            <height>41</height>
+           </rect>
+          </property>
+          <layout class="QHBoxLayout" name="horizontalLayout_3">
+           <item>
+            <widget class="QLabel" name="label_version">
+             <property name="text">
+              <string>软件版本：V20240911</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="btn_check_update">
+             <property name="minimumSize">
+              <size>
+               <width>100</width>
+               <height>36</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>100</width>
+               <height>36</height>
+              </size>
+             </property>
+             <property name="cursor">
+              <cursorShape>PointingHandCursor</cursorShape>
+             </property>
+             <property name="text">
+              <string>检查更新</string>
+             </property>
+             <property name="flat">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="layoutWidget">
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>520</y>
-            <width>570</width>
-            <height>30</height>
+            <y>70</y>
+            <width>441</width>
+            <height>41</height>
            </rect>
           </property>
-          <property name="text">
-           <string>官方网站:http://wanghd.icu    QQ:1467058574</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-         <widget class="QPushButton" name="btn_visti_website">
-          <property name="geometry">
-           <rect>
-            <x>235</x>
-            <y>480</y>
-            <width>120</width>
-            <height>30</height>
-           </rect>
-          </property>
-          <property name="cursor">
-           <cursorShape>PointingHandCursor</cursorShape>
-          </property>
-          <property name="text">
-           <string>访问官网</string>
-          </property>
-          <property name="flat">
-           <bool>true</bool>
-          </property>
-         </widget>
-         <widget class="QPushButton" name="btn_check_update">
-          <property name="geometry">
-           <rect>
-            <x>235</x>
-            <y>440</y>
-            <width>120</width>
-            <height>30</height>
-           </rect>
-          </property>
-          <property name="cursor">
-           <cursorShape>PointingHandCursor</cursorShape>
-          </property>
-          <property name="text">
-           <string>检查更新</string>
-          </property>
-          <property name="flat">
-           <bool>true</bool>
-          </property>
+          <layout class="QHBoxLayout" name="horizontalLayout_4">
+           <item>
+            <widget class="QLabel" name="label_about">
+             <property name="text">
+              <string>官方网站:http://wanghd.icu</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="btn_visti_website">
+             <property name="minimumSize">
+              <size>
+               <width>100</width>
+               <height>36</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>100</width>
+               <height>36</height>
+              </size>
+             </property>
+             <property name="cursor">
+              <cursorShape>PointingHandCursor</cursorShape>
+             </property>
+             <property name="text">
+              <string>访问官网</string>
+             </property>
+             <property name="flat">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </widget>
         </widget>
        </widget>

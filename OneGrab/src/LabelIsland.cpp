@@ -4,6 +4,7 @@
 #include <QMouseEvent>
 #include <QPropertyAnimation>
 #include <QVBoxLayout>
+#include "SettingHandler.h"
 
 
 const static int SCALE_ANIMATION_TIME = 160;
@@ -19,7 +20,6 @@ LabelIsland::LabelIsland(const QPixmap& pixmap, const QPoint& pos, QWidget* pare
 	, sizeIndex_(ORIGIN_SIZE_INDEX)
 	, sizeLabel_(new QLabel("100%"))
 {
-	setStyleSheet(QString("QLabel { border: %1px solid #ff6666; }").arg(BORDER_SIZE));
 	setWindowFlags(Qt::FramelessWindowHint | Qt::Tool | Qt::WindowStaysOnTopHint);
 	originRect_.moveTo(pos - QPoint(BORDER_SIZE, BORDER_SIZE));
 	originRect_.setSize(pixmap.size() + QSize(BORDER_SIZE, BORDER_SIZE) * 2);
@@ -39,12 +39,21 @@ LabelIsland::LabelIsland(const QPixmap& pixmap, const QPoint& pos, QWidget* pare
 	sizeLabel_->setFont(QFont("Microsoft YaHei UI", 15));
 	sizeLabel_->setStyleSheet("QLabel { color: #5c5c66; background-color: white; padding-left: 5px; }");
 	sizeLabel_->setAlignment(Qt::AlignCenter);
+
+	onRefreshSetting();
 }
 
 LabelIsland::~LabelIsland()
 {
 	qDebug() << __FUNCTION__;
 	sizeLabel_->deleteLater();
+}
+
+void LabelIsland::onRefreshSetting()
+{
+	QColor mainColor = SETTING->getMainColor();
+	setStyleSheet(QString("QLabel { border: %1px solid rgb(%2, %3, %4); }").arg(BORDER_SIZE)
+		.arg(mainColor.red()).arg(mainColor.green()).arg(mainColor.blue()));
 }
 
 void LabelIsland::keyPressEvent(QKeyEvent* event)

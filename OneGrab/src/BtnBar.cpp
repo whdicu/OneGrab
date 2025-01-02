@@ -1,5 +1,6 @@
 #include "BtnBar.h"
 #include "DGrabView.h"
+#include "SettingHandler.h"
 
 const static QString NORMAL_STYLE = R"(QPushButton
 {
@@ -89,6 +90,8 @@ void BtnBar::drawBtnClicked(QPushButton* btn, int drawType)
 		choosedBtn_->setStyleSheet(NORMAL_STYLE);
 	choosedBtn_ = btn;
 	isDrawing_ = (drawType == isDrawing_) ? 0 : drawType;
-	btn->setStyleSheet(isDrawing_ ? "background-color: #ff6666;" : NORMAL_STYLE);
+	QColor mainColor = SETTING->getMainColor();
+	btn->setStyleSheet(isDrawing_ ? QString("background-color: rgb(%1, %2, %3);")
+		.arg(mainColor.red()).arg(mainColor.green()).arg(mainColor.blue()): NORMAL_STYLE);
 	emit sigDrawing(isDrawing_);
 }

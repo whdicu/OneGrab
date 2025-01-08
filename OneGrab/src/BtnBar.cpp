@@ -203,6 +203,10 @@ void BtnBar::refreshUI()
 
 void BtnBar::refreshLineBtn(LineWidth lineWidth)
 {
+	ui.btn_line1->show();
+	ui.btn_line2->show();
+	ui.btn_line3->show();
+	ui.btn_line4->show();
 	QString mainColorStr = DStyle::color2Str(SETTING->getMainColor());
 	switch (isDrawing_)
 	{
@@ -217,6 +221,10 @@ void BtnBar::refreshLineBtn(LineWidth lineWidth)
 		break;
 	case DrawTextS:
 		mainColorStr = DStyle::color2Str(SETTING->getTextColor());
+		ui.btn_line1->hide();
+		ui.btn_line2->hide();
+		ui.btn_line3->hide();
+		ui.btn_line4->hide();
 		break;
 	}
 	

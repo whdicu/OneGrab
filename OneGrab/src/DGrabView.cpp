@@ -112,20 +112,19 @@ void DGrabView::mousePressEvent(QMouseEvent *event)
 	}
 	else
 	{
-		QColor mainColor = SETTING->getMainColor();
 		switch (mouseState_)
 		{
 		case DrawRectS:  // 画矩形
-			addRect(QRect(selectionStart_, selectionStart_), mainColor);
+			addRect(QRect(selectionStart_, selectionStart_), SETTING->getRectColor());
 			break;
 		case DrawArrowS:  // 画箭头
-			addArrow(QRect(selectionStart_, selectionStart_), mainColor);
+			addArrow(QRect(selectionStart_, selectionStart_), SETTING->getArrowColor());
 			break;
 		case DrawPenS:  // 随便画
-			addLines(selectionStart_, mainColor);
+			addLines(selectionStart_, SETTING->getPenColor());
 			break;
 		case DrawTextS:  // 画文字
-			addText(selectionStart_, mainColor);
+			addText(selectionStart_, SETTING->getTextColor());
 			break;
 		default:
 			mousePosBeforeMove_ = event->pos();
@@ -318,21 +317,21 @@ void DGrabView::closeEvent(QCloseEvent *evt)
 
 void DGrabView::addRect(const QRect& rect, const QColor& color)
 {
-	editingItem_ = new DGraphicsRectItem(rect, color, this, imgItem_);
+	editingItem_ = new DGraphicsRectItem(rect, color, SETTING->getRectLineWidth(), this, imgItem_);
 	itemList_.enqueue(editingItem_);
 	removedList_.clear();
 }
 
 void DGrabView::addArrow(const QRect& rect, const QColor& color)
 {
-	editingItem_ = new DGraphicsArrowItem(rect, color, this, imgItem_);
+	editingItem_ = new DGraphicsArrowItem(rect, color, SETTING->getArrowLineWidth(), this, imgItem_);
 	itemList_.enqueue(editingItem_);
 	removedList_.clear();
 }
 
 void DGrabView::addLines(const QPoint& point, const QColor& color)
 {
-	editingItem_ = new DGraphicsLinesItem(point, color, this, imgItem_);
+	editingItem_ = new DGraphicsLinesItem(point, color, SETTING->getPenLineWidth(), this, imgItem_);
 	itemList_.enqueue(editingItem_);
 	removedList_.clear();
 }

@@ -9,13 +9,35 @@
 { \
 	QReadLocker locker(&structLock_); \
 	return settingStruct_.##VALUE##; \
+} \
+template <class T> \
+inline void set##VALUE##(const T& v) \
+{ \
+	QWriteLocker locker(&structLock_); \
+	settingStruct_.##VALUE## = v; \
 }
 
+
+enum LineWidth : int
+{
+	Line1 = 1,
+	Line2 = 2,
+	Line3 = 4,
+	Line4 = 7,
+};
 
 struct SettingStruct
 {
 	QString LastSavePath;
 	QColor MainColor;
+	QColor RectColor;
+	LineWidth RectLineWidth;
+	QColor ArrowColor;
+	LineWidth ArrowLineWidth;
+	QColor PenColor;
+	LineWidth PenLineWidth;
+	QColor TextColor;
+	LineWidth TextLineWidth;
 };
 
 
@@ -32,6 +54,14 @@ public:
 	// 上一次保存路径
 	REG_GET_FUNC(LastSavePath)
 	REG_GET_FUNC(MainColor)
+	REG_GET_FUNC(RectColor)
+	REG_GET_FUNC(RectLineWidth)
+	REG_GET_FUNC(ArrowColor)
+	REG_GET_FUNC(ArrowLineWidth)
+	REG_GET_FUNC(PenColor)
+	REG_GET_FUNC(PenLineWidth)
+	REG_GET_FUNC(TextColor)
+	REG_GET_FUNC(TextLineWidth)
 
 private:
     SettingHandler();

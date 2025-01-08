@@ -1,6 +1,6 @@
 #pragma once
-
 #include <QWidget>
+#include "SettingHandler.h"
 #include "ui_BtnBar.h"
 
 class BtnBar : public QWidget
@@ -32,8 +32,17 @@ private slots:
 	void on_btn_save_clicked();
 	void on_btn_copy_clicked();
 
+	void on_btn_color_clicked();
+	void on_btn_line1_clicked();
+	void on_btn_line2_clicked();
+	void on_btn_line3_clicked();
+	void on_btn_line4_clicked();
+
 private:
 	void drawBtnClicked(QPushButton* btn, int drawType);
+	void refreshUI();
+	void refreshLineBtn(LineWidth lineWidth);
+	void setLineWidth(LineWidth lineWidth);
 
 	Ui::BtnBar ui;
 	int isDrawing_;  // 0没画 1在画矩形 2在画箭头 3随便画 4画文字

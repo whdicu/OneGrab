@@ -1,6 +1,7 @@
 #include "BtnBar.h"
 #include "DGrabView.h"
-#include "SettingHandler.h"
+#include <QColorDialog>
+#include "HDQt/DStyle.hpp"
 
 const static QString NORMAL_STYLE = R"(QPushButton
 {
@@ -19,6 +20,7 @@ BtnBar::BtnBar(QWidget *parent)
 {
 	ui.setupUi(this);
 	setAttribute(Qt::WA_TranslucentBackground);
+	ui.widget_2->hide();
 }
 
 BtnBar::~BtnBar()
@@ -84,14 +86,179 @@ void BtnBar::on_btn_copy_clicked()
 	emit sigCopy();
 }
 
+void BtnBar::on_btn_color_clicked()
+{
+	SettingStruct stru = SETTING->getSettingStruct();
+
+	QColor* c = nullptr;
+	switch (isDrawing_)
+	{
+	case DrawRectS:
+		c = &stru.RectColor;
+		break;
+	case DrawArrowS:
+		c = &stru.ArrowColor;
+		break;
+	case DrawPenS:
+		c = &stru.PenColor;
+		break;
+	case DrawTextS:
+		c = &stru.TextColor;
+		break;
+	default:
+		return;
+	}
+
+	QColorDialog dlg(this);
+	dlg.setStyleSheet("QPushButton { backgorund-color: white; border: 1px solid #5c5c66; border-radius: 4px; padding: 5px 15px; }");
+	dlg.setWindowFlag(Qt::WindowStaysOnTopHint);
+	dlg.setCurrentColor(*c);
+	if (dlg.exec() != QDialog::Accepted)
+		return;
+
+	*c = dlg.selectedColor();
+	SETTING->setSettingStruct(stru);
+
+	// 为了刷新界面颜色显示
+	refreshUI();
+}
+
+void BtnBar::on_btn_line1_clicked()
+{
+	setLineWidth(Line1);
+	refreshLineBtn(Line1);
+}
+
+void BtnBar::on_btn_line2_clicked()
+{
+	setLineWidth(Line2);
+	refreshLineBtn(Line2);
+}
+
+void BtnBar::on_btn_line3_clicked()
+{
+	setLineWidth(Line3);
+	refreshLineBtn(Line3);
+}
+
+void BtnBar::on_btn_line4_clicked()
+{
+	setLineWidth(Line4);
+	refreshLineBtn(Line4);
+}
+
 void BtnBar::drawBtnClicked(QPushButton* btn, int drawType)
 {
 	if (nullptr != choosedBtn_)
 		choosedBtn_->setStyleSheet(NORMAL_STYLE);
 	choosedBtn_ = btn;
 	isDrawing_ = (drawType == isDrawing_) ? 0 : drawType;
-	QColor mainColor = SETTING->getMainColor();
-	btn->setStyleSheet(isDrawing_ ? QString("background-color: rgb(%1, %2, %3);")
-		.arg(mainColor.red()).arg(mainColor.green()).arg(mainColor.blue()): NORMAL_STYLE);
+
+	refreshUI();
 	emit sigDrawing(isDrawing_);
+}
+
+void BtnBar::refreshUI()
+{
+	if (nullptr == choosedBtn_)
+		return;
+
+	LineWidth lineWidth = Line1;
+	QColor color = SETTING->getMainColor();
+	switch (isDrawing_)
+	{
+	case DrawRectS:
+		color = SETTING->getRectColor();
+		lineWidth = SETTING->getRectLineWidth();
+		break;
+	case DrawArrowS:
+		color = SETTING->getArrowColor();
+		lineWidth = SETTING->getArrowLineWidth();
+		break;
+	case DrawPenS:
+		color = SETTING->getPenColor();
+		lineWidth = SETTING->getPenLineWidth();
+		break;
+	case DrawTextS:
+		color = SETTING->getTextColor();
+		lineWidth = SETTING->getTextLineWidth();
+		break;
+	}
+	ui.btn_color->setStyleSheet(QString("background-color: %1;").arg(DStyle::color2Str(color)));
+	refreshLineBtn(lineWidth);
+
+	if (isDrawing_)
+	{
+		ui.widget_2->show();
+		choosedBtn_->setStyleSheet(QString("background-color: rgb(%1, %2, %3);")
+			.arg(color.red()).arg(color.green()).arg(color.blue()));
+	}
+	else
+	{
+		ui.widget_2->hide();
+		choosedBtn_->setStyleSheet(NORMAL_STYLE);
+	}
+}
+
+void BtnBar::refreshLineBtn(LineWidth lineWidth)
+{
+	QString mainColorStr = DStyle::color2Str(SETTING->getMainColor());
+	switch (isDrawing_)
+	{
+	case DrawRectS:
+		mainColorStr = DStyle::color2Str(SETTING->getRectColor());
+		break;
+	case DrawArrowS:
+		mainColorStr = DStyle::color2Str(SETTING->getArrowColor());
+		break;
+	case DrawPenS:
+		mainColorStr = DStyle::color2Str(SETTING->getPenColor());
+		break;
+	case DrawTextS:
+		mainColorStr = DStyle::color2Str(SETTING->getTextColor());
+		break;
+	}
+	
+	ui.btn_line1->setStyleSheet("border: none;");
+	ui.btn_line2->setStyleSheet("border: none;");
+	ui.btn_line3->setStyleSheet("border: none;");
+	ui.btn_line4->setStyleSheet("border: none;");
+	switch (lineWidth)
+	{
+	case Line1:
+		ui.btn_line1->setStyleSheet(QString("border: 2px dashed %1; border-radius: 6px;")
+			.arg(mainColorStr));
+		break;
+	case Line2:
+		ui.btn_line2->setStyleSheet(QString("border: 2px dashed %1; border-radius: 6px;")
+			.arg(mainColorStr));
+		break;
+	case Line3:
+		ui.btn_line3->setStyleSheet(QString("border: 2px dashed %1; border-radius: 6px;")
+			.arg(mainColorStr));
+		break;
+	case Line4:
+		ui.btn_line4->setStyleSheet(QString("border: 2px dashed %1; border-radius: 6px;")
+			.arg(mainColorStr));
+		break;
+	}
+}
+
+void BtnBar::setLineWidth(LineWidth lineWidth)
+{
+	switch (isDrawing_)
+	{
+	case DrawRectS:
+		SETTING->setRectLineWidth(lineWidth);
+		break;
+	case DrawArrowS:
+		SETTING->setArrowLineWidth(lineWidth);
+		break;
+	case DrawPenS:
+		SETTING->setPenLineWidth(lineWidth);
+		break;
+	case DrawTextS:
+		SETTING->setTextLineWidth(lineWidth);
+		break;
+	}
 }

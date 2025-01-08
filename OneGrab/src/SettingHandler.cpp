@@ -1,4 +1,5 @@
 ﻿#include "SettingHandler.h"
+#include "HDQt/DStyle.hpp"
 #include <mutex>
 #include <QColor>
 #include <QCoreApplication>
@@ -78,11 +79,15 @@ void SettingHandler::writeAll()
 
 	SettingStruct settingStruct = getSettingStruct();
 	wholeObject.insert("LastSavePath", settingStruct.LastSavePath);
-
-	int mainColor = (settingStruct.MainColor.red() << 16)
-		+ (settingStruct.MainColor.green() << 8)
-		+ settingStruct.MainColor.blue();
-	wholeObject.insert("MainColor", mainColor);
+	wholeObject.insert("MainColor", DStyle::color2Int(settingStruct.MainColor));
+	wholeObject.insert("RectColor", DStyle::color2Int(settingStruct.RectColor));
+	wholeObject.insert("RectLineWidth", settingStruct.RectLineWidth);
+	wholeObject.insert("ArrowColor", DStyle::color2Int(settingStruct.ArrowColor));
+	wholeObject.insert("ArrowLineWidth", settingStruct.ArrowLineWidth);
+	wholeObject.insert("PenColor", DStyle::color2Int(settingStruct.PenColor));
+	wholeObject.insert("PenLineWidth", settingStruct.PenLineWidth);
+	wholeObject.insert("TextColor", DStyle::color2Int(settingStruct.TextColor));
+	wholeObject.insert("TextLineWidth", settingStruct.TextLineWidth);
 
 	// 如果路径中有不存在的文件夹则创建
 	QFileInfo fileInfo(strFile);
@@ -127,9 +132,15 @@ void SettingHandler::readAll()
 	QJsonObject obj = jsonDoc.object();
 	SettingStruct settingStruct;
 	settingStruct.LastSavePath = obj["LastSavePath"].toString();
-	int mainColor = obj["MainColor"].toInt();
-	settingStruct.MainColor = QColor(mainColor >> 16, mainColor >> 8 & 0xff, mainColor & 0xff);
-
+	settingStruct.MainColor = DStyle::int2Color(obj["MainColor"].toInt());
+	settingStruct.RectColor = DStyle::int2Color(obj["RectColor"].toInt());
+	settingStruct.RectLineWidth = (LineWidth)obj["RectLineWidth"].toInt(1);
+	settingStruct.ArrowColor = DStyle::int2Color(obj["ArrowColor"].toInt());
+	settingStruct.ArrowLineWidth = (LineWidth)obj["ArrowLineWidth"].toInt(1);
+	settingStruct.PenColor = DStyle::int2Color(obj["PenColor"].toInt());
+	settingStruct.PenLineWidth = (LineWidth)obj["PenLineWidth"].toInt(1);
+	settingStruct.TextColor = DStyle::int2Color(obj["TextColor"].toInt());
+	settingStruct.TextLineWidth = (LineWidth)obj["TextLineWidth"].toInt(1);
 	setSettingStruct(std::move(settingStruct));
 }
 

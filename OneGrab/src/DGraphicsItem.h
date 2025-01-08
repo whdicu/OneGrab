@@ -9,17 +9,17 @@
 
 
 using ViewType = DGrabView;
-const static int DEFAULT_PEN_SCALE = 2;
 
 
 class DGraphicsItem : public QGraphicsItem
 {
 public:
-	DGraphicsItem(const QRectF& r, const QColor& color = QColor(255, 0, 0),
+	DGraphicsItem(const QRectF& r, const QColor& color = QColor(255, 0, 0), int penWidth = 2,
 		ViewType* imgView = nullptr, QGraphicsItem* parent = nullptr)
 		: QGraphicsItem(parent)
 		, rect_(r)
-		, penScale_(DEFAULT_PEN_SCALE)
+		, defaultPenWidth_(penWidth)
+		, penWidth_(penWidth)
 		, color_(color)
 		, imgView_(imgView)
 	{
@@ -47,7 +47,7 @@ public:
 
 	virtual void hoverEnterEvent(QGraphicsSceneHoverEvent* event) override
 	{
-		penScale_ = DEFAULT_PEN_SCALE * 2;
+		penWidth_ = defaultPenWidth_ * 2;
 		if (nullptr != imgView_)
 			imgView_->onMouseHover(this, true);
 		//update();
@@ -55,7 +55,7 @@ public:
 
 	virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent* event) override
 	{
-		penScale_ = DEFAULT_PEN_SCALE;
+		penWidth_ = defaultPenWidth_;
 		if (nullptr != imgView_)
 			imgView_->onMouseHover(this, false);
 		//update();
@@ -83,7 +83,8 @@ signals:
 
 protected:
 	QRectF rect_;
-	int penScale_;
+	int defaultPenWidth_;
+	int penWidth_;
 	QColor color_;
 	ViewType* imgView_;
 };
@@ -93,12 +94,13 @@ Q_DECLARE_METATYPE(DGraphicsItem*)
 class DGraphicsRectItem : public DGraphicsItem
 {
 public:
-	DGraphicsRectItem(const QRectF& r, const QColor& color = QColor(255, 0, 0), ViewType* imgView = nullptr, QGraphicsItem* parent = nullptr)
-		: DGraphicsItem(r, color, imgView, parent) {}
+	DGraphicsRectItem(const QRectF& r, const QColor& color = QColor(255, 0, 0), int penWidth = 2
+		, ViewType* imgView = nullptr, QGraphicsItem* parent = nullptr)
+		: DGraphicsItem(r, color, penWidth, imgView, parent) {}
 
 	void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override
 	{
-		QPen pen(color_, penScale_);
+		QPen pen(color_, penWidth_);
 		painter->setPen(pen);
 		painter->drawRect(rect_);
 	}
@@ -111,13 +113,14 @@ public:
 	const static int ARROW_LENGTH = 8;  // 箭头长度倍数
 	const static int ARROW_WIDTH = 3;  // 箭头两边宽度倍数
 
-	DGraphicsArrowItem(const QRectF& r, const QColor& color = QColor(255, 0, 0), ViewType* imgView = nullptr, QGraphicsItem* parent = nullptr)
-		: DGraphicsItem(r, color, imgView, parent) {}
+	DGraphicsArrowItem(const QRectF& r, const QColor& color = QColor(255, 0, 0), int penWidth = 2
+		, ViewType* imgView = nullptr, QGraphicsItem* parent = nullptr)
+		: DGraphicsItem(r, color, penWidth, imgView, parent) {}
 
 	void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override
 	{
-		int al = penScale_ * ARROW_LENGTH;
-		int aw = penScale_ * ARROW_WIDTH;
+		int al = penWidth_ * ARROW_LENGTH;
+		int aw = penWidth_ * ARROW_WIDTH;
 
 		QPointF dp = rect_.bottomRight() - rect_.topLeft();
 		double bei1 = al / std::pow((dp.x() * dp.x() + dp.y() * dp.y()), 0.5);
@@ -127,7 +130,7 @@ public:
 		QPointF p2 = arrowCenter - QPointF(bei2 * dp.y(), -bei2 * dp.x());
 		QPointF p3 = arrowCenter + QPointF(bei2 * dp.y(), -bei2 * dp.x());
 
-		QPen pen1(color_, penScale_);
+		QPen pen1(color_, penWidth_);
 		painter->setPen(pen1);
 		painter->setRenderHint(QPainter::Antialiasing);
 		painter->drawLine(rect_.topLeft(), arrowCenter);
@@ -143,8 +146,9 @@ public:
 class DGraphicsLinesItem : public DGraphicsItem
 {
 public:
-	DGraphicsLinesItem(const QPointF& point, const QColor& color = QColor(255, 0, 0), ViewType* imgView = nullptr, QGraphicsItem* parent = nullptr)
-		: DGraphicsItem(QRectF(point, point), color, imgView, parent) {}
+	DGraphicsLinesItem(const QPointF& point, const QColor& color = QColor(255, 0, 0), int penWidth = 2
+		, ViewType* imgView = nullptr, QGraphicsItem* parent = nullptr)
+		: DGraphicsItem(QRectF(point, point), color, penWidth, imgView, parent) {}
 
 	virtual void setBoundingRect(const QRectF& r) override
 	{
@@ -167,7 +171,7 @@ public:
 
 	void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override
 	{
-		QPen pen(color_, penScale_);
+		QPen pen(color_, penWidth_);
 		painter->setPen(pen);
 		painter->setRenderHint(QPainter::Antialiasing);
 		painter->drawPolyline(points_);
@@ -181,13 +185,14 @@ private:
 class DGraphicsEllipseItem : public DGraphicsItem
 {
 public:
-	DGraphicsEllipseItem(const QRectF& r, const QColor& color = QColor(255, 0, 0), ViewType* imgView = nullptr, QGraphicsItem* parent = nullptr)
-		: DGraphicsItem(r, color, imgView, parent) {}
+	DGraphicsEllipseItem(const QRectF& r, const QColor& color = QColor(255, 0, 0), int penWidth = 2
+		, ViewType* imgView = nullptr, QGraphicsItem* parent = nullptr)
+		: DGraphicsItem(r, color, penWidth, imgView, parent) {}
 
 	void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override
 	{
 		qreal scale = 1.0 / painter->worldTransform().m11();
-		QPen pen(color_, scale * penScale_);
+		QPen pen(color_, scale * penWidth_);
 		painter->setPen(pen);
 		painter->drawEllipse(rect_);
 	}
@@ -222,8 +227,9 @@ class DGraphicsTextItem : public DGraphicsItem
 	};
 
 public:
-	DGraphicsTextItem(const QRectF& r, const QColor& color = QColor(255, 0, 0), ViewType* imgView = nullptr, QGraphicsItem* parent = nullptr)
-		: DGraphicsItem(r, color, imgView, parent)
+	DGraphicsTextItem(const QRectF& r, const QColor& color = QColor(255, 0, 0)
+		, ViewType* imgView = nullptr, QGraphicsItem* parent = nullptr)
+		: DGraphicsItem(r, color, 2, imgView, parent)
 	{
 		textItem_ = new TextItem(this);
 		textItem_->setTextInteractionFlags(Qt::TextEditorInteraction);

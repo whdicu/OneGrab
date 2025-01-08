@@ -132,15 +132,15 @@ void SettingHandler::readAll()
 	QJsonObject obj = jsonDoc.object();
 	SettingStruct settingStruct;
 	settingStruct.LastSavePath = obj["LastSavePath"].toString();
-	settingStruct.MainColor = DStyle::int2Color(obj["MainColor"].toInt());
-	settingStruct.RectColor = DStyle::int2Color(obj["RectColor"].toInt());
-	settingStruct.RectLineWidth = (LineWidth)obj["RectLineWidth"].toInt(1);
-	settingStruct.ArrowColor = DStyle::int2Color(obj["ArrowColor"].toInt());
-	settingStruct.ArrowLineWidth = (LineWidth)obj["ArrowLineWidth"].toInt(1);
-	settingStruct.PenColor = DStyle::int2Color(obj["PenColor"].toInt());
-	settingStruct.PenLineWidth = (LineWidth)obj["PenLineWidth"].toInt(1);
-	settingStruct.TextColor = DStyle::int2Color(obj["TextColor"].toInt());
-	settingStruct.TextLineWidth = (LineWidth)obj["TextLineWidth"].toInt(1);
+	settingStruct.MainColor = DStyle::int2Color(obj["MainColor"].toInt(16737894));
+	settingStruct.RectColor = DStyle::int2Color(obj["RectColor"].toInt(16737894));
+	settingStruct.RectLineWidth = (LineWidth)obj["RectLineWidth"].toInt(2);
+	settingStruct.ArrowColor = DStyle::int2Color(obj["ArrowColor"].toInt(16737894));
+	settingStruct.ArrowLineWidth = (LineWidth)obj["ArrowLineWidth"].toInt(2);
+	settingStruct.PenColor = DStyle::int2Color(obj["PenColor"].toInt(16737894));
+	settingStruct.PenLineWidth = (LineWidth)obj["PenLineWidth"].toInt(2);
+	settingStruct.TextColor = DStyle::int2Color(obj["TextColor"].toInt(16737894));
+	settingStruct.TextLineWidth = (LineWidth)obj["TextLineWidth"].toInt(2);
 	setSettingStruct(std::move(settingStruct));
 }
 

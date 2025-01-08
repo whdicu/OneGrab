@@ -28,6 +28,13 @@ enum LineWidth : int
 
 struct SettingStruct
 {
+	SettingStruct()
+		: MainColor(QColor(255, 66, 66)), RectColor(QColor(255, 66, 66)), RectLineWidth(Line2)
+		, ArrowColor(QColor(255, 66, 66)), ArrowLineWidth(Line2)
+		, PenColor(QColor(255, 66, 66)), PenLineWidth(Line2)
+		, TextColor(QColor(255, 66, 66)), TextLineWidth(Line2) {}
+	~SettingStruct() = default;
+
 	QString LastSavePath;
 	QColor MainColor;
 	QColor RectColor;

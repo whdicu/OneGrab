@@ -44,6 +44,7 @@ void BtnBar::onFinishGrab()
 	choosedBtn_ = nullptr;
 	isDrawing_ = 0;
 	hide();
+	ui.widget_2->hide();
 }
 
 void BtnBar::on_btn_rect_clicked()

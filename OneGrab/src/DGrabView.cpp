@@ -52,7 +52,7 @@ void DGrabView::zItem(bool shift /*= false*/)
 		if (removedList_.isEmpty())
 			return;
 		auto item = removedList_.dequeue();
-		item->setVisible(true);
+		item->show();
 		itemList_.enqueue(item);
 	}
 	else
@@ -60,8 +60,10 @@ void DGrabView::zItem(bool shift /*= false*/)
 		if (itemList_.isEmpty())
 			return;
 		auto item = itemList_.dequeue();
-		item->setVisible(false);
+		item->hide();
 		removedList_.enqueue(item);
+		if (hoverItem_ == item)
+			hoverItem_ = nullptr;
 	}
 	update();
 }
@@ -365,6 +367,9 @@ void DGrabView::onItemClicked(DGraphicsItem* item, const QPointF& pos)
 
 void DGrabView::onMouseHover(DGraphicsItem* item, bool isEnter)
 {
+	if (isEnter)
+		qDebug() << "hover item:" << hoverItem_;
+
 	if (isEnter)
 		hoverItem_ = item;
 	else

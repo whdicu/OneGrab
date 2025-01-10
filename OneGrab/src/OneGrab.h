@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "hook.h"
 #include <QtWidgets/QWidget>
 #include "ui_OneGrab.h"
@@ -28,7 +28,7 @@ private slots:
 	void slotPosChanged(const QPoint& pos);
 
 private:
-	// »ñÈ¡ËùÓĞÏÔÊ¾Æ÷×é³ÉµÄÒ»ÕÅÍ¼Æ¬
+	// è·å–æ‰€æœ‰æ˜¾ç¤ºå™¨ç»„æˆçš„ä¸€å¼ å›¾ç‰‡
 	QPixmap getFullPixmap(QRect& screenRect);
 	QColor getPixelColor(const QPoint& pos);
 	void finishGrab();

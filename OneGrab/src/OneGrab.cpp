@@ -1,4 +1,4 @@
-#include "OneGrab.h"
+ï»¿#include "OneGrab.h"
 #include "BtnBar.h"
 #include "LabelIsland.h"
 #include "MouseWindow.h"
@@ -61,7 +61,7 @@ void OneGrab::doGrab()
 	if (!isHidden())
 		return;
 
-	// x y ¿ÉÒÔÊÇ¸ºÊı
+	// x y å¯ä»¥æ˜¯è´Ÿæ•°
 	QRect screenRect(0, 0, 0, 0);
 	fullPixmap_ = getFullPixmap(screenRect);
 	ui.view->setImg(fullPixmap_);
@@ -82,7 +82,9 @@ void OneGrab::slotKeyPressed(const KeyInfo& info)
 	switch (info.key)
 	{
 	case 27ul:  // ESC
-		if (!isHidden())
+		// æœ‰é¡¶å±‚dialogæ—¶ï¼ŒæŒ‰escåªæ˜¯éšè—é¡¶å±‚dialog
+		// ä¸ç„¶æ•´ä¸ªç¨‹åºä¼šé€€å‡ºï¼Œå› ä¸ºdialogæ¨å‡ºåå·²ç»åšä¸€éfinishGrabäº†
+		if (!isHidden() && (QApplication::activeModalWidget() == nullptr))
 			finishGrab();
 		break;
 	case 46ul:  // delete
@@ -113,19 +115,21 @@ void OneGrab::slotFixed()
 void OneGrab::slotSave()
 {
 	QPixmap croppedPixmap = ui.view->getSelectionPixmap();
-	//// ±£´æ½ØÍ¼µ½ÎÄ¼ş
+	//// ä¿å­˜æˆªå›¾åˆ°æ–‡ä»¶
 	QString timestamp = QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss");
 	QString filename = QString("OneGrab_%1.png").arg(timestamp);
 
 	SettingStruct settingStruct = SETTING->getSettingStruct();
-	QString fileurl = QFileDialog::getSaveFileName(this, tr("±£´æÎÄ¼ş"), settingStruct.LastSavePath + '/' + filename);
-	fileurl = fileurl.replace('\\', '/');
-	int i = fileurl.lastIndexOf('/');
-	settingStruct.LastSavePath = fileurl.mid(0, i);
-	SETTING->setSettingStruct(settingStruct);
-	qDebug() << settingStruct.LastSavePath;
+	QString fileurl = QFileDialog::getSaveFileName(this, tr("ä¿å­˜æ–‡ä»¶"), settingStruct.LastSavePath + '/' + filename);
+	if (!fileurl.isEmpty())
+	{
+		fileurl = fileurl.replace('\\', '/');
+		int i = fileurl.lastIndexOf('/');
+		settingStruct.LastSavePath = fileurl.mid(0, i);
+		SETTING->setSettingStruct(settingStruct);
+		croppedPixmap.save(fileurl);
+	}
 	
-	croppedPixmap.save(fileurl);
 	finishGrab();
 }
 
@@ -163,12 +167,12 @@ void OneGrab::slotRefreshPixelInfo(const QPoint& mousePos)
 {
 	QColor color = getPixelColor(mousePos);
 
-	// 8±¶·Å´ó
+	// 8å€æ”¾å¤§
 	QSize windowSize = mouseWindow_->getWindowSize() / 8;
 	QPixmap windowPixmap = fullPixmap_.copy(QRect(mousePos
 		- QPoint(windowSize.width() / 2, windowSize.height() / 2), windowSize));
 
-	// »­Êó±êËùÔÚÏñËØµÄ¾ØĞÎ¿ò
+	// ç”»é¼ æ ‡æ‰€åœ¨åƒç´ çš„çŸ©å½¢æ¡†
 	QColor mainColor = SETTING->getMainColor();
 	QPainter painter(&windowPixmap);
 	painter.setPen(QPen(mainColor, 1));
@@ -205,7 +209,7 @@ QPixmap OneGrab::getFullPixmap(QRect& screenRect)
 {
 	QList<QScreen*> screens = QGuiApplication::screens();
 
-	// »ñÈ¡ÈİÄÉËùÓĞÏÔÊ¾Æ÷Í¼Æ¬µÄ¾ØĞÎ
+	// è·å–å®¹çº³æ‰€æœ‰æ˜¾ç¤ºå™¨å›¾ç‰‡çš„çŸ©å½¢
 	for (QScreen *screen : screens)
 	{
 		QRect scRect = screen->geometry();
@@ -218,7 +222,7 @@ QPixmap OneGrab::getFullPixmap(QRect& screenRect)
 	QPixmap combinedPixmap(screenRect.size());
 	combinedPixmap.fill(Qt::transparent);
 
-	// ½«Ã¿¸öÆÁÄ»µÄÄÚÈİ»æÖÆµ½ combinedPixmap
+	// å°†æ¯ä¸ªå±å¹•çš„å†…å®¹ç»˜åˆ¶åˆ° combinedPixmap
 	QPainter painter(&combinedPixmap);
 	for (QScreen *screen : screens)
 	{

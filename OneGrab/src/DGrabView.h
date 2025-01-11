@@ -38,7 +38,7 @@ public:
 	void onFinishGrab();
 	void zItem(bool shift = false);
 	void setDrawingState(int isDrawing);
-	QPixmap getSelectionPixmap(QRect& rect = QRect());
+	QPixmap getSelectionPixmap(QRect& rect);
 	void deleteHoverItem();
 
 	virtual void wheelEvent(QWheelEvent* event);

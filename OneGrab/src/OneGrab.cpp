@@ -114,7 +114,8 @@ void OneGrab::slotFixed()
 
 void OneGrab::slotSave()
 {
-	QPixmap croppedPixmap = ui.view->getSelectionPixmap();
+	QRect uselessRect;
+	QPixmap croppedPixmap = ui.view->getSelectionPixmap(uselessRect);
 	//// 保存截图到文件
 	QString timestamp = QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss");
 	QString filename = QString("OneGrab_%1.png").arg(timestamp);
@@ -135,7 +136,8 @@ void OneGrab::slotSave()
 
 void OneGrab::slotCopy()
 {
-	QPixmap croppedPixmap = ui.view->getSelectionPixmap();
+	QRect uselessRect;
+	QPixmap croppedPixmap = ui.view->getSelectionPixmap(uselessRect);
 	QClipboard* clipboard = QApplication::clipboard();
 	clipboard->setPixmap(croppedPixmap);
 	finishGrab();

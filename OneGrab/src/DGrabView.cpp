@@ -231,6 +231,9 @@ void DGrabView::mouseMoveEvent(QMouseEvent* event)
 
 		QRect selectionRect = maskItem_->getSelectionRect();
 		choosedBorder_ = 0;
+		if (selectionRect.isEmpty())
+			break;
+
 		if (dAbs(selectionRect.left() - event->pos().x()) < DRAG_SPACE)
 		{
 			choosedBorder_ |= dragLeft;

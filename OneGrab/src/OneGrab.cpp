@@ -68,7 +68,7 @@ void OneGrab::doGrab()
 	setGeometry(screenRect);
 	show();
 
-	mouseWindow_->moveAndRefresh(QCursor::pos(), geometry());
+	mouseWindow_->moveAndRefresh(QCursor::pos() - pos(), geometry());
 	mouseWindow_->show();
 }
 

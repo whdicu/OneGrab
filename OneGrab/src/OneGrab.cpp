@@ -1,6 +1,7 @@
 ﻿#include "OneGrab.h"
 #include "BtnBar.h"
 #include "LabelIsland.h"
+#include "LabelIsland2.h"
 #include "MouseWindow.h"
 #include <QClipboard>
 #include <QDateTime>

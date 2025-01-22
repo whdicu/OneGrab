@@ -1,5 +1,6 @@
-#include "LabelIsland.h"
+#include "LabelIsland2.h"
 #include <QDebug>
+#include <QGraphicsPixmapItem>
 #include <QLabel>
 #include <QMouseEvent>
 #include <QPropertyAnimation>
@@ -7,35 +8,42 @@
 #include "SettingHandler.h"
 
 
-const static int SCALE_ANIMATION_TIME = 150;
+const static int SCALE_ANIMATION_TIME = 160;
 const static int BORDER_SIZE = 2;
 const static int ORIGIN_SIZE_INDEX = 8;
 const static QVector<int> SIZE_V =
 //{10, 15, 22, 33, 51, 76, 114, 171, 256, 384, 577, 865/*, 1297, 1946, 2919, 4379*/};
-{10, 13, 17, 22, 29, 37, 48, 63, 82, 106, 138, 179, 232, 303, 394, 512, 665};
+{10, 13, 17, 22, 29, 37, 48, 63, 82, 106, 138, 179, 232, 303, 394, 521, 665};
 
-LabelIsland::LabelIsland(const QPixmap& pixmap, const QPoint& pos, QWidget* parent /*= nullptr*/)
-	: QLabel(parent)
+LabelIsland2::LabelIsland2(const QPixmap& pixmap, const QPoint& pos, QWidget* parent /*= nullptr*/)
+	: QGraphicsView(parent)
 	, isMove_(false)
 	, sizeIndex_(ORIGIN_SIZE_INDEX)
 	, sizeLabel_(new QLabel("100%"))
+	, scene_(new QGraphicsScene)
 {
 	setWindowFlags(Qt::FramelessWindowHint | Qt::Tool | Qt::WindowStaysOnTopHint);
+
 	originRect_.moveTo(pos - QPoint(BORDER_SIZE, BORDER_SIZE));
 	originRect_.setSize(pixmap.size() + QSize(BORDER_SIZE, BORDER_SIZE) * 2);
-	setScaledContents(true);
-	setPixmap(pixmap);
+
+	setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+	setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+	QGraphicsPixmapItem* pixmapItem = scene_->addPixmap(pixmap);
+	setScene(scene_);
+	pixmapItem->setOffset(-pixmap.width() / 2.0, -pixmap.height() / 2.0);
+	//scene_->setSceneRect(originRect_);
+	
 	setGeometry(originRect_);
+	centerOn(0, 0);
+	//fitInView(pixmapItem, Qt::KeepAspectRatio);
+
 
 	animation_ = new QPropertyAnimation(this, "geometry");
 	animation_->setDuration(SCALE_ANIMATION_TIME);
 	connect(animation_, &QPropertyAnimation::finished, this, [this]()
 	{
 		sizeLabel_->hide();
-	});
-	connect(animation_, &QPropertyAnimation::valueChanged, this, [this](const QVariant &value)
-	{
-		update();
 	});
 
 	sizeLabel_->setWindowFlags(Qt::FramelessWindowHint | Qt::Tool | Qt::WindowStaysOnTopHint);
@@ -47,20 +55,20 @@ LabelIsland::LabelIsland(const QPixmap& pixmap, const QPoint& pos, QWidget* pare
 	onRefreshSetting();
 }
 
-LabelIsland::~LabelIsland()
+LabelIsland2::~LabelIsland2()
 {
 	qDebug() << __FUNCTION__;
 	sizeLabel_->deleteLater();
 }
 
-void LabelIsland::onRefreshSetting()
+void LabelIsland2::onRefreshSetting()
 {
 	QColor mainColor = SETTING->getMainColor();
 	setStyleSheet(QString("QLabel { border: %1px solid rgb(%2, %3, %4); }").arg(BORDER_SIZE)
 		.arg(mainColor.red()).arg(mainColor.green()).arg(mainColor.blue()));
 }
 
-void LabelIsland::keyPressEvent(QKeyEvent* event)
+void LabelIsland2::keyPressEvent(QKeyEvent* event)
 {
 	switch (event->key())
 	{
@@ -71,7 +79,7 @@ void LabelIsland::keyPressEvent(QKeyEvent* event)
 	}
 }
 
-void LabelIsland::wheelEvent(QWheelEvent* event)
+void LabelIsland2::wheelEvent(QWheelEvent* event)
 {
 	sizeIndex_ += (event->delta() > 0) ? 1 : -1;
 	if (sizeIndex_ < 0)
@@ -84,19 +92,22 @@ void LabelIsland::wheelEvent(QWheelEvent* event)
 	QSize newSize = originRect_.size() * scale;
 	QSize dSize = originRect_.size() - newSize;
 	
-	animation_->stop();
-	animation_->setEasingCurve(QEasingCurve::Linear);
-	animation_->setStartValue(geometry());
-	animation_->setEndValue(QRect(originRect_.topLeft() + QPoint(dSize.width() / 2, dSize.height() / 2), newSize));
-	animation_->start();
+
+	this->scale(scale, scale); // 仅在限制范围内缩放
+
+	//animation_->stop();
+	//animation_->setEasingCurve(QEasingCurve::Linear);
+	//animation_->setStartValue(geometry());
+	//animation_->setEndValue(QRect(originRect_.topLeft() + QPoint(dSize.width() / 2, dSize.height() / 2), newSize));
+	//animation_->start();
 	sizeLabel_->move(event->globalPos() + QPoint(15, 0));
 	sizeLabel_->show();
 
-	//move(originRect_.topLeft() + QPoint(dSize.width() / 2, dSize.height() / 2));
-	//resize(newSize);
+	move(originRect_.topLeft() + QPoint(dSize.width() / 2, dSize.height() / 2));
+	resize(newSize);
 }
 
-void LabelIsland::mousePressEvent(QMouseEvent* event)
+void LabelIsland2::mousePressEvent(QMouseEvent* event)
 {
 	if (event->button() == Qt::LeftButton)
 	{
@@ -105,7 +116,7 @@ void LabelIsland::mousePressEvent(QMouseEvent* event)
 	}
 }
 
-void LabelIsland::mouseMoveEvent(QMouseEvent* event)
+void LabelIsland2::mouseMoveEvent(QMouseEvent* event)
 {
 	if (isMove_)
 	{
@@ -114,7 +125,7 @@ void LabelIsland::mouseMoveEvent(QMouseEvent* event)
 	}
 }
 
-void LabelIsland::mouseReleaseEvent(QMouseEvent* event)
+void LabelIsland2::mouseReleaseEvent(QMouseEvent* event)
 {
 	if (event->button() == Qt::LeftButton)
 		isMove_ = false;

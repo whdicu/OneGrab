@@ -1,7 +1,8 @@
-#pragma once
+﻿#pragma once
 #include <QLabel>
 
 class QPropertyAnimation;
+class DMenu;
 
 class LabelIsland : public QLabel
 {
@@ -19,11 +20,14 @@ private:
 	void mouseMoveEvent(QMouseEvent* event) override;
 	void mouseReleaseEvent(QMouseEvent* event) override;
 
-	bool isMove_;
+	void slotBtnClicked(const QString& text);
+	void scale(bool bigger);
+
 	QPoint pressPoint_;
 	int sizeIndex_;
 	QRect originRect_;
 	QPropertyAnimation* animation_;
 	QLabel* sizeLabel_;
+	DMenu* menu_;
 };
 

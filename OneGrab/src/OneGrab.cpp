@@ -117,7 +117,7 @@ void OneGrab::slotSave()
 {
 	QRect uselessRect;
 	QPixmap croppedPixmap = ui.view->getSelectionPixmap(uselessRect);
-	//// 保存截图到文件
+	// 保存截图到文件
 	QString timestamp = QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss");
 	QString filename = QString("OneGrab_%1.png").arg(timestamp);
 

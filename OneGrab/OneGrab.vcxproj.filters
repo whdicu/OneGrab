@@ -69,6 +69,9 @@
     <ClCompile Include="src\LabelIsland2.cpp">
       <Filter>Widgets</Filter>
     </ClCompile>
+    <ClCompile Include="src\DMenu.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="src\OneGrab.h">
@@ -105,6 +108,9 @@
       <Filter>Widgets</Filter>
     </QtMoc>
     <QtMoc Include="src\LabelIsland2.h">
+      <Filter>Widgets</Filter>
+    </QtMoc>
+    <QtMoc Include="src\DMenu.h">
       <Filter>Widgets</Filter>
     </QtMoc>
   </ItemGroup>

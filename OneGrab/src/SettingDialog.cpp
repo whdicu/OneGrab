@@ -106,6 +106,9 @@ SettingDialog::SettingDialog(QWidget *parent)
 	ui.setupUi(this);
 	setAttribute(Qt::WA_TranslucentBackground);
 
+	ui.btn_other->hide();
+	ui.btn_about->hide();
+
 	ui.stackedWidget->setCurrentIndex(0);
 	ui.label_version->setText(tr("软件版本：V%1").arg(convertDateFormat(__DATE__)));
 

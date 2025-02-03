@@ -81,7 +81,11 @@ void LabelIsland2::keyPressEvent(QKeyEvent* event)
 
 void LabelIsland2::wheelEvent(QWheelEvent* event)
 {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+	sizeIndex_ += (event->angleDelta().y() > 0) ? 1 : -1;
+#else
 	sizeIndex_ += (event->delta() > 0) ? 1 : -1;
+#endif
 	if (sizeIndex_ < 0)
 		sizeIndex_ = 0;
 	else if (sizeIndex_ > SIZE_V.size() - 1)
@@ -100,7 +104,11 @@ void LabelIsland2::wheelEvent(QWheelEvent* event)
 	//animation_->setStartValue(geometry());
 	//animation_->setEndValue(QRect(originRect_.topLeft() + QPoint(dSize.width() / 2, dSize.height() / 2), newSize));
 	//animation_->start();
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+	sizeLabel_->move(event->globalPosition().toPoint() + QPoint(15, 0));
+#else
 	sizeLabel_->move(event->globalPos() + QPoint(15, 0));
+#endif
 	sizeLabel_->show();
 
 	move(originRect_.topLeft() + QPoint(dSize.width() / 2, dSize.height() / 2));

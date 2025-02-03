@@ -215,7 +215,11 @@ class DGraphicsTextItem : public DGraphicsItem
 			setTextCursor(cursor);
 
 			QFontMetrics metrics(font());
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+			int w = metrics.horizontalAdvance(toPlainText() + '-') + 2;
+#else
 			int w = metrics.width(toPlainText() + '-') + 2;
+#endif
 			QRectF r = parent_->boundingRect();
 			r.setWidth(w);
 			parent_->setBoundingRect(r);

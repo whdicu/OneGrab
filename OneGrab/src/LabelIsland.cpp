@@ -82,8 +82,13 @@ void LabelIsland::keyPressEvent(QKeyEvent* event)
 
 void LabelIsland::wheelEvent(QWheelEvent* event)
 {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+	scale(event->angleDelta().y() > 0);
+	sizeLabel_->move(event->globalPosition().toPoint() + QPoint(15, 0));
+#else
 	scale(event->delta() > 0);
 	sizeLabel_->move(event->globalPos() + QPoint(15, 0));
+#endif
 	sizeLabel_->show();
 
 	//move(originRect_.topLeft() + QPoint(dSize.width() / 2, dSize.height() / 2));
@@ -140,12 +145,20 @@ void LabelIsland::slotBtnClicked(const QString& text)
 			int i = fileurl.lastIndexOf('/');
 			settingStruct.LastSavePath = fileurl.mid(0, i);
 			SETTING->setSettingStruct(settingStruct);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+			pixmap().save(fileurl);
+#else
 			pixmap()->save(fileurl);
+#endif
 		}
 		break;
 	}
 	case 1:
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+		QApplication::clipboard()->setPixmap(pixmap());
+#else
 		QApplication::clipboard()->setPixmap(*pixmap());
+#endif
 		break;
 	case 2:
 		sizeLabel_->move(pos() + QPoint((width() - sizeLabel_->width()) / 2, (height() - sizeLabel_->height()) / 2));

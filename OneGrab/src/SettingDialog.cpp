@@ -141,7 +141,7 @@ void SettingDialog::mouseMoveEvent(QMouseEvent* event)
 	if (isMoveWindow_)
 	{
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-		auto globalPos = event->globalPosition();
+		auto globalPos = event->globalPosition().toPoint();
 #else
 		auto globalPos = event->globalPos();
 #endif

@@ -1,5 +1,6 @@
 ﻿#include "OneGrab.h"
 #include "BtnBar.h"
+#include "HDQt/DStyle.hpp"
 #include "LabelIsland.h"
 #include "LabelIsland2.h"
 #include "MouseWindow.h"
@@ -79,26 +80,40 @@ QColor OneGrab::getPixelColor(const QPoint& pos)
 
 void OneGrab::slotKeyPressed(const KeyInfo& info)
 {
-	switch (info.key)
+	if (isHidden())
 	{
-	case 27ul:  // ESC
-		// 有顶层dialog时，按esc只是隐藏顶层dialog
-		// 不然整个程序会退出，因为dialog推出后已经做一遍finishGrab了
-		if (!isHidden() && (QApplication::activeModalWidget() == nullptr))
-			finishGrab();
-		break;
-	case 46ul:  // delete
-		ui.view->deleteHoverItem();
-		break;
-	case 90ul:  // Z
-		if (info.ctrlPressed)
+		switch (info.key)
 		{
-			ui.view->zItem(info.shiftPressed);
+		case 112ul:  // F1
+			doGrab();
+			break;
 		}
-		break;
-	case 112ul:  // F1
-		doGrab();
-		break;
+	}
+	else
+	{
+		switch (info.key)
+		{
+		case 27ul:  // ESC
+			// 有顶层dialog时，按esc只是隐藏顶层dialog
+			// 不然整个程序会退出，因为dialog推出后已经做一遍finishGrab了
+			if (!isHidden() && (QApplication::activeModalWidget() == nullptr))
+				finishGrab();
+			break;
+		case 46ul:  // delete
+			ui.view->deleteHoverItem();
+			break;
+		case 67ul:  // C
+			QApplication::clipboard()->
+				setText(DStyle::color2Str(mouseWindow_->getCurrentColor(), true));
+			finishGrab();
+			break;
+		case 90ul:  // Z
+			if (info.ctrlPressed)
+			{
+				ui.view->zItem(info.shiftPressed);
+			}
+			break;
+		}
 	}
 }
 

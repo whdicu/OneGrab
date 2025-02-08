@@ -45,6 +45,7 @@ void MouseWindow::moveAndRefresh(const QPoint& pos, const QRect& fullPixmapRect)
 
 void MouseWindow::refreshInfo(const QPoint& pos, const QColor& color, const QPixmap& pixmap)
 {
+	pixelColor_ = color;
 	ui.label_img->setPixmap(pixmap);
 	ui.label_pos->setText(QString("X: %1 Y: %2").arg(pos.x()).arg(pos.y()));
 	ui.widget_color->setStyleSheet(QString("background-color: rgb(%1, %2, %3)")

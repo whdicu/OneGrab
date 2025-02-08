@@ -118,13 +118,13 @@
     <QtUic Include="src\OneGrab.ui">
       <Filter>Form Files</Filter>
     </QtUic>
-    <QtUic Include="src\MouseWindow.ui">
-      <Filter>Form Files</Filter>
-    </QtUic>
     <QtUic Include="src\SettingDialog.ui">
       <Filter>Form Files</Filter>
     </QtUic>
     <QtUic Include="src\BtnBar.ui">
+      <Filter>Widgets</Filter>
+    </QtUic>
+    <QtUic Include="src\MouseWindow.ui">
       <Filter>Widgets</Filter>
     </QtUic>
   </ItemGroup>

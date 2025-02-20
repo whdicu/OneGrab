@@ -1,6 +1,5 @@
 ﻿#include "OneGrab.h"
 #include "BtnBar.h"
-#include "HDQt/DStyle.hpp"
 #include "LabelIsland.h"
 #include "LabelIsland2.h"
 #include "MouseWindow.h"
@@ -39,8 +38,8 @@ OneGrab::OneGrab(QWidget *parent)
 	connect(mouseWindow_, &MouseWindow::sigMouseRelease, this, &OneGrab::slotMouseEventInWindow);
 	connect(ui.view, &DGrabView::sigMousePressed, this, [this]()
 	{
-		//mouseWindow_->hide();
-		//mouseWindow_->show();
+		mouseWindow_->hide();
+		mouseWindow_->show();
 	});
 	connect(ui.view, &DGrabView::sigMouseReleased, this, [this]()
 	{
@@ -103,15 +102,23 @@ void OneGrab::slotKeyPressed(const KeyInfo& info)
 			ui.view->deleteHoverItem();
 			break;
 		case 67ul:  // C
-			QApplication::clipboard()->
-				setText(DStyle::color2Str(mouseWindow_->getCurrentColor(), true));
-			finishGrab();
+			if (info.ctrlPressed)
+				slotCopy();  // 这个函数里已调 finishGrab
+			else
+			{
+				QApplication::clipboard()->
+					setText(mouseWindow_->getCurrentColorStr());
+				finishGrab();
+			}
 			break;
 		case 90ul:  // Z
 			if (info.ctrlPressed)
 			{
 				ui.view->zItem(info.shiftPressed);
 			}
+			break;
+		case 160ul:
+			mouseWindow_->switchColorStrMode();
 			break;
 		}
 	}

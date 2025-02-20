@@ -1,7 +1,6 @@
 ﻿#include "LabelIsland.h"
 #include "DMenu.h"
 #include "HDBase/DStringList.hpp"
-#include "HDQt/DStyle.hpp"
 #include "HDQt/HD2QT.hpp"
 #include <QApplication>
 #include <QClipboard>
@@ -65,7 +64,7 @@ void LabelIsland::onRefreshSetting()
 {
 	QColor mainColor = SETTING->getMainColor();
 	setStyleSheet(QString("QLabel { border: %1px solid %2; }")
-		.arg(BORDER_SIZE).arg(DStyle::color2Str(mainColor)));
+		.arg(BORDER_SIZE).arg(mainColor.name().toUpper()));
 	menu_->setBgColor(mainColor);
 }
 

@@ -1,7 +1,6 @@
 #include "BtnBar.h"
 #include "DGrabView.h"
 #include <QColorDialog>
-#include "HDQt/DStyle.hpp"
 
 const static QString NORMAL_STYLE = R"(QPushButton
 {
@@ -185,7 +184,7 @@ void BtnBar::refreshUI()
 		lineWidth = SETTING->getTextLineWidth();
 		break;
 	}
-	ui.btn_color->setStyleSheet(QString("background-color: %1;").arg(DStyle::color2Str(color)));
+	ui.btn_color->setStyleSheet(QString("background-color: %1;").arg(color.name().toUpper()));
 	refreshLineBtn(lineWidth);
 
 	if (isDrawing_)
@@ -207,20 +206,20 @@ void BtnBar::refreshLineBtn(LineWidth lineWidth)
 	ui.btn_line2->show();
 	ui.btn_line3->show();
 	ui.btn_line4->show();
-	QString mainColorStr = DStyle::color2Str(SETTING->getMainColor());
+	QString mainColorStr = SETTING->getMainColor().name().toUpper();
 	switch (isDrawing_)
 	{
 	case DrawRectS:
-		mainColorStr = DStyle::color2Str(SETTING->getRectColor());
+		mainColorStr = SETTING->getRectColor().name().toUpper();
 		break;
 	case DrawArrowS:
-		mainColorStr = DStyle::color2Str(SETTING->getArrowColor());
+		mainColorStr = SETTING->getArrowColor().name().toUpper();
 		break;
 	case DrawPenS:
-		mainColorStr = DStyle::color2Str(SETTING->getPenColor());
+		mainColorStr = SETTING->getPenColor().name().toUpper();
 		break;
 	case DrawTextS:
-		mainColorStr = DStyle::color2Str(SETTING->getTextColor());
+		mainColorStr = SETTING->getTextColor().name().toUpper();
 		ui.btn_line1->hide();
 		ui.btn_line2->hide();
 		ui.btn_line3->hide();

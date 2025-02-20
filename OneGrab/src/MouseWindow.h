@@ -13,7 +13,8 @@ public:
 	void moveAndRefresh(const QPoint& pos, const QRect& fullPixmapRect);
 	void refreshInfo(const QPoint& pos, const QColor& color, const QPixmap& pixmap);
 	QSize getWindowSize();
-	QColor getCurrentColor() { return pixelColor_; }
+	QString getCurrentColorStr();
+	void switchColorStrMode();
 
 signals:
 	void sigNeedRefresh(const QPoint& mousePos);
@@ -29,4 +30,5 @@ private:
 	Ui::MouseWindow ui;
 	QRect fullPixmapRect_;
 	QColor pixelColor_;
+	bool isNumColor_;
 };

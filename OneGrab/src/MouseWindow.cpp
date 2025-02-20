@@ -6,6 +6,7 @@
 MouseWindow::MouseWindow(QWidget *parent)
 	: QWidget(parent, Qt::FramelessWindowHint | Qt::Tool | Qt::WindowStaysOnTopHint)
 	, fullPixmapRect_(0, 0, 0, 0)
+	, isNumColor_(false)
 {
 	ui.setupUi(this);
 	setAttribute(Qt::WA_TransparentForMouseEvents, true);
@@ -50,12 +51,26 @@ void MouseWindow::refreshInfo(const QPoint& pos, const QColor& color, const QPix
 	ui.label_pos->setText(QString("X: %1 Y: %2").arg(pos.x()).arg(pos.y()));
 	ui.widget_color->setStyleSheet(QString("background-color: rgb(%1, %2, %3)")
 		.arg(color.red()).arg(color.green()).arg(color.blue()));
-	ui.label_color->setText(color.name().toUpper());
+	ui.label_color->setText(getCurrentColorStr());
 }
 
 QSize MouseWindow::getWindowSize()
 {
 	return ui.label_img->size();
+}
+
+QString MouseWindow::getCurrentColorStr()
+{
+	if (isNumColor_)
+		return QString("%1, %2, %3").arg(pixelColor_.red()).arg(pixelColor_.green()).arg(pixelColor_.blue());
+	else
+		return pixelColor_.name().toUpper();
+}
+
+void MouseWindow::switchColorStrMode()
+{
+	isNumColor_ = !isNumColor_;
+	ui.label_color->setText(getCurrentColorStr());
 }
 
 void MouseWindow::mousePressEvent(QMouseEvent* event)

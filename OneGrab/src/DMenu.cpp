@@ -1,5 +1,4 @@
 ﻿#include "DMenu.h"
-#include "HDQt/DStyle.hpp"
 #include "HDQt/HD2QT.hpp"
 #include <QDebug>
 #include <QLabel>
@@ -153,7 +152,7 @@ void DMenu::show(QPoint pos)
 
 void DMenu::setBgColor(const QColor& color)
 {
-	setStyleSheet(QSS_STYLE.arg(DStyle::color2Str(color)));
+	setStyleSheet(QSS_STYLE.arg(color.name().toUpper()));
 }
 
 void DMenu::focusOutEvent(QFocusEvent* event)

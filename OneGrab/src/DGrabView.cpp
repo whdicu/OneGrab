@@ -145,6 +145,10 @@ void DGrabView::mousePressEvent(QMouseEvent *event)
 				{
 					emit sigMousePressed();
 					mouseState_ = SelectState;
+
+					// 更新btnBar位置
+					maskItem_->setSelectionRect(QRect(selectionStart_, selectionStart_));
+					emit sigSelectionChanged(maskItem_->getSelectionRect());
 				}
 			}
 			break;

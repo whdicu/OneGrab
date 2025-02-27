@@ -9,6 +9,7 @@
 
 
 using ViewType = DGrabView;
+const static double HOVER_SCALE = 1.5;
 
 
 class DGraphicsItem : public QGraphicsItem
@@ -47,7 +48,7 @@ public:
 
 	virtual void hoverEnterEvent(QGraphicsSceneHoverEvent* event) override
 	{
-		penWidth_ = defaultPenWidth_ * 2;
+		penWidth_ = defaultPenWidth_ * HOVER_SCALE + 1;
 		if (nullptr != imgView_)
 			imgView_->onMouseHover(this, true);
 		//update();

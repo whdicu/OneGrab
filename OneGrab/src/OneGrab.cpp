@@ -40,6 +40,8 @@ OneGrab::OneGrab(QWidget *parent)
 	{
 		mouseWindow_->hide();
 		mouseWindow_->show();
+		btnBar_->hide();
+		btnBar_->show();
 	});
 	connect(ui.view, &DGrabView::sigMouseReleased, this, [this]()
 	{

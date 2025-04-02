@@ -30,6 +30,7 @@ struct SettingStruct
 {
 	SettingStruct()
 		: MainColor(QColor(255, 66, 66)), RectColor(QColor(255, 66, 66)), RectLineWidth(Line2)
+		, LineColor(QColor(255, 66, 66)), LineLineWidth(Line2)
 		, ArrowColor(QColor(255, 66, 66)), ArrowLineWidth(Line2)
 		, PenColor(QColor(255, 66, 66)), PenLineWidth(Line2)
 		, TextColor(QColor(255, 66, 66)), TextLineWidth(Line2) {}
@@ -39,6 +40,8 @@ struct SettingStruct
 	QColor MainColor;
 	QColor RectColor;
 	LineWidth RectLineWidth;
+	QColor LineColor;
+	LineWidth LineLineWidth;
 	QColor ArrowColor;
 	LineWidth ArrowLineWidth;
 	QColor PenColor;
@@ -63,6 +66,8 @@ public:
 	REG_GET_FUNC(MainColor)
 	REG_GET_FUNC(RectColor)
 	REG_GET_FUNC(RectLineWidth)
+	REG_GET_FUNC(LineColor)
+	REG_GET_FUNC(LineLineWidth)
 	REG_GET_FUNC(ArrowColor)
 	REG_GET_FUNC(ArrowLineWidth)
 	REG_GET_FUNC(PenColor)

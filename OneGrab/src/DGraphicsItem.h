@@ -108,6 +108,26 @@ public:
 };
 
 
+class DGraphicsLineItem : public DGraphicsItem
+{
+public:
+	DGraphicsLineItem(const QPointF& point, const QColor& color = QColor(255, 0, 0), int penWidth = 2
+		, ViewType* imgView = nullptr, QGraphicsItem* parent = nullptr)
+		: DGraphicsItem(QRectF(point, point), color, penWidth, imgView, parent) {}
+
+	void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override
+	{
+		QPen pen(color_, penWidth_);
+		painter->setPen(pen);
+		painter->setRenderHint(QPainter::Antialiasing);
+		painter->drawLine(rect_.topLeft(), rect_.bottomRight());
+	}
+
+private:
+	QPolygonF points_;
+};
+
+
 class DGraphicsArrowItem : public DGraphicsItem
 {
 public:

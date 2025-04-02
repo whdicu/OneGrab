@@ -119,6 +119,9 @@ void DGrabView::mousePressEvent(QMouseEvent *event)
 		case DrawRectS:  // 画矩形
 			addRect(QRect(selectionStart_, selectionStart_), SETTING->getRectColor());
 			break;
+		case DrawLineS:  // 画线
+			addLine(selectionStart_, SETTING->getLineColor());
+			break;
 		case DrawArrowS:  // 画箭头
 			addArrow(QRect(selectionStart_, selectionStart_), SETTING->getArrowColor());
 			break;
@@ -189,6 +192,7 @@ void DGrabView::mouseMoveEvent(QMouseEvent* event)
 		break;
 	}
 	case DrawRectS:  // 画矩形
+	case DrawLineS:  // 画矩形
 	case DrawArrowS:  // 画箭头
 	case DrawTextS:  // 画箭头
 	case DrawPenS:  // 随便画
@@ -298,6 +302,7 @@ void DGrabView::mouseReleaseEvent(QMouseEvent *event)
 		switch (mouseState_)
 		{
 		case DrawRectS:
+		case DrawLineS:
 		case DrawArrowS:
 		case DrawPenS:
 			break;
@@ -327,6 +332,13 @@ void DGrabView::closeEvent(QCloseEvent *evt)
 void DGrabView::addRect(const QRect& rect, const QColor& color)
 {
 	editingItem_ = new DGraphicsRectItem(rect, color, SETTING->getRectLineWidth(), this, imgItem_);
+	itemList_.enqueue(editingItem_);
+	removedList_.clear();
+}
+
+void DGrabView::addLine(const QPoint& point, const QColor& color)
+{
+	editingItem_ = new DGraphicsLineItem(point, color, SETTING->getLineLineWidth(), this, imgItem_);
 	itemList_.enqueue(editingItem_);
 	removedList_.clear();
 }

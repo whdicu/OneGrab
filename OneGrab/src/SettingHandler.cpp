@@ -82,6 +82,8 @@ void SettingHandler::writeAll()
 	wholeObject.insert("MainColor", DStyle::color2Int(settingStruct.MainColor));
 	wholeObject.insert("RectColor", DStyle::color2Int(settingStruct.RectColor));
 	wholeObject.insert("RectLineWidth", settingStruct.RectLineWidth);
+	wholeObject.insert("LineColor", DStyle::color2Int(settingStruct.LineColor));
+	wholeObject.insert("LineLineWidth", settingStruct.LineLineWidth);
 	wholeObject.insert("ArrowColor", DStyle::color2Int(settingStruct.ArrowColor));
 	wholeObject.insert("ArrowLineWidth", settingStruct.ArrowLineWidth);
 	wholeObject.insert("PenColor", DStyle::color2Int(settingStruct.PenColor));
@@ -135,6 +137,8 @@ void SettingHandler::readAll()
 	settingStruct.MainColor = DStyle::int2Color(obj["MainColor"].toInt(16737894));
 	settingStruct.RectColor = DStyle::int2Color(obj["RectColor"].toInt(16737894));
 	settingStruct.RectLineWidth = (LineWidth)obj["RectLineWidth"].toInt(2);
+	settingStruct.LineColor = DStyle::int2Color(obj["LineColor"].toInt(16737894));
+	settingStruct.LineLineWidth = (LineWidth)obj["LineLineWidth"].toInt(2);
 	settingStruct.ArrowColor = DStyle::int2Color(obj["ArrowColor"].toInt(16737894));
 	settingStruct.ArrowLineWidth = (LineWidth)obj["ArrowLineWidth"].toInt(2);
 	settingStruct.PenColor = DStyle::int2Color(obj["PenColor"].toInt(16737894));

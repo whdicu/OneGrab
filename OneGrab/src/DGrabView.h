@@ -12,10 +12,11 @@ enum MouseState
 	SelectState = 1,
 	MoveState = 2,
 	DrawRectS = 3,
-	DrawArrowS = 4,
-	DrawPenS = 5,
-	DrawTextS = 6,
-	MoveItem = 7,
+	DrawLineS = 4,
+	DrawArrowS = 5,
+	DrawPenS = 6,
+	DrawTextS = 7,
+	MoveItem = 8,
 	dragLeft = 0x10,
 	dragTop = 0x20,
 	dragRight = 0x40,
@@ -61,6 +62,7 @@ signals:
 
 private:
 	void addRect(const QRect& rect, const QColor& color);
+	void addLine(const QPoint& point, const QColor& color);
 	void addArrow(const QRect& rect, const QColor& color);
 	void addLines(const QPoint& point, const QColor& color);
 	void addText(const QPoint& point, const QColor& color);

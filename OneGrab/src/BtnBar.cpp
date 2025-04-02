@@ -51,6 +51,11 @@ void BtnBar::on_btn_rect_clicked()
 	drawBtnClicked(ui.btn_rect, DrawRectS);
 }
 
+void BtnBar::on_btn_line_clicked()
+{
+	drawBtnClicked(ui.btn_line, DrawLineS);
+}
+
 void BtnBar::on_btn_arrow_clicked()
 {
 	drawBtnClicked(ui.btn_arrow, DrawArrowS);
@@ -95,6 +100,9 @@ void BtnBar::on_btn_color_clicked()
 	{
 	case DrawRectS:
 		c = &stru.RectColor;
+		break;
+	case DrawLineS:
+		c = &stru.LineColor;
 		break;
 	case DrawArrowS:
 		c = &stru.ArrowColor;
@@ -171,6 +179,10 @@ void BtnBar::refreshUI()
 		color = SETTING->getRectColor();
 		lineWidth = SETTING->getRectLineWidth();
 		break;
+	case DrawLineS:
+		color = SETTING->getLineColor();
+		lineWidth = SETTING->getLineLineWidth();
+		break;
 	case DrawArrowS:
 		color = SETTING->getArrowColor();
 		lineWidth = SETTING->getArrowLineWidth();
@@ -211,6 +223,9 @@ void BtnBar::refreshLineBtn(LineWidth lineWidth)
 	{
 	case DrawRectS:
 		mainColorStr = SETTING->getRectColor().name().toUpper();
+		break;
+	case DrawLineS:
+		mainColorStr = SETTING->getLineColor().name().toUpper();
 		break;
 	case DrawArrowS:
 		mainColorStr = SETTING->getArrowColor().name().toUpper();
@@ -258,6 +273,9 @@ void BtnBar::setLineWidth(LineWidth lineWidth)
 	{
 	case DrawRectS:
 		SETTING->setRectLineWidth(lineWidth);
+		break;
+	case DrawLineS:
+		SETTING->setLineLineWidth(lineWidth);
 		break;
 	case DrawArrowS:
 		SETTING->setArrowLineWidth(lineWidth);

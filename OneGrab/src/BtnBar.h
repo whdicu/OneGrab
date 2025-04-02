@@ -24,6 +24,7 @@ signals:
 
 private slots:
 	void on_btn_rect_clicked();
+	void on_btn_line_clicked();
 	void on_btn_arrow_clicked();
 	void on_btn_pen_clicked();
 	void on_btn_text_clicked();

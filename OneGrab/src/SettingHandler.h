@@ -33,7 +33,8 @@ struct SettingStruct
 		, LineColor(QColor(255, 66, 66)), LineLineWidth(Line2)
 		, ArrowColor(QColor(255, 66, 66)), ArrowLineWidth(Line2)
 		, PenColor(QColor(255, 66, 66)), PenLineWidth(Line2)
-		, TextColor(QColor(255, 66, 66)), TextLineWidth(Line2) {}
+		, TextColor(QColor(255, 66, 66)), TextLineWidth(Line2)
+		, UseDefaultSavePath(false), DefaultSavePath("") {}
 	~SettingStruct() = default;
 
 	QString LastSavePath;
@@ -48,6 +49,8 @@ struct SettingStruct
 	LineWidth PenLineWidth;
 	QColor TextColor;
 	LineWidth TextLineWidth;
+	bool UseDefaultSavePath;
+	QString DefaultSavePath;
 };
 
 
@@ -74,6 +77,8 @@ public:
 	REG_GET_FUNC(PenLineWidth)
 	REG_GET_FUNC(TextColor)
 	REG_GET_FUNC(TextLineWidth)
+	REG_GET_FUNC(UseDefaultSavePath)
+	REG_GET_FUNC(DefaultSavePath)
 
 private:
     SettingHandler();

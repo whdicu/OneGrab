@@ -1,5 +1,6 @@
 ﻿#include "SettingHandler.h"
 #include "HDQt/DStyle.hpp"
+#include "HDQt/HDQt.hpp"
 #include <mutex>
 #include <QColor>
 #include <QCoreApplication>
@@ -11,33 +12,6 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 
-
-QByteArray readFile(const QString& filePath)
-{
-	QByteArray data;
-	QFile file(filePath);
-	if (!file.exists())
-	{
-		qWarning() << filePath << "not exist";
-		bool ret = file.open(QIODevice::WriteOnly);
-		if (!ret)
-			qWarning() << filePath << "create failed";
-		else
-			file.close();
-		return data;
-	}
-
-	bool ok = file.open(QIODevice::ReadOnly | QIODevice::Text);
-	if (!ok)
-	{
-		qWarning() << "File" << filePath << "open failed";
-		return data;
-	}
-
-	data = file.readAll();
-	file.close();
-	return data;
-}
 
 static std::once_flag onceFlag;
 static SettingHandler* setting_handler = nullptr;
@@ -76,7 +50,6 @@ void SettingHandler::writeAll()
 	strFile += "/config/Setting.json";
 
 	QJsonObject wholeObject;
-
 	SettingStruct settingStruct = getSettingStruct();
 	wholeObject.insert("LastSavePath", settingStruct.LastSavePath);
 	wholeObject.insert("MainColor", DStyle::color2Int(settingStruct.MainColor));
@@ -90,24 +63,9 @@ void SettingHandler::writeAll()
 	wholeObject.insert("PenLineWidth", settingStruct.PenLineWidth);
 	wholeObject.insert("TextColor", DStyle::color2Int(settingStruct.TextColor));
 	wholeObject.insert("TextLineWidth", settingStruct.TextLineWidth);
-
-	// 如果路径中有不存在的文件夹则创建
-	QFileInfo fileInfo(strFile);
-	QDir().mkpath(fileInfo.absolutePath());
-
-	QJsonDocument doc(wholeObject);
-	QByteArray data = doc.toJson();
-	QFile file(strFile);
-	bool ok = file.open(QIODevice::WriteOnly);
-	if (ok)
-	{
-		file.write(data);
-		file.close();
-	}
-	else
-	{
-		qWarning() << "File" << strFile << "open failed!";
-	}
+	wholeObject.insert("UseDefaultSavePath", settingStruct.UseDefaultSavePath);
+	wholeObject.insert("DefaultSavePath", settingStruct.DefaultSavePath);
+	HDQt::writeJson(strFile, wholeObject);
 }
 
 void SettingHandler::readAll()
@@ -116,22 +74,8 @@ void SettingHandler::readAll()
 	QString filePath = "/config/Setting.json";
 	strFile += filePath;
 
-	QByteArray data = readFile(strFile);
-	if (0 == data.size())
-	{
-		qWarning() << "File" << filePath << "is empty";
-		return;
-	}
-
-	QJsonParseError parseError;
-	QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &parseError);
-	if (QJsonParseError::NoError != parseError.error)
-	{
-		qWarning() << "File" << filePath << "analyze failed";
-		return;
-	}
-
-	QJsonObject obj = jsonDoc.object();
+	QJsonObject obj;
+	HDQt::readJson(filePath, obj);
 	SettingStruct settingStruct;
 	settingStruct.LastSavePath = obj["LastSavePath"].toString();
 	settingStruct.MainColor = DStyle::int2Color(obj["MainColor"].toInt(16737894));
@@ -145,6 +89,8 @@ void SettingHandler::readAll()
 	settingStruct.PenLineWidth = (LineWidth)obj["PenLineWidth"].toInt(2);
 	settingStruct.TextColor = DStyle::int2Color(obj["TextColor"].toInt(16737894));
 	settingStruct.TextLineWidth = (LineWidth)obj["TextLineWidth"].toInt(2);
+	settingStruct.UseDefaultSavePath = obj["UseDefaultSavePath"].toBool(false);
+	settingStruct.DefaultSavePath = obj["DefaultSavePath"].toString();
 	setSettingStruct(std::move(settingStruct));
 }
 

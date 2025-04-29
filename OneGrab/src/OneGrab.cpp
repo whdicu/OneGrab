@@ -145,16 +145,35 @@ void OneGrab::slotSave()
 	QString filename = QString("OneGrab_%1.png").arg(timestamp);
 
 	SettingStruct settingStruct = SETTING->getSettingStruct();
-	QString fileurl = QFileDialog::getSaveFileName(this, tr("保存文件"), settingStruct.LastSavePath + '/' + filename);
-	if (!fileurl.isEmpty())
+	QString fileurl;
+	if (settingStruct.UseDefaultSavePath)
 	{
-		fileurl = fileurl.replace('\\', '/');
-		int i = fileurl.lastIndexOf('/');
-		settingStruct.LastSavePath = fileurl.mid(0, i);
-		SETTING->setSettingStruct(settingStruct);
-		croppedPixmap.save(fileurl);
+		if (settingStruct.DefaultSavePath.isEmpty())
+		{
+			QString fileurl = QFileDialog::getSaveFileName(this, tr("保存文件"), settingStruct.LastSavePath + '/' + filename);
+			if (!fileurl.isEmpty())
+			{
+				fileurl = fileurl.replace('\\', '/');
+				int i = fileurl.lastIndexOf('/');
+				settingStruct.DefaultSavePath = fileurl.mid(0, i);
+			}
+		}
+		else
+			fileurl = settingStruct.DefaultSavePath + '/' + filename;
 	}
-	
+	else
+	{
+		QString fileurl = QFileDialog::getSaveFileName(this, tr("保存文件"), settingStruct.LastSavePath + '/' + filename);
+		if (!fileurl.isEmpty())
+		{
+			fileurl = fileurl.replace('\\', '/');
+			int i = fileurl.lastIndexOf('/');
+			settingStruct.LastSavePath = fileurl.mid(0, i);
+		}
+	}
+
+	SETTING->setSettingStruct(settingStruct);
+	croppedPixmap.save(fileurl);
 	finishGrab();
 }
 

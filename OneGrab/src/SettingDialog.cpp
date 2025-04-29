@@ -2,6 +2,7 @@
 #include <mutex>
 #include <QColorDialog>
 #include <QDebug>
+#include <QFileDialog>
 #include <QMessageBox>
 #include <QMouseEvent>
 #include <QSettings>
@@ -22,6 +23,7 @@ void SettingDialog::on_btn_close_clicked()
 {
 	hide();
 	emit sigRefreshSetting();
+	SETTING->syncToFile();
 }
 
 void SettingDialog::on_cb_start_by_pc_clicked()
@@ -72,6 +74,25 @@ void SettingDialog::on_cb_start_by_pc_clicked()
 	}
 }
 
+void SettingDialog::on_cb_use_default_save_path_stateChanged(int state)
+{
+	ui.label_default_save_path->setEnabled(state);
+	ui.btn_default_save_path->setEnabled(state);
+	SETTING->setUseDefaultSavePath(state);
+}
+
+void SettingDialog::on_btn_default_save_path_clicked()
+{
+	QString oldPath = SETTING->getDefaultSavePath();
+	QString selectedPath = QFileDialog::getExistingDirectory(this, tr("选择虚拟相机目录"), oldPath, QFileDialog::ShowDirsOnly);
+	if (selectedPath.isEmpty())
+		return;
+
+	selectedPath.replace(QRegExp("\\"), "/");
+	ui.label_default_save_path->setText(selectedPath);
+	SETTING->setDefaultSavePath(selectedPath);
+}
+
 void SettingDialog::on_btn_base_clicked()
 {
 	ui.stackedWidget->setCurrentIndex(0);
@@ -117,9 +138,13 @@ SettingDialog::SettingDialog(QWidget *parent)
 		QSettings::NativeFormat);
 	ui.cb_start_by_pc->setChecked(settings.allKeys().contains(applicationName));
 
-	QColor mainColor = SETTING->getMainColor();
+	SettingStruct stru = SETTING->getSettingStruct();
 	ui.btn_color->setStyleSheet(QString("border-radius: 4px; background-color: rgb(%1, %2, %3);")
-		.arg(mainColor.red()).arg(mainColor.green()).arg(mainColor.blue()));
+		.arg(stru.MainColor.red()).arg(stru.MainColor.green()).arg(stru.MainColor.blue()));
+	ui.cb_use_default_save_path->setChecked(stru.UseDefaultSavePath);
+	ui.label_default_save_path->setEnabled(stru.UseDefaultSavePath);
+	ui.btn_default_save_path->setEnabled(stru.UseDefaultSavePath);
+	ui.label_default_save_path->setText(stru.DefaultSavePath);
 }
 
 SettingDialog::~SettingDialog()

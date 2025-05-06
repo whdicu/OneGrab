@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.35026.233
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OneGrab", "OneGrab\OneGrab.vcxproj", "{618C4362-2A52-4252-B244-0DF499344BE1}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "StartByPC", "..\StartByPC\StartByPC\StartByPC.vcxproj", "{E4641862-FA17-4A17-9F59-C50E506BF3D1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -15,6 +17,10 @@ Global
 		{618C4362-2A52-4252-B244-0DF499344BE1}.Debug|x64.Build.0 = Debug|x64
 		{618C4362-2A52-4252-B244-0DF499344BE1}.Release|x64.ActiveCfg = Release|x64
 		{618C4362-2A52-4252-B244-0DF499344BE1}.Release|x64.Build.0 = Release|x64
+		{E4641862-FA17-4A17-9F59-C50E506BF3D1}.Debug|x64.ActiveCfg = Debug|x64
+		{E4641862-FA17-4A17-9F59-C50E506BF3D1}.Debug|x64.Build.0 = Debug|x64
+		{E4641862-FA17-4A17-9F59-C50E506BF3D1}.Release|x64.ActiveCfg = Release|x64
+		{E4641862-FA17-4A17-9F59-C50E506BF3D1}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -65,13 +65,13 @@ QPushButton:hover
    <property name="minimumSize">
     <size>
      <width>0</width>
-     <height>0</height>
+     <height>36</height>
     </size>
    </property>
    <property name="maximumSize">
     <size>
      <width>16777215</width>
-     <height>16777215</height>
+     <height>36</height>
     </size>
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout">
@@ -136,7 +136,7 @@ QPushButton:hover
        </size>
       </property>
       <property name="toolTip">
-       <string>置顶</string>
+       <string>画矩形框</string>
       </property>
       <property name="text">
        <string/>
@@ -177,7 +177,7 @@ QPushButton:hover
        </size>
       </property>
       <property name="toolTip">
-       <string>置顶</string>
+       <string>画直线</string>
       </property>
       <property name="text">
        <string/>
@@ -218,7 +218,7 @@ QPushButton:hover
        </size>
       </property>
       <property name="toolTip">
-       <string>置顶</string>
+       <string>画箭头</string>
       </property>
       <property name="text">
        <string/>
@@ -259,7 +259,7 @@ QPushButton:hover
        </size>
       </property>
       <property name="toolTip">
-       <string>置顶</string>
+       <string>画笔</string>
       </property>
       <property name="text">
        <string/>
@@ -308,7 +308,7 @@ QPushButton:hover
        </font>
       </property>
       <property name="toolTip">
-       <string>置顶</string>
+       <string>画文字</string>
       </property>
       <property name="text">
        <string>字</string>
@@ -345,7 +345,7 @@ QPushButton:hover
        </size>
       </property>
       <property name="toolTip">
-       <string>置顶</string>
+       <string>关闭 CTRL + Q</string>
       </property>
       <property name="text">
        <string/>
@@ -386,7 +386,7 @@ QPushButton:hover
        </size>
       </property>
       <property name="toolTip">
-       <string>置顶</string>
+       <string>置顶 CTRL + T</string>
       </property>
       <property name="text">
        <string/>
@@ -427,7 +427,7 @@ QPushButton:hover
        </size>
       </property>
       <property name="toolTip">
-       <string>保存</string>
+       <string>保存 CTRL + S</string>
       </property>
       <property name="text">
        <string/>
@@ -468,7 +468,7 @@ QPushButton:hover
        </size>
       </property>
       <property name="toolTip">
-       <string>复制</string>
+       <string>复制 CTRL + C</string>
       </property>
       <property name="text">
        <string/>
@@ -495,9 +495,21 @@ QPushButton:hover
     <rect>
      <x>0</x>
      <y>41</y>
-     <width>420</width>
+     <width>456</width>
      <height>36</height>
     </rect>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>0</width>
+     <height>36</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>16777215</width>
+     <height>36</height>
+    </size>
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout_3">
     <property name="spacing">
@@ -519,6 +531,9 @@ QPushButton:hover
      <spacer name="horizontalSpacer">
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeType">
+       <enum>QSizePolicy::Expanding</enum>
       </property>
       <property name="sizeHint" stdset="0">
        <size>

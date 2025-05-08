@@ -113,13 +113,25 @@ void OneGrab::slotKeyPressed(const KeyInfo& info)
 				finishGrab();
 			}
 			break;
+		case 81ul:  // Q
+			if (info.ctrlPressed)
+				finishGrab();
+			break;
+		case 83ul:  // S
+			if (info.ctrlPressed)
+				slotSave();  // 这个函数里已调 finishGrab
+			break;
+		case 84ul:  // T
+			if (info.ctrlPressed)
+				slotFixed();  // 这个函数里已调 finishGrab
+			break;
 		case 90ul:  // Z
 			if (info.ctrlPressed)
 			{
 				ui.view->zItem(info.shiftPressed);
 			}
 			break;
-		case 160ul:
+		case 160ul:  // SHIFT
 			mouseWindow_->switchColorStrMode();
 			break;
 		}

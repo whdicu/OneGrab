@@ -105,24 +105,24 @@ void OneGrab::slotKeyPressed(const KeyInfo& info)
 			break;
 		case 67ul:  // C
 			if (info.ctrlPressed)
-				slotCopy();  // 这个函数里已调 finishGrab
-			else
 			{
 				QApplication::clipboard()->
 					setText(mouseWindow_->getCurrentColorStr());
 				finishGrab();
 			}
+			else
+				slotCopy();  // 这个函数里已调 finishGrab
 			break;
 		case 81ul:  // Q
-			if (info.ctrlPressed)
+			if (!info.ctrlPressed)
 				finishGrab();
 			break;
 		case 83ul:  // S
-			if (info.ctrlPressed)
+			if (!info.ctrlPressed)
 				slotSave();  // 这个函数里已调 finishGrab
 			break;
 		case 84ul:  // T
-			if (info.ctrlPressed)
+			if (!info.ctrlPressed)
 				slotFixed();  // 这个函数里已调 finishGrab
 			break;
 		case 90ul:  // Z

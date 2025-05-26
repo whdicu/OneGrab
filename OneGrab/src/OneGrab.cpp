@@ -162,7 +162,7 @@ void OneGrab::slotSave()
 	{
 		if (settingStruct.DefaultSavePath.isEmpty())
 		{
-			QString fileurl = QFileDialog::getSaveFileName(this, tr("保存文件"), settingStruct.LastSavePath + '/' + filename);
+			fileurl = QFileDialog::getSaveFileName(this, tr("保存文件"), settingStruct.LastSavePath + '/' + filename);
 			if (!fileurl.isEmpty())
 			{
 				fileurl = fileurl.replace('\\', '/');
@@ -175,7 +175,7 @@ void OneGrab::slotSave()
 	}
 	else
 	{
-		QString fileurl = QFileDialog::getSaveFileName(this, tr("保存文件"), settingStruct.LastSavePath + '/' + filename);
+		fileurl = QFileDialog::getSaveFileName(this, tr("保存文件"), settingStruct.LastSavePath + '/' + filename);
 		if (!fileurl.isEmpty())
 		{
 			fileurl = fileurl.replace('\\', '/');

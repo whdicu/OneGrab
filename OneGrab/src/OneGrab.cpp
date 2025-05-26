@@ -158,20 +158,9 @@ void OneGrab::slotSave()
 
 	SettingStruct settingStruct = SETTING->getSettingStruct();
 	QString fileurl;
-	if (settingStruct.UseDefaultSavePath)
+	if (settingStruct.UseDefaultSavePath && !settingStruct.DefaultSavePath.isEmpty())
 	{
-		if (settingStruct.DefaultSavePath.isEmpty())
-		{
-			fileurl = QFileDialog::getSaveFileName(this, tr("保存文件"), settingStruct.LastSavePath + '/' + filename);
-			if (!fileurl.isEmpty())
-			{
-				fileurl = fileurl.replace('\\', '/');
-				int i = fileurl.lastIndexOf('/');
-				settingStruct.DefaultSavePath = fileurl.mid(0, i);
-			}
-		}
-		else
-			fileurl = settingStruct.DefaultSavePath + '/' + filename;
+		fileurl = settingStruct.DefaultSavePath + '/' + filename;
 	}
 	else
 	{

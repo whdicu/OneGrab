@@ -72,6 +72,9 @@
     <ClCompile Include="src\DMenu.cpp">
       <Filter>Widgets</Filter>
     </ClCompile>
+    <ClCompile Include="src\WinHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="src\OneGrab.h">
@@ -142,6 +145,9 @@
     </ClInclude>
     <ClInclude Include="src\MaskItem.h">
       <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="src\WinHandler.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -2,13 +2,25 @@
 #include "hook.h"
 #include "OneGrab.h"
 #include <QApplication>
+#include <QDebug>
+#include <QFileInfo>
 #include <QSystemTrayIcon>
 #include "SettingDialog.h"
 #include "SettingHandler.h"
+#include "WinHandler.h"
 
 
 int main(int argc, char *argv[])
 {
+	QFileInfo fileInfo(argv[0]);
+	QString processName = fileInfo.fileName();
+	bool isRunning = WinHandler::isProcessRunning(processName);
+	if (isRunning)
+	{
+		qWarning() << processName << "is running!";
+		return 1;
+	}
+
     QApplication a(argc, argv);
     OneGrab w;
 

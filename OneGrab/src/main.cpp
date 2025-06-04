@@ -1,4 +1,5 @@
-#include "DSystemTrayMenu.h"
+﻿#include "DSystemTrayMenu.h"
+#include "HDBase/DList.hpp"
 #include "hook.h"
 #include "OneGrab.h"
 #include <QApplication>
@@ -49,11 +50,24 @@ int main(int argc, char *argv[])
 		}
 	});
 
-	// �������̲˵�
-	DSystemTrayMenu trayMenu;
-	QObject::connect(&trayMenu, &DSystemTrayMenu::sigGrab, &w, &OneGrab::doGrab);
-	QObject::connect(&trayMenu, &DSystemTrayMenu::sigSetting, SettingDialog::getInstance(), &SettingDialog::show);
-	QObject::connect(&trayMenu, &DSystemTrayMenu::sigQuit, &a, &QApplication::quit);
+	// 任务栏图标右键菜单
+	const static DList<TrayItemInfo> infos = { TrayItemInfo(QObject::tr("截屏")), TrayItemInfo(QObject::tr("设置")), TrayItemInfo(QObject::tr("退出")) };
+	DSystemTrayMenu trayMenu(infos);
+	QObject::connect(&trayMenu, &DSystemTrayMenu::sigItemClicked, [&w, &a](QString text, QVariant data)
+	{
+		switch (infos.indexOf(text))
+		{
+		case 0:  // 截屏
+			w.doGrab();
+			break;
+		case 1:  // 设置
+			SettingDialog::getInstance()->show();
+			break;
+		case 2:  // 退出
+			a.quit();
+			break;
+		}
+	});
 
 	trayIcon.setContextMenu(&trayMenu);
 	trayIcon.show();

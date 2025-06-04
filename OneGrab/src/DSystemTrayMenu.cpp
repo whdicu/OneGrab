@@ -13,32 +13,29 @@ QMenu::item:selected {
 	background-color: #ff6666;
 }*/)";
 
-DSystemTrayMenu::DSystemTrayMenu(QWidget *parent)
+DSystemTrayMenu::DSystemTrayMenu(DList<TrayItemInfo> infos, QWidget *parent)
 	: QMenu(parent)
 {
 	setWindowFlags(windowFlags() | Qt::FramelessWindowHint);
 	setAttribute(Qt::WA_TranslucentBackground);
 	setStyleSheet(MENU_STYLE_SHEET);
-	
+
 	QFont font("Microsoft YaHei UI", 9);
 
-	QAction* grabAction = new QAction(QObject::tr("截屏"), this);
-	grabAction->setFont(font);
-	grabAction->setIcon(QIcon(":svgs/logo.svg"));
-	connect(grabAction, &QAction::triggered, this, &DSystemTrayMenu::sigGrab);
-	addAction(grabAction);
-	
-	QAction* settingAction = new QAction(QObject::tr("设置"), this);
-	settingAction->setFont(font);
-	settingAction->setIcon(QIcon(":svgs/setting.svg"));
-	connect(settingAction, &QAction::triggered, this, &DSystemTrayMenu::sigSetting);
-	addAction(settingAction);
-
-	QAction* quitAction = new QAction(QObject::tr("退出"), this);
-	quitAction->setFont(font);
-	quitAction->setIcon(QIcon(":svgs/shutdown.svg"));
-	connect(quitAction, &QAction::triggered, this, &DSystemTrayMenu::sigQuit);
-	addAction(quitAction);
+	for (const TrayItemInfo& info : infos)
+	{
+		QAction* action = new QAction(info.text, this);
+		action->setFont(font);
+		if (!info.icon.isNull())
+			action->setIcon(info.icon);
+		if (!info.data.isNull())
+			action->setData(info.data);
+		connect(action, &QAction::triggered, this, [this, action]()
+			{
+				emit sigItemClicked(action->text(), action->data());
+			});
+		addAction(action);
+	}
 }
 
 DSystemTrayMenu::~DSystemTrayMenu()

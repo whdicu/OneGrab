@@ -42,4 +42,5 @@ private:
 	BtnBar* btnBar_;
 	MouseWindow* mouseWindow_;
 	QPixmap fullPixmap_;
+	bool ignoreKeyPress_;  // 忽略键盘按键
 };

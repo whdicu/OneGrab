@@ -117,19 +117,19 @@ void DGrabView::mousePressEvent(QMouseEvent *event)
 		switch (mouseState_)
 		{
 		case DrawRectS:  // 画矩形
-			addRect(QRect(selectionStart_, selectionStart_), SETTING->getRectColor());
+			addRect(QRect(selectionStart_, selectionStart_), SETTING_HANDLER->getRectColor());
 			break;
 		case DrawLineS:  // 画线
-			addLine(selectionStart_, SETTING->getLineColor());
+			addLine(selectionStart_, SETTING_HANDLER->getLineColor());
 			break;
 		case DrawArrowS:  // 画箭头
-			addArrow(QRect(selectionStart_, selectionStart_), SETTING->getArrowColor());
+			addArrow(QRect(selectionStart_, selectionStart_), SETTING_HANDLER->getArrowColor());
 			break;
 		case DrawPenS:  // 随便画
-			addLines(selectionStart_, SETTING->getPenColor());
+			addLines(selectionStart_, SETTING_HANDLER->getPenColor());
 			break;
 		case DrawTextS:  // 画文字
-			addText(selectionStart_, SETTING->getTextColor());
+			addText(selectionStart_, SETTING_HANDLER->getTextColor());
 			break;
 		default:
 			mousePosBeforeMove_ = event->pos();
@@ -331,28 +331,28 @@ void DGrabView::closeEvent(QCloseEvent *evt)
 
 void DGrabView::addRect(const QRect& rect, const QColor& color)
 {
-	editingItem_ = new DGraphicsRectItem(rect, color, SETTING->getRectLineWidth(), this, imgItem_);
+	editingItem_ = new DGraphicsRectItem(rect, color, SETTING_HANDLER->getRectLineWidth(), this, imgItem_);
 	itemList_.enqueue(editingItem_);
 	removedList_.clear();
 }
 
 void DGrabView::addLine(const QPoint& point, const QColor& color)
 {
-	editingItem_ = new DGraphicsLineItem(point, color, SETTING->getLineLineWidth(), this, imgItem_);
+	editingItem_ = new DGraphicsLineItem(point, color, SETTING_HANDLER->getLineLineWidth(), this, imgItem_);
 	itemList_.enqueue(editingItem_);
 	removedList_.clear();
 }
 
 void DGrabView::addArrow(const QRect& rect, const QColor& color)
 {
-	editingItem_ = new DGraphicsArrowItem(rect, color, SETTING->getArrowLineWidth(), this, imgItem_);
+	editingItem_ = new DGraphicsArrowItem(rect, color, SETTING_HANDLER->getArrowLineWidth(), this, imgItem_);
 	itemList_.enqueue(editingItem_);
 	removedList_.clear();
 }
 
 void DGrabView::addLines(const QPoint& point, const QColor& color)
 {
-	editingItem_ = new DGraphicsLinesItem(point, color, SETTING->getPenLineWidth(), this, imgItem_);
+	editingItem_ = new DGraphicsLinesItem(point, color, SETTING_HANDLER->getPenLineWidth(), this, imgItem_);
 	itemList_.enqueue(editingItem_);
 	removedList_.clear();
 }

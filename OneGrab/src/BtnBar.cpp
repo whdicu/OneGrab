@@ -93,7 +93,7 @@ void BtnBar::on_btn_copy_clicked()
 
 void BtnBar::on_btn_color_clicked()
 {
-	SettingStruct stru = SETTING->getSettingStruct();
+	SettingStruct stru = SETTING_HANDLER->getSettingStruct();
 
 	QColor* c = nullptr;
 	switch (isDrawing_)
@@ -125,7 +125,7 @@ void BtnBar::on_btn_color_clicked()
 		return;
 
 	*c = dlg.selectedColor();
-	SETTING->setSettingStruct(stru);
+	SETTING_HANDLER->setSettingStruct(stru);
 
 	// 为了刷新界面颜色显示
 	refreshUI();
@@ -172,28 +172,28 @@ void BtnBar::refreshUI()
 		return;
 
 	LineWidth lineWidth = Line1;
-	QColor color = SETTING->getMainColor();
+	QColor color = SETTING_HANDLER->getMainColor();
 	switch (isDrawing_)
 	{
 	case DrawRectS:
-		color = SETTING->getRectColor();
-		lineWidth = SETTING->getRectLineWidth();
+		color = SETTING_HANDLER->getRectColor();
+		lineWidth = SETTING_HANDLER->getRectLineWidth();
 		break;
 	case DrawLineS:
-		color = SETTING->getLineColor();
-		lineWidth = SETTING->getLineLineWidth();
+		color = SETTING_HANDLER->getLineColor();
+		lineWidth = SETTING_HANDLER->getLineLineWidth();
 		break;
 	case DrawArrowS:
-		color = SETTING->getArrowColor();
-		lineWidth = SETTING->getArrowLineWidth();
+		color = SETTING_HANDLER->getArrowColor();
+		lineWidth = SETTING_HANDLER->getArrowLineWidth();
 		break;
 	case DrawPenS:
-		color = SETTING->getPenColor();
-		lineWidth = SETTING->getPenLineWidth();
+		color = SETTING_HANDLER->getPenColor();
+		lineWidth = SETTING_HANDLER->getPenLineWidth();
 		break;
 	case DrawTextS:
-		color = SETTING->getTextColor();
-		lineWidth = SETTING->getTextLineWidth();
+		color = SETTING_HANDLER->getTextColor();
+		lineWidth = SETTING_HANDLER->getTextLineWidth();
 		break;
 	}
 	ui.btn_color->setStyleSheet(QString("background-color: %1;").arg(color.name().toUpper()));
@@ -218,23 +218,23 @@ void BtnBar::refreshLineBtn(LineWidth lineWidth)
 	ui.btn_line2->show();
 	ui.btn_line3->show();
 	ui.btn_line4->show();
-	QString mainColorStr = SETTING->getMainColor().name().toUpper();
+	QString mainColorStr = SETTING_HANDLER->getMainColor().name().toUpper();
 	switch (isDrawing_)
 	{
 	case DrawRectS:
-		mainColorStr = SETTING->getRectColor().name().toUpper();
+		mainColorStr = SETTING_HANDLER->getRectColor().name().toUpper();
 		break;
 	case DrawLineS:
-		mainColorStr = SETTING->getLineColor().name().toUpper();
+		mainColorStr = SETTING_HANDLER->getLineColor().name().toUpper();
 		break;
 	case DrawArrowS:
-		mainColorStr = SETTING->getArrowColor().name().toUpper();
+		mainColorStr = SETTING_HANDLER->getArrowColor().name().toUpper();
 		break;
 	case DrawPenS:
-		mainColorStr = SETTING->getPenColor().name().toUpper();
+		mainColorStr = SETTING_HANDLER->getPenColor().name().toUpper();
 		break;
 	case DrawTextS:
-		mainColorStr = SETTING->getTextColor().name().toUpper();
+		mainColorStr = SETTING_HANDLER->getTextColor().name().toUpper();
 		ui.btn_line1->hide();
 		ui.btn_line2->hide();
 		ui.btn_line3->hide();
@@ -272,19 +272,19 @@ void BtnBar::setLineWidth(LineWidth lineWidth)
 	switch (isDrawing_)
 	{
 	case DrawRectS:
-		SETTING->setRectLineWidth(lineWidth);
+		SETTING_HANDLER->setRectLineWidth(lineWidth);
 		break;
 	case DrawLineS:
-		SETTING->setLineLineWidth(lineWidth);
+		SETTING_HANDLER->setLineLineWidth(lineWidth);
 		break;
 	case DrawArrowS:
-		SETTING->setArrowLineWidth(lineWidth);
+		SETTING_HANDLER->setArrowLineWidth(lineWidth);
 		break;
 	case DrawPenS:
-		SETTING->setPenLineWidth(lineWidth);
+		SETTING_HANDLER->setPenLineWidth(lineWidth);
 		break;
 	case DrawTextS:
-		SETTING->setTextLineWidth(lineWidth);
+		SETTING_HANDLER->setTextLineWidth(lineWidth);
 		break;
 	}
 }

@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     OneGrab w;
 
-	QObject::connect(&a, &QApplication::aboutToQuit, SETTING, &SettingHandler::syncToFile);
+	QObject::connect(&a, &QApplication::aboutToQuit, SETTING_HANDLER, &SettingHandler::syncToFile);
 
 	QSystemTrayIcon trayIcon(QIcon(":/svgs/logo.svg"));
 	trayIcon.setToolTip("OneGrab");

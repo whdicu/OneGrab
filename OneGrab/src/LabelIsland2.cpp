@@ -63,7 +63,7 @@ LabelIsland2::~LabelIsland2()
 
 void LabelIsland2::onRefreshSetting()
 {
-	QColor mainColor = SETTING->getMainColor();
+	QColor mainColor = SETTING_HANDLER->getMainColor();
 	setStyleSheet(QString("QLabel { border: %1px solid rgb(%2, %3, %4); }").arg(BORDER_SIZE)
 		.arg(mainColor.red()).arg(mainColor.green()).arg(mainColor.blue()));
 }

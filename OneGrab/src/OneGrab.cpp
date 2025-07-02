@@ -1,5 +1,6 @@
 ﻿#include "OneGrab.h"
 #include "BtnBar.h"
+#include "HDCore/DBoolSetter.hpp"
 #include "LabelIsland.h"
 #include "LabelIsland2.h"
 #include "MouseWindow.h"
@@ -20,6 +21,7 @@ OneGrab::OneGrab(QWidget *parent)
     : QWidget(parent, Qt::FramelessWindowHint | Qt::Tool | Qt::WindowStaysOnTopHint)
 	, btnBar_(new BtnBar)
 	, mouseWindow_(new MouseWindow)
+	, ignoreKeyPress_(false)
 {
     ui.setupUi(this);
 	setAttribute(Qt::WA_TranslucentBackground);
@@ -27,7 +29,11 @@ OneGrab::OneGrab(QWidget *parent)
 	QGraphicsScene* lpScene = new QGraphicsScene;
 	ui.view->setScene(lpScene);
 
-	connect(btnBar_, &BtnBar::sigDrawing, ui.view, &DGrabView::setDrawingState);
+	connect(btnBar_, &BtnBar::sigDrawing, this, [this](int isDrawing)
+	{
+		ignoreKeyPress_ = isDrawing;
+		ui.view->setDrawingState(isDrawing);
+	});
 	connect(btnBar_, &BtnBar::sigClose, this, &OneGrab::finishGrab);
 	connect(btnBar_, &BtnBar::sigFixed, this, &OneGrab::slotFixed);
 	connect(btnBar_, &BtnBar::sigSave, this, &OneGrab::slotSave);
@@ -92,6 +98,12 @@ void OneGrab::slotKeyPressed(const KeyInfo& info)
 	}
 	else
 	{
+		if (ignoreKeyPress_)
+		{
+			qDebug() << __FUNCTION__ << "ignoreKeyPress. key:" << info.key;
+			return;
+		}
+
 		switch (info.key)
 		{
 		case 27ul:  // ESC
@@ -150,13 +162,14 @@ void OneGrab::slotFixed()
 
 void OneGrab::slotSave()
 {
+	DBoolSetter setter(ignoreKeyPress_, true);
 	QRect uselessRect;
 	QPixmap croppedPixmap = ui.view->getSelectionPixmap(uselessRect);
 	// 保存截图到文件
 	QString timestamp = QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss");
 	QString filename = QString("OneGrab_%1.png").arg(timestamp);
 
-	SettingStruct settingStruct = SETTING->getSettingStruct();
+	SettingStruct settingStruct = SETTING_HANDLER->getSettingStruct();
 	QString fileurl;
 	if (settingStruct.UseDefaultSavePath && !settingStruct.DefaultSavePath.isEmpty())
 	{
@@ -173,7 +186,7 @@ void OneGrab::slotSave()
 		}
 	}
 
-	SETTING->setSettingStruct(settingStruct);
+	SETTING_HANDLER->setSettingStruct(settingStruct);
 	croppedPixmap.save(fileurl);
 	finishGrab();
 }
@@ -219,7 +232,7 @@ void OneGrab::slotRefreshPixelInfo(const QPoint& mousePos)
 		- QPoint(windowSize.width() / 2, windowSize.height() / 2), windowSize));
 
 	// 画鼠标所在像素的矩形框
-	QColor mainColor = SETTING->getMainColor();
+	QColor mainColor = SETTING_HANDLER->getMainColor();
 	QPainter painter(&windowPixmap);
 	painter.setPen(QPen(mainColor, 1));
 	painter.drawRect(QRect(windowSize.width() / 2 - 1, windowSize.height() / 2 - 1, 2, 2));
@@ -281,6 +294,7 @@ QPixmap OneGrab::getFullPixmap(QRect& screenRect)
 
 void OneGrab::finishGrab()
 {
+	ignoreKeyPress_ = false;
 	ui.view->onFinishGrab();
 	mouseWindow_->hide();
 	btnBar_->onFinishGrab();

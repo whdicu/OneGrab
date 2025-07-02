@@ -24,7 +24,7 @@ void SettingDialog::on_btn_close_clicked()
 {
 	hide();
 	emit sigRefreshSetting();
-	SETTING->syncToFile();
+	SETTING_HANDLER->syncToFile();
 }
 
 void SettingDialog::on_cb_start_by_pc_clicked()
@@ -48,19 +48,19 @@ void SettingDialog::on_cb_use_default_save_path_stateChanged(int state)
 {
 	ui.label_default_save_path->setEnabled(state);
 	ui.btn_default_save_path->setEnabled(state);
-	SETTING->setUseDefaultSavePath(state);
+	SETTING_HANDLER->setUseDefaultSavePath(state);
 }
 
 void SettingDialog::on_btn_default_save_path_clicked()
 {
-	QString oldPath = SETTING->getDefaultSavePath();
+	QString oldPath = SETTING_HANDLER->getDefaultSavePath();
 	QString selectedPath = QFileDialog::getExistingDirectory(this, tr("选择虚拟相机目录"), oldPath, QFileDialog::ShowDirsOnly);
 	if (selectedPath.isEmpty())
 		return;
 
 	selectedPath.replace(QRegExp("\\"), "/");
 	ui.label_default_save_path->setText(selectedPath);
-	SETTING->setDefaultSavePath(selectedPath);
+	SETTING_HANDLER->setDefaultSavePath(selectedPath);
 }
 
 void SettingDialog::on_btn_base_clicked()
@@ -75,7 +75,7 @@ void SettingDialog::on_btn_about_clicked()
 
 void SettingDialog::on_btn_color_clicked()
 {
-	SettingStruct stru = SETTING->getSettingStruct();
+	SettingStruct stru = SETTING_HANDLER->getSettingStruct();
 
 	QColorDialog dlg;
 	dlg.setCurrentColor(stru.MainColor);
@@ -83,7 +83,7 @@ void SettingDialog::on_btn_color_clicked()
 		return;
 
 	stru.MainColor = dlg.selectedColor();
-	SETTING->setSettingStruct(stru);
+	SETTING_HANDLER->setSettingStruct(stru);
 
 	ui.btn_color->setStyleSheet(QString("border-radius: 4px; background-color: rgb(%1, %2, %3);")
 		.arg(stru.MainColor.red()).arg(stru.MainColor.green()).arg(stru.MainColor.blue()));
@@ -108,7 +108,7 @@ SettingDialog::SettingDialog(QWidget *parent)
 		QSettings::NativeFormat);
 	ui.cb_start_by_pc->setChecked(settings.allKeys().contains(applicationName));
 
-	SettingStruct stru = SETTING->getSettingStruct();
+	SettingStruct stru = SETTING_HANDLER->getSettingStruct();
 	ui.btn_color->setStyleSheet(QString("border-radius: 4px; background-color: rgb(%1, %2, %3);")
 		.arg(stru.MainColor.red()).arg(stru.MainColor.green()).arg(stru.MainColor.blue()));
 	ui.cb_use_default_save_path->setChecked(stru.UseDefaultSavePath);

@@ -62,7 +62,7 @@ LabelIsland::~LabelIsland()
 
 void LabelIsland::onRefreshSetting()
 {
-	QColor mainColor = SETTING->getMainColor();
+	QColor mainColor = SETTING_HANDLER->getMainColor();
 	setStyleSheet(QString("QLabel { border: %1px solid %2; }")
 		.arg(BORDER_SIZE).arg(mainColor.name().toUpper()));
 	menu_->setBgColor(mainColor);
@@ -136,14 +136,14 @@ void LabelIsland::slotBtnClicked(const QString& text)
 		QString timestamp = QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss");
 		QString filename = QString("OneGrab_%1.png").arg(timestamp);
 
-		SettingStruct settingStruct = SETTING->getSettingStruct();
+		SettingStruct settingStruct = SETTING_HANDLER->getSettingStruct();
 		QString fileurl = QFileDialog::getSaveFileName(this, tr("保存文件"), settingStruct.LastSavePath + '/' + filename);
 		if (!fileurl.isEmpty())
 		{
 			fileurl = fileurl.replace('\\', '/');
 			int i = fileurl.lastIndexOf('/');
 			settingStruct.LastSavePath = fileurl.mid(0, i);
-			SETTING->setSettingStruct(settingStruct);
+			SETTING_HANDLER->setSettingStruct(settingStruct);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 			pixmap().save(fileurl);
 #else

@@ -91,7 +91,7 @@ private:
 };
 
 #ifndef SETTING_HANDLER
-#define SETTING SettingHandler::getInstance()
+#define SETTING_HANDLER SettingHandler::getInstance()
 #endif
 
 #endif // SETTINGHANDLER_H

@@ -41,7 +41,8 @@ void SettingDialog::on_cb_start_by_pc_clicked()
 	}
 
 	QStringList args = { "name=" + applicationName, "path=" + applicationPath, "start=" + QString::number(startByPC) };
-	QProcess::startDetached(exePath, args);
+	if (!QProcess::startDetached(exePath, args))
+		ui.cb_start_by_pc->setChecked(!startByPC);
 }
 
 void SettingDialog::on_cb_use_default_save_path_stateChanged(int state)

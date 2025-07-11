@@ -225,11 +225,27 @@ void OneGrab::slotSelectionChanged(const QRectF& rectf)
 void OneGrab::slotRefreshPixelInfo(const QPoint& mousePos)
 {
 	QColor color = getPixelColor(mousePos);
+	QSize windowSize = mouseWindow_->getWindowSize() / 8;  // 8倍放大
+	QRect targetRect = QRect(mousePos
+		- QPoint(windowSize.width() / 2, windowSize.height() / 2), windowSize);
 
-	// 8倍放大
-	QSize windowSize = mouseWindow_->getWindowSize() / 8;
-	QPixmap windowPixmap = fullPixmap_.copy(QRect(mousePos
-		- QPoint(windowSize.width() / 2, windowSize.height() / 2), windowSize));
+	QPixmap windowPixmap(windowSize);
+	windowPixmap.fill(Qt::black);
+
+	// 计算原图中可以截取的有效区域（和src交集）
+	QRect srcRect = targetRect & QRect(0, 0, fullPixmap_.width(), fullPixmap_.height());
+
+	if (!srcRect.isEmpty())
+	{
+		// 从原图中截取有效部分
+		QPixmap cropped = fullPixmap_.copy(srcRect);
+
+		// 计算将cropped粘贴到result中的位置（相对位置）
+		QPoint destTopLeft = srcRect.topLeft() - targetRect.topLeft();
+		QPainter painter(&windowPixmap);
+		painter.drawPixmap(destTopLeft, cropped);
+		painter.end();
+	}
 
 	// 画鼠标所在像素的矩形框
 	QColor mainColor = SETTING_HANDLER->getMainColor();

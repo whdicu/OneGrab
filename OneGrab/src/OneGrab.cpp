@@ -31,7 +31,7 @@ OneGrab::OneGrab(QWidget *parent)
 
 	connect(btnBar_, &BtnBar::sigDrawing, this, [this](int isDrawing)
 	{
-		ignoreKeyPress_ = isDrawing;
+		ignoreKeyPress_ = isDrawing == DrawTextS;  // 只有绘制文字时屏蔽按键
 		ui.view->setDrawingState(isDrawing);
 	});
 	connect(btnBar_, &BtnBar::sigClose, this, &OneGrab::finishGrab);

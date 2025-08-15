@@ -47,21 +47,8 @@ void SettingDialog::on_cb_start_by_pc_clicked()
 
 void SettingDialog::on_cb_use_default_save_path_stateChanged(int state)
 {
-	ui.label_default_save_path->setEnabled(state);
-	ui.btn_default_save_path->setEnabled(state);
+	ui.edit_default_save_path->setEnabled(state);
 	SETTING_HANDLER->setUseDefaultSavePath(state);
-}
-
-void SettingDialog::on_btn_default_save_path_clicked()
-{
-	QString oldPath = SETTING_HANDLER->getDefaultSavePath();
-	QString selectedPath = QFileDialog::getExistingDirectory(this, tr("选择虚拟相机目录"), oldPath, QFileDialog::ShowDirsOnly);
-	if (selectedPath.isEmpty())
-		return;
-
-	selectedPath.replace(QRegExp("\\"), "/");
-	ui.label_default_save_path->setText(selectedPath);
-	SETTING_HANDLER->setDefaultSavePath(selectedPath);
 }
 
 void SettingDialog::on_btn_base_clicked()
@@ -113,9 +100,21 @@ SettingDialog::SettingDialog(QWidget *parent)
 	ui.btn_color->setStyleSheet(QString("border-radius: 4px; background-color: rgb(%1, %2, %3);")
 		.arg(stru.MainColor.red()).arg(stru.MainColor.green()).arg(stru.MainColor.blue()));
 	ui.cb_use_default_save_path->setChecked(stru.UseDefaultSavePath);
-	ui.label_default_save_path->setEnabled(stru.UseDefaultSavePath);
-	ui.btn_default_save_path->setEnabled(stru.UseDefaultSavePath);
-	ui.label_default_save_path->setText(stru.DefaultSavePath);
+	ui.edit_default_save_path->setEnabled(stru.UseDefaultSavePath);
+	ui.edit_default_save_path->setText(stru.DefaultSavePath);
+	ui.edit_default_save_path->setEditable(false);
+
+	connect(ui.edit_default_save_path, &DLineEdit::sigBtnClicked, this, [this]()
+	{
+		QString oldPath = SETTING_HANDLER->getDefaultSavePath();
+		QString selectedPath = QFileDialog::getExistingDirectory(this, tr("选择虚拟相机目录"), oldPath, QFileDialog::ShowDirsOnly);
+		if (selectedPath.isEmpty())
+			return;
+
+		selectedPath.replace(QRegExp("\\"), "/");
+		ui.edit_default_save_path->setText(selectedPath);
+		SETTING_HANDLER->setDefaultSavePath(selectedPath);
+	});
 }
 
 SettingDialog::~SettingDialog()

@@ -75,6 +75,9 @@
     <ClCompile Include="src\WinHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\DLineEdit.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="src\OneGrab.h">
@@ -114,6 +117,9 @@
       <Filter>Widgets</Filter>
     </QtMoc>
     <QtMoc Include="src\DMenu.h">
+      <Filter>Widgets</Filter>
+    </QtMoc>
+    <QtMoc Include="src\DLineEdit.h">
       <Filter>Widgets</Filter>
     </QtMoc>
   </ItemGroup>

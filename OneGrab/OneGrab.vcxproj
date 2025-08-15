@@ -12,6 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\BtnBar.cpp" />
+    <ClCompile Include="src\DLineEdit.cpp" />
     <ClCompile Include="src\DMenu.cpp" />
     <ClCompile Include="src\DSystemTrayMenu.cpp" />
     <ClCompile Include="src\hook.cpp" />
@@ -62,6 +63,7 @@
   <ItemGroup>
     <ClInclude Include="resource.h" />
     <ClInclude Include="src\DGraphicsItem.h" />
+    <QtMoc Include="src\DLineEdit.h" />
     <ClInclude Include="src\WinHandler.h" />
     <QtMoc Include="src\LabelIsland2.h" />
     <QtMoc Include="src\DMenu.h" />
@@ -127,7 +129,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'" Label="QtSettings">
     <QtInstall>qt5.9.4-msvc2017-x64</QtInstall>
-    <QtModules>core;gui;widgets</QtModules>
+    <QtModules>core;gui;svg;widgets</QtModules>
     <QtBuildConfig>release</QtBuildConfig>
   </PropertyGroup>
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.props')">

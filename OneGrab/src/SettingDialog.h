@@ -17,7 +17,6 @@ private slots:
 	void on_btn_close_clicked();
 	void on_cb_start_by_pc_clicked();
 	void on_cb_use_default_save_path_stateChanged(int state);
-	void on_btn_default_save_path_clicked();
 	void on_btn_base_clicked();
 	void on_btn_about_clicked();
 	void on_btn_color_clicked();

@@ -17,6 +17,7 @@ public:
 	void setText(const QString& text);
 	QString text() const;
 	void setEditable(bool editable);
+	void setIconSize(const QSize& size);
 
 signals:
 	void sigBtnClicked();

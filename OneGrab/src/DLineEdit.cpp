@@ -65,6 +65,7 @@ DLineEdit::DLineEdit(QWidget* parent)
 
 	setMinimumHeight(MIN_HEIGHT);
 	setStyleSheet(QString("#dlineedit_box { border: %1px solid #5c5c66; border-radius: 10px; } \
+		#dlineedit_box:disabled { border: %1px solid rgba(92, 92, 102, 0.5); } \
 		QLineEdit { border: none; background-color: transparent; } \
 		QPushButton { background-color: white; border-radius: 5px; } \
 		QPushButton:hover { background-color: rgba(92, 92, 102, 0.5); }").arg(BORDER_SIZE));
@@ -93,4 +94,9 @@ QString DLineEdit::text() const
 void DLineEdit::setEditable(bool editable)
 {
 	lineEdit_->setEnabled(editable);
+}
+
+void DLineEdit::setIconSize(const QSize& size)
+{
+	btn_->setIconSize(size);
 }

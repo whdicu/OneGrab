@@ -68,6 +68,7 @@ bool Hook::sendSignal(const KeyInfo& info)
 }
 
 Hook::Hook()
+	: block_(false)
 {
 	QThread* thread = new QThread(this);
 	moveToThread(thread);

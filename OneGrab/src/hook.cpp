@@ -23,13 +23,17 @@ LRESULT CALLBACK keyProc(int nCode, WPARAM wParam, LPARAM lParam)
 		info.key = pkbhs->vkCode;
 		info.ctrlPressed = GetAsyncKeyState(VK_CONTROL);
 		info.shiftPressed = GetAsyncKeyState(VK_SHIFT);
-
+		//qDebug() << pkbhs->vkCode;
         switch (pkbhs->vkCode)
         {
         case 112ul:
             Hook::getInstance()->sendSignal(info);
             return true;
 		case 27ul:
+		case 37ul:
+		case 38ul:
+		case 39ul:
+		case 40ul:
 		case 46ul:  // delete
 		case 67ul:  // C
 		case 81ul:  // Q
@@ -37,7 +41,8 @@ LRESULT CALLBACK keyProc(int nCode, WPARAM wParam, LPARAM lParam)
 		case 84ul:  // T
 		case 90ul:  // Z
 		case 160ul:  // shift
-			Hook::getInstance()->sendSignal(info);
+			if (Hook::getInstance()->sendSignal(info))
+				return true;
 			break;
         }
 	}
@@ -55,9 +60,11 @@ void Hook::unInstallHook()
 	keyHook = nullptr;
 }
 
-void Hook::sendSignal(const KeyInfo& info)
+bool Hook::sendSignal(const KeyInfo& info)
 {
 	emit sendKeyType(info);
+	if (block_)
+		return true;
 }
 
 Hook::Hook()

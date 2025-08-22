@@ -20,7 +20,8 @@ public:
 	static Hook* getInstance();
 	void installHook();
 	void unInstallHook();
-    void sendSignal(const KeyInfo& info);
+    bool sendSignal(const KeyInfo& info);
+	void setBlock(bool block) { block_ = block; }
 
 signals:
 	void sendKeyType(const KeyInfo& info);
@@ -28,6 +29,7 @@ signals:
 private:
 	Hook();
 	~Hook() = default;
+	bool block_;
 };
 
 #endif // HOOK_H

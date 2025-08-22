@@ -78,6 +78,8 @@ void OneGrab::doGrab()
 
 	mouseWindow_->moveAndRefresh(QCursor::pos() - pos(), geometry());
 	mouseWindow_->show();
+
+	ui.view->setFocus();
 }
 
 QColor OneGrab::getPixelColor(const QPoint& pos)
@@ -95,58 +97,69 @@ void OneGrab::slotKeyPressed(const KeyInfo& info)
 			doGrab();
 			break;
 		}
+		return;
 	}
-	else
-	{
-		if (ignoreKeyPress_)
-		{
-			qDebug() << __FUNCTION__ << "ignoreKeyPress. key:" << info.key;
-			return;
-		}
 
-		switch (info.key)
+	if (ignoreKeyPress_)
+	{
+		qDebug() << __FUNCTION__ << "ignoreKeyPress. key:" << info.key;
+		return;
+	}
+
+	switch (info.key)
+	{
+	case 27ul:  // ESC
+		// 有顶层dialog时，按esc只是隐藏顶层dialog
+		// 不然整个程序会退出，因为dialog推出后已经做一遍finishGrab了
+		if (!isHidden() && (QApplication::activeModalWidget() == nullptr))
+			finishGrab();
+		break;
+	case 37ul:  // left
+		QCursor::setPos(QCursor::pos() + QPoint(-1, 0));
+		break;
+	case 38ul:  // up
+		QCursor::setPos(QCursor::pos() + QPoint(0, -1));
+		break;
+	case 39ul:  // right
+		QCursor::setPos(QCursor::pos() + QPoint(1, 0));
+		break;
+	case 40ul:  // down
+		QCursor::setPos(QCursor::pos() + QPoint(0, 1));
+		break;
+	case 46ul:  // delete
+		ui.view->deleteHoverItem();
+		break;
+	case 67ul:  // C
+		if (info.ctrlPressed)
 		{
-		case 27ul:  // ESC
-			// 有顶层dialog时，按esc只是隐藏顶层dialog
-			// 不然整个程序会退出，因为dialog推出后已经做一遍finishGrab了
-			if (!isHidden() && (QApplication::activeModalWidget() == nullptr))
-				finishGrab();
-			break;
-		case 46ul:  // delete
-			ui.view->deleteHoverItem();
-			break;
-		case 67ul:  // C
-			if (info.ctrlPressed)
-			{
-				QApplication::clipboard()->
-					setText(mouseWindow_->getCurrentColorStr());
-				finishGrab();
-			}
-			else
-				slotCopy();  // 这个函数里已调 finishGrab
-			break;
-		case 81ul:  // Q
-			if (!info.ctrlPressed)
-				finishGrab();
-			break;
-		case 83ul:  // S
-			if (!info.ctrlPressed)
-				slotSave();  // 这个函数里已调 finishGrab
-			break;
-		case 84ul:  // T
-			if (!info.ctrlPressed)
-				slotFixed();  // 这个函数里已调 finishGrab
-			break;
-		case 90ul:  // Z
-			if (info.ctrlPressed)
-			{
-				ui.view->zItem(info.shiftPressed);
-			}
-			break;
-		case 160ul:  // SHIFT
-			mouseWindow_->switchColorStrMode();
-			break;
+			QApplication::clipboard()->
+				setText(mouseWindow_->getCurrentColorStr());
+			finishGrab();
 		}
+		else
+			slotCopy();  // 这个函数里已调 finishGrab
+		break;
+	case 81ul:  // Q
+		if (!info.ctrlPressed)
+			finishGrab();
+		break;
+	case 83ul:  // S
+		if (!info.ctrlPressed)
+			slotSave();  // 这个函数里已调 finishGrab
+		break;
+	case 84ul:  // T
+		if (!info.ctrlPressed)
+			slotFixed();  // 这个函数里已调 finishGrab
+		break;
+	case 90ul:  // Z
+		if (info.ctrlPressed)
+		{
+			ui.view->zItem(info.shiftPressed);
+		}
+		break;
+	case 160ul:  // SHIFT
+		mouseWindow_->switchColorStrMode();
+		break;
 	}
 }
 

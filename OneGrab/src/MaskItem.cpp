@@ -146,18 +146,18 @@ void MaskItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, 
 		}
 		if (Right & border_)
 		{
-			QPoint p1 = selectionRect_.topRight();
-			QPoint p2 = selectionRect_.bottomRight();
-			QPoint p3 = borderRect.bottomRight();
-			QPoint p4 = borderRect.topRight();
+			QPoint p1 = selectionRect_.topRight() + QPoint(1, 0);
+			QPoint p2 = selectionRect_.bottomRight() + QPoint(1, 0);
+			QPoint p3 = borderRect.bottomRight() + QPoint(1, 0);
+			QPoint p4 = borderRect.topRight() + QPoint(1, 0);
 			painter->drawPolygon(QPolygon({ p1, p2, p3, p4 }));
 		}
 		if (Bottom & border_)
 		{
-			QPoint p1 = selectionRect_.bottomLeft();
-			QPoint p2 = selectionRect_.bottomRight();
-			QPoint p3 = borderRect.bottomRight();
-			QPoint p4 = borderRect.bottomLeft();
+			QPoint p1 = selectionRect_.bottomLeft() + QPoint(0, 1);
+			QPoint p2 = selectionRect_.bottomRight() + QPoint(0, 1);
+			QPoint p3 = borderRect.bottomRight() + QPoint(0, 1);
+			QPoint p4 = borderRect.bottomLeft() + QPoint(0, 1);
 			painter->drawPolygon(QPolygon({ p1, p2, p3, p4 }));
 		}
 	}

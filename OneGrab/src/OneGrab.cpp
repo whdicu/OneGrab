@@ -323,6 +323,8 @@ QPixmap OneGrab::getFullPixmap(QRect& screenRect)
 
 void OneGrab::finishGrab()
 {
+	qDebug() << __FUNCTION__;
+
 	ignoreKeyPress_ = false;
 	ui.view->onFinishGrab();
 	mouseWindow_->hide();

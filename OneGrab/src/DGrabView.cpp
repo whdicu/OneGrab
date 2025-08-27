@@ -15,6 +15,7 @@ DGrabView::DGrabView(QWidget* parent)
 	, imgItem_(nullptr)
 	, editingItem_(nullptr)
 	, hoverItem_(nullptr)
+	, maskItem_(nullptr)
 	, mouseState_(FreeState)
 	, selectionStart_(0, 0)
 	, mousePosBeforeMove_(0, 0)
@@ -32,7 +33,8 @@ QGraphicsPixmapItem* DGrabView::setImg(const QPixmap& img)
 	clearItems();
 	imgItem_ = scene()->addPixmap(img);
 
-	maskItem_ = new MaskItem(scene()->sceneRect().toRect());
+	if (nullptr == maskItem_)
+		maskItem_ = new MaskItem(scene()->sceneRect().toRect());
 	scene()->addItem(maskItem_);
 
 	return imgItem_;
@@ -161,6 +163,17 @@ void DGrabView::mousePressEvent(QMouseEvent *event)
 
 void DGrabView::mouseMoveEvent(QMouseEvent* event)
 {
+	if (nullptr == maskItem_)
+	{
+		qWarning() << __FUNCTION__ << "maskItem is nullptr!";
+		return;
+	}
+	if (nullptr == imgItem_)
+	{
+		qWarning() << __FUNCTION__ << "imgItem_ is nullptr!";
+		return;
+	}
+
 	QPoint curpos;
 	if (imgItem_)
 	{
@@ -245,18 +258,22 @@ void DGrabView::mouseMoveEvent(QMouseEvent* event)
 		if (dAbs(selectionRect.left() - event->pos().x()) < DRAG_SPACE)
 		{
 			choosedBorder_ |= dragLeft;
+			maskItem_->setBorderBright(MaskItem::Left, true);
 		}
 		else if (dAbs(selectionRect.right() - event->pos().x()) < DRAG_SPACE)
 		{
 			choosedBorder_ |= dragRight;
+			maskItem_->setBorderBright(MaskItem::Right, true);
 		}
 		if (dAbs(selectionRect.top() - event->pos().y()) < DRAG_SPACE)
 		{
 			choosedBorder_ |= dragTop;
+			maskItem_->setBorderBright(MaskItem::Top, true);
 		}
 		else if (dAbs(selectionRect.bottom() - event->pos().y()) < DRAG_SPACE)
 		{
 			choosedBorder_ |= dragBottom;
+			maskItem_->setBorderBright(MaskItem::Bottom, true);
 		}
 
 		switch (choosedBorder_)
@@ -280,6 +297,7 @@ void DGrabView::mouseMoveEvent(QMouseEvent* event)
 		default:
 			if (selectionRect.contains(event->pos()))
 				setCursor(Qt::OpenHandCursor);
+			maskItem_->removeBorderBright();
 		}
 		break;
 	}
@@ -368,6 +386,7 @@ void DGrabView::clearItems()
 {
 	scene()->clear();
 	imgItem_ = nullptr;
+	maskItem_ = nullptr;
 	itemList_.clear();
 	removedList_.clear();
 	//for (auto item : itemList_)

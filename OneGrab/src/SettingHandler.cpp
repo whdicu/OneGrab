@@ -91,6 +91,7 @@ void SettingHandler::readAll()
 	settingStruct.TextLineWidth = (LineWidth)obj["TextLineWidth"].toInt(2);
 	settingStruct.UseDefaultSavePath = obj["UseDefaultSavePath"].toBool(false);
 	settingStruct.DefaultSavePath = obj["DefaultSavePath"].toString();
+	settingStruct.BrightBorder = obj["BrightBorder"].toBool(true);
 	setSettingStruct(std::move(settingStruct));
 }
 

@@ -3,12 +3,17 @@
 #include <QGraphicsSceneEvent>
 #include <QPainter>
 #include <QRegion>
+#include "SettingHandler.h"
+
+
+const static int BORDER_SIZE = 3;
 
 
 MaskItem::MaskItem(const QRect& rect, QGraphicsItem* parent /*= nullptr*/)
 	: QGraphicsItem(parent)
 	, fullRect_(rect)
 	, selectionRect_(0, 0, 0, 0)
+	, border_(None)
 {
 	setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
@@ -16,6 +21,23 @@ MaskItem::MaskItem(const QRect& rect, QGraphicsItem* parent /*= nullptr*/)
 void MaskItem::setSelectionRect(const QRect& rect)
 {
 	selectionRect_ = rect.normalized();
+}
+
+void MaskItem::setBorderBright(Border border, bool bright)
+{
+	if (bright)
+		border_ |= border;
+	else
+		border_ &= ~border;
+	update();
+}
+
+void MaskItem::removeBorderBright()
+{
+	if (border_ == None)
+		return;
+	border_ = None;
+	update();
 }
 
 void MaskItem::moveSelectionRect(const QPoint& dPos)
@@ -90,6 +112,7 @@ bool MaskItem::moveSelectionRectBottom(int dY)
 void MaskItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
 {
 	painter->setPen(Qt::NoPen);
+	painter->setBrush(Qt::NoBrush);
 
 	// 绘制半透明的黑色矩形
 	QRegion region(fullRect_);
@@ -98,4 +121,44 @@ void MaskItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, 
 	painter->setClipRegion(region);
 	painter->setBrush(QColor(0, 0, 0, 192));
 	painter->drawRect(fullRect_);
+
+	if (SETTING_HANDLER->getBrightBorder())
+	{
+		painter->setBrush(SETTING_HANDLER->getMainColor());
+		QRect borderRect = QRect(selectionRect_.left() - BORDER_SIZE, selectionRect_.top() - BORDER_SIZE
+			, selectionRect_.width() + BORDER_SIZE * 2, selectionRect_.height() + BORDER_SIZE * 2);
+
+		if (Left & border_)
+		{
+			QPoint p1 = selectionRect_.topLeft();
+			QPoint p2 = selectionRect_.bottomLeft();
+			QPoint p3 = borderRect.bottomLeft();
+			QPoint p4 = borderRect.topLeft();
+			painter->drawPolygon(QPolygon({ p1, p2, p3, p4 }));
+		}
+		if (Top & border_)
+		{
+			QPoint p1 = selectionRect_.topLeft();
+			QPoint p2 = selectionRect_.topRight();
+			QPoint p3 = borderRect.topRight();
+			QPoint p4 = borderRect.topLeft();
+			painter->drawPolygon(QPolygon({ p1, p2, p3, p4 }));
+		}
+		if (Right & border_)
+		{
+			QPoint p1 = selectionRect_.topRight();
+			QPoint p2 = selectionRect_.bottomRight();
+			QPoint p3 = borderRect.bottomRight();
+			QPoint p4 = borderRect.topRight();
+			painter->drawPolygon(QPolygon({ p1, p2, p3, p4 }));
+		}
+		if (Bottom & border_)
+		{
+			QPoint p1 = selectionRect_.bottomLeft();
+			QPoint p2 = selectionRect_.bottomRight();
+			QPoint p3 = borderRect.bottomRight();
+			QPoint p4 = borderRect.bottomLeft();
+			painter->drawPolygon(QPolygon({ p1, p2, p3, p4 }));
+		}
+	}
 }

@@ -402,7 +402,7 @@
            <rect>
             <x>20</x>
             <y>90</y>
-            <width>155</width>
+            <width>421</width>
             <height>30</height>
            </rect>
           </property>
@@ -424,6 +424,19 @@
             <family>Microsoft YaHei UI</family>
             <pointsize>10</pointsize>
            </font>
+          </property>
+         </widget>
+         <widget class="QCheckBox" name="cb_bright_border">
+          <property name="geometry">
+           <rect>
+            <x>20</x>
+            <y>180</y>
+            <width>421</width>
+            <height>30</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>鼠标移动到截图区域边缘时高亮</string>
           </property>
          </widget>
         </widget>

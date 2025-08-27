@@ -34,7 +34,7 @@ struct SettingStruct
 		, ArrowColor(QColor(255, 66, 66)), ArrowLineWidth(Line2)
 		, PenColor(QColor(255, 66, 66)), PenLineWidth(Line2)
 		, TextColor(QColor(255, 66, 66)), TextLineWidth(Line2)
-		, UseDefaultSavePath(false), DefaultSavePath("") {}
+		, UseDefaultSavePath(false), DefaultSavePath(""), BrightBorder(true) {}
 	~SettingStruct() = default;
 
 	QString LastSavePath;
@@ -51,6 +51,7 @@ struct SettingStruct
 	LineWidth TextLineWidth;
 	bool UseDefaultSavePath;
 	QString DefaultSavePath;
+	bool BrightBorder;
 };
 
 
@@ -79,6 +80,7 @@ public:
 	REG_GET_FUNC(TextLineWidth)
 	REG_GET_FUNC(UseDefaultSavePath)
 	REG_GET_FUNC(DefaultSavePath)
+	REG_GET_FUNC(BrightBorder)
 
 private:
     SettingHandler();

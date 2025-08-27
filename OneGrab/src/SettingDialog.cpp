@@ -51,6 +51,11 @@ void SettingDialog::on_cb_use_default_save_path_stateChanged(int state)
 	SETTING_HANDLER->setUseDefaultSavePath(state);
 }
 
+void SettingDialog::on_cb_bright_border_stateChanged(int state)
+{
+	SETTING_HANDLER->setBrightBorder(state);
+}
+
 void SettingDialog::on_btn_base_clicked()
 {
 	ui.stackedWidget->setCurrentIndex(0);
@@ -103,6 +108,7 @@ SettingDialog::SettingDialog(QWidget *parent)
 	ui.edit_default_save_path->setEnabled(stru.UseDefaultSavePath);
 	ui.edit_default_save_path->setText(stru.DefaultSavePath);
 	ui.edit_default_save_path->setEditable(false);
+	ui.cb_bright_border->setChecked(stru.BrightBorder);
 
 	connect(ui.edit_default_save_path, &DLineEdit::sigBtnClicked, this, [this]()
 	{

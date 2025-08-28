@@ -78,6 +78,7 @@ void DGrabView::setDrawingState(int isDrawing)
 QPixmap DGrabView::getSelectionPixmap(QRect& rect)
 {
 	rect = maskItem_->getSelectionRect();
+	rect = viewport()->geometry().intersected(rect);
 	QPixmap fullPixmap(viewport()->size());
 	QPainter painter(&fullPixmap);
 	render(&painter);

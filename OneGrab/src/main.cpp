@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
 		case QSystemTrayIcon::Context:
 			break;
 		case QSystemTrayIcon::DoubleClick:
-			QApplication::quit();
+			//QApplication::quit();
 			break;
 		case QSystemTrayIcon::Trigger:
 			w.doGrab();

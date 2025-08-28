@@ -25,6 +25,12 @@ void MaskItem::setSelectionRect(const QRect& rect)
 
 void MaskItem::setBorderBright(Border border, bool bright)
 {
+	border_ = bright ? border : ~border;
+	update();
+}
+
+void MaskItem::addBorderBright(Border border, bool bright)
+{
 	if (bright)
 		border_ |= border;
 	else

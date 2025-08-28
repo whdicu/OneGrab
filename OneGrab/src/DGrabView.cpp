@@ -255,26 +255,28 @@ void DGrabView::mouseMoveEvent(QMouseEvent* event)
 		if (selectionRect.isEmpty())
 			break;
 
+		unsigned char border = MaskItem::None;
 		if (dAbs(selectionRect.left() - event->pos().x()) < DRAG_SPACE)
 		{
 			choosedBorder_ |= dragLeft;
-			maskItem_->setBorderBright(MaskItem::Left, true);
+			border |= MaskItem::Left;
 		}
 		else if (dAbs(selectionRect.right() - event->pos().x()) < DRAG_SPACE)
 		{
 			choosedBorder_ |= dragRight;
-			maskItem_->setBorderBright(MaskItem::Right, true);
+			border |= MaskItem::Right;
 		}
 		if (dAbs(selectionRect.top() - event->pos().y()) < DRAG_SPACE)
 		{
 			choosedBorder_ |= dragTop;
-			maskItem_->setBorderBright(MaskItem::Top, true);
+			border |= MaskItem::Top;
 		}
 		else if (dAbs(selectionRect.bottom() - event->pos().y()) < DRAG_SPACE)
 		{
 			choosedBorder_ |= dragBottom;
-			maskItem_->setBorderBright(MaskItem::Bottom, true);
+			border |= MaskItem::Bottom;
 		}
+		maskItem_->setBorderBright((MaskItem::Border)border, true);
 
 		switch (choosedBorder_)
 		{

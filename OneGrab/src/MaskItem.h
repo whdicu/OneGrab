@@ -19,6 +19,7 @@ public:
 	QRect getSelectionRect() { return selectionRect_; }
 	void setSelectionRect(const QRect& rect);
 	void setBorderBright(Border border, bool bright);
+	void addBorderBright(Border border, bool bright);
 	void removeBorderBright();
 	void moveSelectionRect(const QPoint& dPos);
 	bool moveSelectionRectLeft(int dX);

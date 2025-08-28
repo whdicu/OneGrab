@@ -137,32 +137,32 @@ void MaskItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, 
 		if (Left & border_)
 		{
 			QPoint p1 = selectionRect_.topLeft();
-			QPoint p2 = selectionRect_.bottomLeft();
-			QPoint p3 = borderRect.bottomLeft();
+			QPoint p2 = selectionRect_.bottomLeft() + QPoint(0, 1);
+			QPoint p3 = borderRect.bottomLeft() + QPoint(0, 1);
 			QPoint p4 = borderRect.topLeft();
 			painter->drawPolygon(QPolygon({ p1, p2, p3, p4 }));
 		}
 		if (Top & border_)
 		{
 			QPoint p1 = selectionRect_.topLeft();
-			QPoint p2 = selectionRect_.topRight();
-			QPoint p3 = borderRect.topRight();
+			QPoint p2 = selectionRect_.topRight() + QPoint(1, 0);
+			QPoint p3 = borderRect.topRight() + QPoint(1, 0);
 			QPoint p4 = borderRect.topLeft();
 			painter->drawPolygon(QPolygon({ p1, p2, p3, p4 }));
 		}
 		if (Right & border_)
 		{
 			QPoint p1 = selectionRect_.topRight() + QPoint(1, 0);
-			QPoint p2 = selectionRect_.bottomRight() + QPoint(1, 0);
-			QPoint p3 = borderRect.bottomRight() + QPoint(1, 0);
+			QPoint p2 = selectionRect_.bottomRight() + QPoint(1, 1);
+			QPoint p3 = borderRect.bottomRight() + QPoint(1, 1);
 			QPoint p4 = borderRect.topRight() + QPoint(1, 0);
 			painter->drawPolygon(QPolygon({ p1, p2, p3, p4 }));
 		}
 		if (Bottom & border_)
 		{
 			QPoint p1 = selectionRect_.bottomLeft() + QPoint(0, 1);
-			QPoint p2 = selectionRect_.bottomRight() + QPoint(0, 1);
-			QPoint p3 = borderRect.bottomRight() + QPoint(0, 1);
+			QPoint p2 = selectionRect_.bottomRight() + QPoint(1, 1);
+			QPoint p3 = borderRect.bottomRight() + QPoint(1, 1);
 			QPoint p4 = borderRect.bottomLeft() + QPoint(0, 1);
 			painter->drawPolygon(QPolygon({ p1, p2, p3, p4 }));
 		}

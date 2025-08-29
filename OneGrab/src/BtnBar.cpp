@@ -288,3 +288,8 @@ void BtnBar::setLineWidth(LineWidth lineWidth)
 		break;
 	}
 }
+
+void BtnBar::enterEvent(QEvent* event)
+{
+	emit sigMouseEnter();
+}

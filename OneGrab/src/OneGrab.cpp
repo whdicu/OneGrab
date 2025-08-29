@@ -38,6 +38,7 @@ OneGrab::OneGrab(QWidget *parent)
 	connect(btnBar_, &BtnBar::sigFixed, this, &OneGrab::slotFixed);
 	connect(btnBar_, &BtnBar::sigSave, this, &OneGrab::slotSave);
 	connect(btnBar_, &BtnBar::sigCopy, this, &OneGrab::slotCopy);
+	connect(btnBar_, &BtnBar::sigMouseEnter, ui.view, &DGrabView::removeBorderBright);
 	connect(mouseWindow_, &MouseWindow::sigNeedRefresh, this, &OneGrab::slotRefreshPixelInfo);
 	connect(mouseWindow_, &MouseWindow::sigMousePress, this, &OneGrab::slotMouseEventInWindow);
 	connect(mouseWindow_, &MouseWindow::sigMouseMove, this, &OneGrab::slotMouseEventInWindow);

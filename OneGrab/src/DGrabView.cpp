@@ -97,6 +97,11 @@ void DGrabView::deleteHoverItem()
 	}
 }
 
+void DGrabView::removeBorderBright()
+{
+	maskItem_->removeBorderBright();
+}
+
 void DGrabView::wheelEvent(QWheelEvent* event)
 {
 	QGraphicsView::wheelEvent(event);

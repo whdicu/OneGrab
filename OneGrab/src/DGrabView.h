@@ -35,12 +35,13 @@ public:
 	virtual ~DGrabView() = default;
 
 	QGraphicsPixmapItem* setImg(const QPixmap& img);
-	QGraphicsPixmapItem* imgItem() { return imgItem_; }
+	inline QGraphicsPixmapItem* imgItem() { return imgItem_; }
 	void onFinishGrab();
 	void zItem(bool shift = false);
 	void setDrawingState(int isDrawing);
 	QPixmap getSelectionPixmap(QRect& rect);
 	void deleteHoverItem();
+	void removeBorderBright();
 
 	virtual void wheelEvent(QWheelEvent* event);
 	virtual void mousePressEvent(QMouseEvent* event);

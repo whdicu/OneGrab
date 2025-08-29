@@ -21,6 +21,7 @@ signals:
 	void sigFixed();
 	void sigSave();
 	void sigCopy();
+	void sigMouseEnter();
 
 private slots:
 	void on_btn_rect_clicked();
@@ -44,6 +45,7 @@ private:
 	void refreshUI();
 	void refreshLineBtn(LineWidth lineWidth);
 	void setLineWidth(LineWidth lineWidth);
+	void enterEvent(QEvent* event) override;
 
 	Ui::BtnBar ui;
 	int isDrawing_;  // 0没画 1在画矩形 2在画箭头 3随便画 4画文字

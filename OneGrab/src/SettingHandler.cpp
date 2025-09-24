@@ -65,6 +65,8 @@ void SettingHandler::writeAll()
 	wholeObject.insert("TextLineWidth", settingStruct.TextLineWidth);
 	wholeObject.insert("UseDefaultSavePath", settingStruct.UseDefaultSavePath);
 	wholeObject.insert("DefaultSavePath", settingStruct.DefaultSavePath);
+	wholeObject.insert("BrightBorder", settingStruct.BrightBorder);
+	wholeObject.insert("Copy2File", settingStruct.Copy2File);
 	HDQt::writeJson(strFile, wholeObject);
 }
 
@@ -92,6 +94,7 @@ void SettingHandler::readAll()
 	settingStruct.UseDefaultSavePath = obj["UseDefaultSavePath"].toBool(false);
 	settingStruct.DefaultSavePath = obj["DefaultSavePath"].toString();
 	settingStruct.BrightBorder = obj["BrightBorder"].toBool(true);
+	settingStruct.Copy2File = obj["Copy2File"].toBool(true);
 	setSettingStruct(std::move(settingStruct));
 }
 

@@ -13,8 +13,11 @@
 template <class T> \
 inline void set##VALUE##(const T& v) \
 { \
-	QWriteLocker locker(&structLock_); \
-	settingStruct_.##VALUE## = v; \
+	{ \
+		QWriteLocker locker(&structLock_); \
+		settingStruct_.##VALUE## = v; \
+	} \
+	syncToFile(); \
 }
 
 
@@ -52,6 +55,7 @@ struct SettingStruct
 	bool UseDefaultSavePath;
 	QString DefaultSavePath;
 	bool BrightBorder;
+	bool Copy2File;
 };
 
 
@@ -81,6 +85,7 @@ public:
 	REG_GET_FUNC(UseDefaultSavePath)
 	REG_GET_FUNC(DefaultSavePath)
 	REG_GET_FUNC(BrightBorder)
+	REG_GET_FUNC(Copy2File)
 
 private:
     SettingHandler();

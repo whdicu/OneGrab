@@ -345,7 +345,7 @@ QPushButton:hover
        </size>
       </property>
       <property name="toolTip">
-       <string>关闭 CTRL + Q</string>
+       <string>关闭 Q</string>
       </property>
       <property name="text">
        <string/>
@@ -386,7 +386,7 @@ QPushButton:hover
        </size>
       </property>
       <property name="toolTip">
-       <string>置顶 CTRL + T</string>
+       <string>置顶 T</string>
       </property>
       <property name="text">
        <string/>
@@ -427,7 +427,7 @@ QPushButton:hover
        </size>
       </property>
       <property name="toolTip">
-       <string>保存 CTRL + S</string>
+       <string>保存 S</string>
       </property>
       <property name="text">
        <string/>
@@ -468,7 +468,7 @@ QPushButton:hover
        </size>
       </property>
       <property name="toolTip">
-       <string>复制 CTRL + C</string>
+       <string>复制 C</string>
       </property>
       <property name="text">
        <string/>

@@ -9,6 +9,7 @@
 #include <QDebug>
 #include <QFileDialog>
 #include <QKeyEvent>
+#include <QMimeData>
 #include <QPainter>
 #include <QScreen>
 #include "SettingDialog.h"
@@ -209,8 +210,34 @@ void OneGrab::slotCopy()
 {
 	QRect uselessRect;
 	QPixmap croppedPixmap = ui.view->getSelectionPixmap(uselessRect);
-	QClipboard* clipboard = QApplication::clipboard();
-	clipboard->setPixmap(croppedPixmap);
+	if (SETTING_HANDLER->getCopy2File())
+	{
+		QString timestamp = QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss");
+		QString strFile = QCoreApplication::applicationDirPath();
+		strFile += QString("/temp/OneGrab_%1.png").arg(timestamp);
+
+		QFileInfo fileInfo(strFile);
+		QDir().mkpath(fileInfo.absolutePath());
+
+		qint64 i1 = QDateTime::currentMSecsSinceEpoch();
+		bool ret = croppedPixmap.save(strFile);
+		qint64 i2 = QDateTime::currentMSecsSinceEpoch();
+		qDebug() << __FUNCTION__ << "save file:" << strFile
+			<< "used time:" << (i2 - i1);
+
+		QMimeData* mimeData = new QMimeData;
+		QList<QUrl> urls;
+		urls << QUrl::fromLocalFile(strFile);
+		mimeData->setUrls(urls);
+		QClipboard* clipboard = QApplication::clipboard();
+		clipboard->setMimeData(mimeData);
+	}
+	else
+	{
+		QClipboard* clipboard = QApplication::clipboard();
+		clipboard->setPixmap(croppedPixmap);
+	}
+	
 	finishGrab();
 }
 

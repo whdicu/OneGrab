@@ -102,6 +102,12 @@
        <height>40</height>
       </size>
      </property>
+     <property name="font">
+      <font>
+       <family>Microsoft YaHei UI</family>
+       <pointsize>9</pointsize>
+      </font>
+     </property>
      <layout class="QHBoxLayout" name="horizontalLayout_2">
       <property name="spacing">
        <number>7</number>
@@ -120,6 +126,12 @@
       </property>
       <item>
        <spacer name="horizontalSpacer">
+        <property name="font">
+         <font>
+          <family>Microsoft YaHei UI</family>
+          <pointsize>9</pointsize>
+         </font>
+        </property>
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
@@ -145,6 +157,12 @@
           <height>26</height>
          </size>
         </property>
+        <property name="font">
+         <font>
+          <family>Microsoft YaHei UI</family>
+          <pointsize>9</pointsize>
+         </font>
+        </property>
         <property name="text">
          <string/>
         </property>
@@ -158,6 +176,12 @@
    </item>
    <item>
     <widget class="QWidget" name="widget_bottom" native="true">
+     <property name="font">
+      <font>
+       <family>Microsoft YaHei UI</family>
+       <pointsize>9</pointsize>
+      </font>
+     </property>
      <layout class="QHBoxLayout" name="horizontalLayout">
       <property name="spacing">
        <number>10</number>
@@ -187,6 +211,12 @@
           <width>160</width>
           <height>16777215</height>
          </size>
+        </property>
+        <property name="font">
+         <font>
+          <family>Microsoft YaHei UI</family>
+          <pointsize>9</pointsize>
+         </font>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_2">
          <property name="spacing">
@@ -218,6 +248,12 @@
              <height>40</height>
             </size>
            </property>
+           <property name="font">
+            <font>
+             <family>Microsoft YaHei UI</family>
+             <pointsize>9</pointsize>
+            </font>
+           </property>
            <property name="cursor">
             <cursorShape>PointingHandCursor</cursorShape>
            </property>
@@ -240,6 +276,12 @@
              <height>40</height>
             </size>
            </property>
+           <property name="font">
+            <font>
+             <family>Microsoft YaHei UI</family>
+             <pointsize>9</pointsize>
+            </font>
+           </property>
            <property name="cursor">
             <cursorShape>PointingHandCursor</cursorShape>
            </property>
@@ -250,6 +292,12 @@
          </item>
          <item>
           <spacer name="verticalSpacer">
+           <property name="font">
+            <font>
+             <family>Microsoft YaHei UI</family>
+             <pointsize>9</pointsize>
+            </font>
+           </property>
            <property name="orientation">
             <enum>Qt::Vertical</enum>
            </property>
@@ -275,6 +323,12 @@
              <height>40</height>
             </size>
            </property>
+           <property name="font">
+            <font>
+             <family>Microsoft YaHei UI</family>
+             <pointsize>9</pointsize>
+            </font>
+           </property>
            <property name="cursor">
             <cursorShape>PointingHandCursor</cursorShape>
            </property>
@@ -288,6 +342,12 @@
       </item>
       <item>
        <widget class="QStackedWidget" name="stackedWidget">
+        <property name="font">
+         <font>
+          <family>Microsoft YaHei UI</family>
+          <pointsize>9</pointsize>
+         </font>
+        </property>
         <property name="currentIndex">
          <number>0</number>
         </property>
@@ -300,6 +360,12 @@
             <width>60</width>
             <height>30</height>
            </rect>
+          </property>
+          <property name="font">
+           <font>
+            <family>Microsoft YaHei UI</family>
+            <pointsize>9</pointsize>
+           </font>
           </property>
           <property name="cursor">
            <cursorShape>PointingHandCursor</cursorShape>
@@ -320,6 +386,12 @@
             <height>30</height>
            </rect>
           </property>
+          <property name="font">
+           <font>
+            <family>Microsoft YaHei UI</family>
+            <pointsize>9</pointsize>
+           </font>
+          </property>
           <property name="text">
            <string>开机启动OneGrab</string>
           </property>
@@ -336,6 +408,12 @@
             <height>30</height>
            </rect>
           </property>
+          <property name="font">
+           <font>
+            <family>Microsoft YaHei UI</family>
+            <pointsize>9</pointsize>
+           </font>
+          </property>
           <property name="maximum">
            <number>30</number>
           </property>
@@ -349,9 +427,21 @@
             <height>31</height>
            </rect>
           </property>
+          <property name="font">
+           <font>
+            <family>Microsoft YaHei UI</family>
+            <pointsize>9</pointsize>
+           </font>
+          </property>
           <layout class="QHBoxLayout" name="horizontalLayout_5">
            <item>
             <widget class="QLabel" name="label_5">
+             <property name="font">
+              <font>
+               <family>Microsoft YaHei UI</family>
+               <pointsize>9</pointsize>
+              </font>
+             </property>
              <property name="text">
               <string>主题颜色</string>
              </property>
@@ -371,6 +461,12 @@
                <height>24</height>
               </size>
              </property>
+             <property name="font">
+              <font>
+               <family>Microsoft YaHei UI</family>
+               <pointsize>9</pointsize>
+              </font>
+             </property>
              <property name="cursor">
               <cursorShape>PointingHandCursor</cursorShape>
              </property>
@@ -384,6 +480,12 @@
            </item>
            <item>
             <spacer name="horizontalSpacer_2">
+             <property name="font">
+              <font>
+               <family>Microsoft YaHei UI</family>
+               <pointsize>9</pointsize>
+              </font>
+             </property>
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
              </property>
@@ -406,6 +508,12 @@
             <height>30</height>
            </rect>
           </property>
+          <property name="font">
+           <font>
+            <family>Microsoft YaHei UI</family>
+            <pointsize>9</pointsize>
+           </font>
+          </property>
           <property name="text">
            <string>保存图片时使用默认路径</string>
           </property>
@@ -422,7 +530,7 @@
           <property name="font">
            <font>
             <family>Microsoft YaHei UI</family>
-            <pointsize>10</pointsize>
+            <pointsize>9</pointsize>
            </font>
           </property>
          </widget>
@@ -430,13 +538,38 @@
           <property name="geometry">
            <rect>
             <x>20</x>
-            <y>180</y>
+            <y>170</y>
             <width>421</width>
             <height>30</height>
            </rect>
           </property>
+          <property name="font">
+           <font>
+            <family>Microsoft YaHei UI</family>
+            <pointsize>9</pointsize>
+           </font>
+          </property>
           <property name="text">
            <string>鼠标移动到截图区域边缘时高亮</string>
+          </property>
+         </widget>
+         <widget class="QCheckBox" name="cb_copy2file">
+          <property name="geometry">
+           <rect>
+            <x>20</x>
+            <y>210</y>
+            <width>421</width>
+            <height>30</height>
+           </rect>
+          </property>
+          <property name="font">
+           <font>
+            <family>Microsoft YaHei UI</family>
+            <pointsize>9</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>启用拷贝图片到文件功能</string>
           </property>
          </widget>
         </widget>

@@ -104,6 +104,19 @@ void DGrabView::removeBorderBright()
 
 void DGrabView::wheelEvent(QWheelEvent* event)
 {
+	int scaleNum = SETTING_HANDLER->getMouseScaleNum();
+	if (event->angleDelta().y() > 0)  // 上滚
+	{
+		if (scaleNum < 20)
+			SETTING_HANDLER->setMouseScaleNum(scaleNum + 1);
+	}
+	else  // 下滚
+	{
+		if (scaleNum > 1)
+			SETTING_HANDLER->setMouseScaleNum(scaleNum - 1);
+	}
+	SETTING_HANDLER->syncToFile();
+	emit sigPosChanged(event->pos());
 	QGraphicsView::wheelEvent(event);
 }
 
@@ -262,26 +275,34 @@ void DGrabView::mouseMoveEvent(QMouseEvent* event)
 			break;
 
 		unsigned char border = MaskItem::None;
-		if (dAbs(selectionRect.left() - event->pos().x()) < DRAG_SPACE)
+		if (event->pos().y() > selectionRect.top() && event->pos().y() < selectionRect.bottom())
 		{
-			choosedBorder_ |= dragLeft;
-			border |= MaskItem::Left;
+			if (dAbs(selectionRect.left() - event->pos().x()) < DRAG_SPACE)
+			{
+				choosedBorder_ |= dragLeft;
+				border |= MaskItem::Left;
+			}
+			else if (dAbs(selectionRect.right() - event->pos().x()) < DRAG_SPACE)
+			{
+				choosedBorder_ |= dragRight;
+				border |= MaskItem::Right;
+			}
 		}
-		else if (dAbs(selectionRect.right() - event->pos().x()) < DRAG_SPACE)
+		
+		if (event->pos().x() > selectionRect.left() && event->pos().x() < selectionRect.right())
 		{
-			choosedBorder_ |= dragRight;
-			border |= MaskItem::Right;
+			if (dAbs(selectionRect.top() - event->pos().y()) < DRAG_SPACE)
+			{
+				choosedBorder_ |= dragTop;
+				border |= MaskItem::Top;
+			}
+			else if (dAbs(selectionRect.bottom() - event->pos().y()) < DRAG_SPACE)
+			{
+				choosedBorder_ |= dragBottom;
+				border |= MaskItem::Bottom;
+			}
 		}
-		if (dAbs(selectionRect.top() - event->pos().y()) < DRAG_SPACE)
-		{
-			choosedBorder_ |= dragTop;
-			border |= MaskItem::Top;
-		}
-		else if (dAbs(selectionRect.bottom() - event->pos().y()) < DRAG_SPACE)
-		{
-			choosedBorder_ |= dragBottom;
-			border |= MaskItem::Bottom;
-		}
+		
 		maskItem_->setBorderBright((MaskItem::Border)border, true);
 
 		switch (choosedBorder_)

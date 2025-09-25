@@ -265,8 +265,9 @@ void OneGrab::slotSelectionChanged(const QRectF& rectf)
 
 void OneGrab::slotRefreshPixelInfo(const QPoint& mousePos)
 {
+	int scaleNum = SETTING_HANDLER->getMouseScaleNum();
 	QColor color = getPixelColor(mousePos);
-	QSize windowSize = mouseWindow_->getWindowSize() / 8;  // 8倍放大
+	QSize windowSize = mouseWindow_->getWindowSize() / scaleNum;  // scaleNum 倍放大
 	QRect targetRect = QRect(mousePos
 		- QPoint(windowSize.width() / 2, windowSize.height() / 2), windowSize);
 
@@ -294,7 +295,7 @@ void OneGrab::slotRefreshPixelInfo(const QPoint& mousePos)
 	painter.setPen(QPen(mainColor, 1));
 	painter.drawRect(QRect(windowSize.width() / 2 - 1, windowSize.height() / 2 - 1, 2, 2));
 	
-	mouseWindow_->refreshInfo(mousePos, color, windowPixmap.scaled(windowSize * 8));
+	mouseWindow_->refreshInfo(mousePos, color, windowPixmap.scaled(windowSize * scaleNum));
 }
 
 void OneGrab::slotMouseEventInWindow(QMouseEvent* event)

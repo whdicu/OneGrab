@@ -9,6 +9,7 @@ class SettingDialog : public QWidget
 
 public:
 	static SettingDialog* getInstance();
+	void show();
 
 signals:
 	void sigRefreshSetting();
@@ -19,6 +20,7 @@ private slots:
 	void on_cb_use_default_save_path_stateChanged(int state);
 	void on_cb_bright_border_stateChanged(int state);
 	void on_cb_copy2file_stateChanged(int state);
+	void on_sb_scale_num_valueChanged(int value);
 	void on_btn_base_clicked();
 	void on_btn_about_clicked();
 	void on_btn_color_clicked();
@@ -30,6 +32,7 @@ private:
 	void mouseMoveEvent(QMouseEvent* event);
 	void mouseReleaseEvent(QMouseEvent* event);
 
+	void refreshByStruct();
 	QString convertDateFormat(const QString& strDate);
 
 	Ui::SettingDialog ui;

@@ -37,7 +37,8 @@ struct SettingStruct
 		, ArrowColor(QColor(255, 66, 66)), ArrowLineWidth(Line2)
 		, PenColor(QColor(255, 66, 66)), PenLineWidth(Line2)
 		, TextColor(QColor(255, 66, 66)), TextLineWidth(Line2)
-		, UseDefaultSavePath(false), DefaultSavePath(""), BrightBorder(true) {}
+		, UseDefaultSavePath(false), DefaultSavePath(""), BrightBorder(true)
+		, Copy2File(true), MouseScaleNum(8) {}
 	~SettingStruct() = default;
 
 	QString LastSavePath;
@@ -56,6 +57,7 @@ struct SettingStruct
 	QString DefaultSavePath;
 	bool BrightBorder;
 	bool Copy2File;
+	int MouseScaleNum;
 };
 
 
@@ -86,6 +88,7 @@ public:
 	REG_GET_FUNC(DefaultSavePath)
 	REG_GET_FUNC(BrightBorder)
 	REG_GET_FUNC(Copy2File)
+	REG_GET_FUNC(MouseScaleNum)
 
 private:
     SettingHandler();

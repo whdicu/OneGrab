@@ -91,7 +91,7 @@ void MouseWindow::mouseMoveEvent(QMouseEvent* event)
 	else if (toPos.y() > fullPixmapRect_.bottom() - height())
 		toPos.setY(fullPixmapRect_.bottom() - height());
 
-	move(toPos);
+	QWidget::move(toPos);
 	emit sigMouseMove(event);
 }
 

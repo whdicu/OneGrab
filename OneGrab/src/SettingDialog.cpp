@@ -20,6 +20,12 @@ SettingDialog* SettingDialog::getInstance()
 	return setting_dialog;
 }
 
+void SettingDialog::show()
+{
+	refreshByStruct();
+	QWidget::show();
+}
+
 void SettingDialog::on_btn_close_clicked()
 {
 	hide();
@@ -59,6 +65,11 @@ void SettingDialog::on_cb_bright_border_stateChanged(int state)
 void SettingDialog::on_cb_copy2file_stateChanged(int state)
 {
 	SETTING_HANDLER->setCopy2File(state);
+}
+
+void SettingDialog::on_sb_scale_num_valueChanged(int value)
+{
+	SETTING_HANDLER->setMouseScaleNum(value);
 }
 
 void SettingDialog::on_btn_base_clicked()
@@ -101,20 +112,7 @@ SettingDialog::SettingDialog(QWidget *parent)
 	ui.stackedWidget->setCurrentIndex(0);
 	ui.label_version->setText(tr("软件版本：V%1").arg(convertDateFormat(__DATE__)));
 
-	QString applicationName = QApplication::applicationName();  // 获取应用名称
-	QSettings settings("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
-		QSettings::NativeFormat);
-	ui.cb_start_by_pc->setChecked(settings.allKeys().contains(applicationName));
-
-	SettingStruct stru = SETTING_HANDLER->getSettingStruct();
-	ui.btn_color->setStyleSheet(QString("border-radius: 4px; background-color: rgb(%1, %2, %3);")
-		.arg(stru.MainColor.red()).arg(stru.MainColor.green()).arg(stru.MainColor.blue()));
-	ui.cb_use_default_save_path->setChecked(stru.UseDefaultSavePath);
-	ui.edit_default_save_path->setEnabled(stru.UseDefaultSavePath);
-	ui.edit_default_save_path->setText(stru.DefaultSavePath);
-	ui.edit_default_save_path->setEditable(false);
-	ui.cb_bright_border->setChecked(stru.BrightBorder);
-	ui.cb_copy2file->setChecked(stru.Copy2File);
+	refreshByStruct();
 
 	connect(ui.edit_default_save_path, &DLineEdit::sigBtnClicked, this, [this]()
 	{
@@ -159,6 +157,25 @@ void SettingDialog::mouseMoveEvent(QMouseEvent* event)
 void SettingDialog::mouseReleaseEvent(QMouseEvent* event)
 {
 	isMoveWindow_ = false;
+}
+
+void SettingDialog::refreshByStruct()
+{
+	QString applicationName = QApplication::applicationName();  // 获取应用名称
+	QSettings settings("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
+		QSettings::NativeFormat);
+	ui.cb_start_by_pc->setChecked(settings.allKeys().contains(applicationName));
+
+	SettingStruct stru = SETTING_HANDLER->getSettingStruct();
+	ui.btn_color->setStyleSheet(QString("border-radius: 4px; background-color: rgb(%1, %2, %3);")
+		.arg(stru.MainColor.red()).arg(stru.MainColor.green()).arg(stru.MainColor.blue()));
+	ui.cb_use_default_save_path->setChecked(stru.UseDefaultSavePath);
+	ui.edit_default_save_path->setEnabled(stru.UseDefaultSavePath);
+	ui.edit_default_save_path->setText(stru.DefaultSavePath);
+	ui.edit_default_save_path->setEditable(false);
+	ui.cb_bright_border->setChecked(stru.BrightBorder);
+	ui.cb_copy2file->setChecked(stru.Copy2File);
+	ui.sb_scale_num->setValue(stru.MouseScaleNum);
 }
 
 QString SettingDialog::convertDateFormat(const QString& strDate)

@@ -78,7 +78,7 @@ void SettingHandler::readAll()
 	strFile += filePath;
 
 	QJsonObject obj;
-	HDQt::readJson(filePath, obj);
+	HDQt::readJson(strFile, obj);
 	SettingStruct settingStruct;
 	settingStruct.LastSavePath = obj["LastSavePath"].toString();
 	settingStruct.MainColor = DStyle::int2Color(obj["MainColor"].toInt(16737894));

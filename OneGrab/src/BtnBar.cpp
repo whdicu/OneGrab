@@ -287,6 +287,7 @@ void BtnBar::setLineWidth(LineWidth lineWidth)
 		SETTING_HANDLER->setTextLineWidth(lineWidth);
 		break;
 	}
+	SETTING_HANDLER->syncToFile();
 }
 
 void BtnBar::enterEvent(QEvent* event)

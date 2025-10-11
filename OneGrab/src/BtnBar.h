@@ -22,6 +22,7 @@ signals:
 	void sigSave();
 	void sigCopy();
 	void sigMouseEnter();
+	void sigSetIgnoreKey(bool ignore);
 
 private slots:
 	void on_btn_rect_clicked();

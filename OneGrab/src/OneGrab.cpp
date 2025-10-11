@@ -40,6 +40,10 @@ OneGrab::OneGrab(QWidget *parent)
 	connect(btnBar_, &BtnBar::sigSave, this, &OneGrab::slotSave);
 	connect(btnBar_, &BtnBar::sigCopy, this, &OneGrab::slotCopy);
 	connect(btnBar_, &BtnBar::sigMouseEnter, ui.view, &DGrabView::removeBorderBright);
+	connect(btnBar_, &BtnBar::sigSetIgnoreKey, ui.view, [this](bool ignore)
+	{
+		ignoreKeyPress_ = ignore;
+	}, Qt::DirectConnection);
 	connect(mouseWindow_, &MouseWindow::sigNeedRefresh, this, &OneGrab::slotRefreshPixelInfo);
 	connect(mouseWindow_, &MouseWindow::sigMousePress, this, &OneGrab::slotMouseEventInWindow);
 	connect(mouseWindow_, &MouseWindow::sigMouseMove, this, &OneGrab::slotMouseEventInWindow);
@@ -114,7 +118,10 @@ void OneGrab::slotKeyPressed(const KeyInfo& info)
 		// 有顶层dialog时，按esc只是隐藏顶层dialog
 		// 不然整个程序会退出，因为dialog推出后已经做一遍finishGrab了
 		if (!isHidden() && (QApplication::activeModalWidget() == nullptr))
+		{
 			finishGrab();
+			Hook::getInstance()->blockOnce();
+		}
 		break;
 	case 37ul:  // left
 		QCursor::setPos(QCursor::pos() + QPoint(-1, 0));

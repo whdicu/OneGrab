@@ -6,10 +6,10 @@
 #include <QPushButton>
 #include <QSvgRenderer>
 
-const static int BTN_MARGIN = 5;
+const static int BTN_MARGIN = 4;
 const static int BORDER_SIZE = 2;
-const static int MIN_HEIGHT = 30;
-const static QSize ICON_SIZE = QSize(24, 24);
+const static int MIN_HEIGHT = 32;
+const static QSize ICON_SIZE = QSize(20, 20);
 const static QString BTN_SVG_ICON = "<?xml version=\"1.0\" standalone=\"no\"?> \
 	<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\"> \
 	<svg t=\"1693577481969\" class=\"icon\" viewBox=\"0 0 1024 1024\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" p-id=\"3186\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" width=\"200\" height=\"200\"> \
@@ -30,7 +30,7 @@ DLineEdit::DLineEdit(QWidget* parent)
 	btn_->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
 	btn_->setFlat(true);
 	btn_->setCursor(Qt::PointingHandCursor);
-	btn_->setFixedWidth(30);
+	btn_->setFixedWidth(MIN_HEIGHT - BTN_MARGIN * 2);
 	connect(btn_, &QPushButton::clicked, this, &DLineEdit::sigBtnClicked);
 
 	QByteArray svgBytes = BTN_SVG_ICON.toUtf8();
@@ -67,8 +67,8 @@ DLineEdit::DLineEdit(QWidget* parent)
 	setStyleSheet(QString("#dlineedit_box { border: %1px solid #5c5c66; border-radius: 10px; } \
 		#dlineedit_box:disabled { border: %1px solid rgba(92, 92, 102, 0.5); } \
 		QLineEdit { border: none; background-color: transparent; } \
-		QPushButton { background-color: white; border-radius: 5px; } \
-		QPushButton:hover { background-color: rgba(92, 92, 102, 0.5); }").arg(BORDER_SIZE));
+		QPushButton { background-color: white; border-radius: %2px; } \
+		QPushButton:hover { background-color: rgba(92, 92, 102, 0.5); }").arg(BORDER_SIZE).arg(10 - BTN_MARGIN));
 }
 
 DLineEdit::~DLineEdit()

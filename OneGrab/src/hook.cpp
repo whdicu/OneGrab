@@ -63,12 +63,15 @@ void Hook::unInstallHook()
 bool Hook::sendSignal(const KeyInfo& info)
 {
 	emit sendKeyType(info);
-	if (block_)
+	if (blockOnce_)
+	{
+		blockOnce_ = false;
 		return true;
+	}
 }
 
 Hook::Hook()
-	: block_(false)
+	: blockOnce_(false)
 {
 	QThread* thread = new QThread(this);
 	moveToThread(thread);

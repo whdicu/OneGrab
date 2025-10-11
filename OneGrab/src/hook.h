@@ -4,6 +4,8 @@
 #define HOOK_H
 #include <QObject>
 #include "windows.h"
+#include <atomic>
+
 
 struct KeyInfo
 {
@@ -21,7 +23,7 @@ public:
 	void installHook();
 	void unInstallHook();
     bool sendSignal(const KeyInfo& info);
-	void setBlock(bool block) { block_ = block; }
+	void blockOnce() { blockOnce_ = true; }
 
 signals:
 	void sendKeyType(const KeyInfo& info);
@@ -29,7 +31,7 @@ signals:
 private:
 	Hook();
 	~Hook() = default;
-	bool block_;
+	std::atomic<bool> blockOnce_;
 };
 
 #endif // HOOK_H

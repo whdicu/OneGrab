@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
 	trayIcon.show();
 
 	Hook::getInstance()->installHook();
-	QObject::connect(Hook::getInstance(), &Hook::sendKeyType, &w, &OneGrab::slotKeyPressed, Qt::QueuedConnection);
+	QObject::connect(Hook::getInstance(), &Hook::sendKeyType, &w, &OneGrab::slotKeyPressed, Qt::DirectConnection);
 	QObject::connect(&a, &QApplication::aboutToQuit, Hook::getInstance(), &Hook::unInstallHook);
 
     return a.exec();

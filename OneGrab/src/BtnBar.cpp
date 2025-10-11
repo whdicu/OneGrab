@@ -121,9 +121,11 @@ void BtnBar::on_btn_color_clicked()
 	dlg.setStyleSheet("QPushButton { backgorund-color: white; border: 1px solid #5c5c66; border-radius: 4px; padding: 5px 15px; }");
 	dlg.setWindowFlag(Qt::WindowStaysOnTopHint);
 	dlg.setCurrentColor(*c);
-	if (dlg.exec() != QDialog::Accepted)
+	emit sigSetIgnoreKey(true);
+	int ret = dlg.exec();
+	emit sigSetIgnoreKey(false);
+	if (ret != QDialog::Accepted)
 		return;
-
 	*c = dlg.selectedColor();
 	SETTING_HANDLER->setSettingStruct(stru);
 

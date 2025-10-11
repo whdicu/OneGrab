@@ -118,10 +118,7 @@ void OneGrab::slotKeyPressed(const KeyInfo& info)
 		// 有顶层dialog时，按esc只是隐藏顶层dialog
 		// 不然整个程序会退出，因为dialog推出后已经做一遍finishGrab了
 		if (!isHidden() && (QApplication::activeModalWidget() == nullptr))
-		{
 			finishGrab();
-			Hook::getInstance()->blockOnce();
-		}
 		break;
 	case 37ul:  // left
 		QCursor::setPos(QCursor::pos() + QPoint(-1, 0));
@@ -170,6 +167,8 @@ void OneGrab::slotKeyPressed(const KeyInfo& info)
 		mouseWindow_->switchColorStrMode();
 		break;
 	}
+
+	Hook::getInstance()->blockOnce();
 }
 
 void OneGrab::slotFixed()
@@ -225,6 +224,26 @@ void OneGrab::slotCopy()
 
 		QFileInfo fileInfo(strFile);
 		QDir().mkpath(fileInfo.absolutePath());
+
+		// 删除已有的缓存图片
+		QFileInfoList entries = fileInfo.absoluteDir().entryInfoList(QDir::NoDotAndDotDot | QDir::AllEntries);
+		for (const QFileInfo& entry : entries)
+		{
+			QString filePath = entry.absoluteFilePath();
+			if (entry.isDir() && !entry.isSymLink())
+			{
+				// 递归删除子目录
+				QDir subDir(filePath);
+				if (!subDir.removeRecursively())
+					qWarning() << "无法删除子目录:" << filePath;
+			}
+			else
+			{
+				// 删除文件或符号链接
+				if (!QFile::remove(filePath))
+					qWarning() << "无法删除文件:" << filePath;
+			}
+		}
 
 		qint64 i1 = QDateTime::currentMSecsSinceEpoch();
 		bool ret = croppedPixmap.save(strFile);

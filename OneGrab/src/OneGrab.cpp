@@ -17,6 +17,7 @@
 
 
 const static int MARGIN = 5;
+const static int COPY_TEMP_SIZE = 64;  // 复制图片到文件的最大图片保存数量
 
 OneGrab::OneGrab(QWidget *parent)
     : QWidget(parent, Qt::FramelessWindowHint | Qt::Tool | Qt::WindowStaysOnTopHint)
@@ -135,7 +136,7 @@ void OneGrab::slotKeyPressed(const KeyInfo& info)
 	case 46ul:  // delete
 		ui.view->deleteHoverItem();
 		break;
-	case 67ul:  // C
+	case 'C':
 		if (info.ctrlPressed)
 		{
 			QApplication::clipboard()->
@@ -145,19 +146,19 @@ void OneGrab::slotKeyPressed(const KeyInfo& info)
 		else
 			slotCopy();  // 这个函数里已调 finishGrab
 		break;
-	case 81ul:  // Q
+	case 'Q':
 		if (!info.ctrlPressed)
 			finishGrab();
 		break;
-	case 83ul:  // S
+	case 'S':
 		if (!info.ctrlPressed)
 			slotSave();  // 这个函数里已调 finishGrab
 		break;
-	case 84ul:  // T
+	case 'T':
 		if (!info.ctrlPressed)
 			slotFixed();  // 这个函数里已调 finishGrab
 		break;
-	case 90ul:  // Z
+	case 'Z':
 		if (info.ctrlPressed)
 		{
 			ui.view->zItem(info.shiftPressed);
@@ -225,23 +226,31 @@ void OneGrab::slotCopy()
 		QFileInfo fileInfo(strFile);
 		QDir().mkpath(fileInfo.absolutePath());
 
-		// 删除已有的缓存图片
-		QFileInfoList entries = fileInfo.absoluteDir().entryInfoList(QDir::NoDotAndDotDot | QDir::AllEntries);
-		for (const QFileInfo& entry : entries)
+		// 如果图片数量超出了COPY_TEMP_SIZE，删除最老的缓存图片
+		QFileInfoList entries = fileInfo.absoluteDir().entryInfoList(QDir::NoDotAndDotDot | QDir::Files
+			, QDir::Name | QDir::IgnoreCase);
+
+		if (entries.size() > COPY_TEMP_SIZE)
 		{
-			QString filePath = entry.absoluteFilePath();
-			if (entry.isDir() && !entry.isSymLink())
+			for (int i = 0; i < entries.size() - COPY_TEMP_SIZE; ++i)
 			{
-				// 递归删除子目录
-				QDir subDir(filePath);
-				if (!subDir.removeRecursively())
-					qWarning() << "无法删除子目录:" << filePath;
-			}
-			else
-			{
-				// 删除文件或符号链接
-				if (!QFile::remove(filePath))
-					qWarning() << "无法删除文件:" << filePath;
+				const QFileInfo& entry = entries[i];
+				QString filePath = entry.absoluteFilePath();
+
+				// 其实entries里只有文件，没有文件夹
+				if (entry.isDir() && !entry.isSymLink())
+				{
+					// 递归删除子目录
+					QDir subDir(filePath);
+					if (!subDir.removeRecursively())
+						qWarning() << "无法删除子目录:" << filePath;
+				}
+				else
+				{
+					// 删除文件或符号链接
+					if (!QFile::remove(filePath))
+						qWarning() << "无法删除文件:" << filePath;
+				}
 			}
 		}
 

@@ -35,11 +35,11 @@ LRESULT CALLBACK keyProc(int nCode, WPARAM wParam, LPARAM lParam)
 		case 39ul:
 		case 40ul:
 		case 46ul:  // delete
-		case 67ul:  // C
-		case 81ul:  // Q
-		case 83ul:  // S
-		case 84ul:  // T
-		case 90ul:  // Z
+		case 'C':
+		case 'Q':
+		case 'S':
+		case 'T':
+		case 'Z':
 		case 160ul:  // shift
 			if (Hook::getInstance()->sendSignal(info))
 				return true;

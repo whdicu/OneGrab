@@ -19,6 +19,13 @@
 const static int MARGIN = 5;
 const static int COPY_TEMP_SIZE = 64;  // 复制图片到文件的最大图片保存数量
 
+
+inline QString generateImageId()
+{
+	return QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss");
+}
+
+
 OneGrab::OneGrab(QWidget *parent)
     : QWidget(parent, Qt::FramelessWindowHint | Qt::Tool | Qt::WindowStaysOnTopHint)
 	, btnBar_(new BtnBar)
@@ -101,7 +108,10 @@ void OneGrab::slotKeyPressed(const KeyInfo& info)
 		switch (info.key)
 		{
 		case 112ul:  // F1
-			doGrab();
+			if (info.ctrlPressed)
+				slotFixedOldOne();
+			else
+				doGrab();
 			break;
 		}
 		return;
@@ -176,10 +186,30 @@ void OneGrab::slotFixed()
 {
 	QRect croppedRect;
 	QPixmap croppedPixmap = ui.view->getSelectionPixmap(croppedRect);
+
 	LabelIsland* island = new LabelIsland(croppedPixmap, croppedRect.topLeft() + pos());
 	connect(SettingDialog::getInstance(), &SettingDialog::sigRefreshSetting, island, &LabelIsland::onRefreshSetting);
 	island->show();
+	islandBuffer_.enqueue(island);
+	while (islandBuffer_.size() > SETTING_HANDLER->getIslandNum())
+		islandBuffer_.dequeue()->deleteLater();
+
 	finishGrab();
+}
+
+void OneGrab::slotFixedOldOne()
+{
+	// 找到最新的未显示的island
+	LabelIsland* lastUnshowIsland = nullptr;
+	for (auto island : islandBuffer_)
+	{
+		if (island->isHidden())
+			lastUnshowIsland = island;
+	}
+	if (nullptr != lastUnshowIsland)
+	{
+		lastUnshowIsland->show();
+	}
 }
 
 void OneGrab::slotSave()
@@ -188,7 +218,7 @@ void OneGrab::slotSave()
 	QRect uselessRect;
 	QPixmap croppedPixmap = ui.view->getSelectionPixmap(uselessRect);
 	// 保存截图到文件
-	QString timestamp = QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss");
+	QString timestamp = generateImageId();
 	QString filename = QString("OneGrab_%1.png").arg(timestamp);
 
 	SettingStruct settingStruct = SETTING_HANDLER->getSettingStruct();
@@ -219,50 +249,12 @@ void OneGrab::slotCopy()
 	QPixmap croppedPixmap = ui.view->getSelectionPixmap(uselessRect);
 	if (SETTING_HANDLER->getCopy2File())
 	{
-		QString timestamp = QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss");
-		QString strFile = QCoreApplication::applicationDirPath();
-		strFile += QString("/temp/OneGrab_%1.png").arg(timestamp);
-
-		QFileInfo fileInfo(strFile);
-		QDir().mkpath(fileInfo.absolutePath());
-
-		// 如果图片数量超出了COPY_TEMP_SIZE，删除最老的缓存图片
-		QFileInfoList entries = fileInfo.absoluteDir().entryInfoList(QDir::NoDotAndDotDot | QDir::Files
-			, QDir::Name | QDir::IgnoreCase);
-
-		if (entries.size() > COPY_TEMP_SIZE)
-		{
-			for (int i = 0; i < entries.size() - COPY_TEMP_SIZE; ++i)
-			{
-				const QFileInfo& entry = entries[i];
-				QString filePath = entry.absoluteFilePath();
-
-				// 其实entries里只有文件，没有文件夹
-				if (entry.isDir() && !entry.isSymLink())
-				{
-					// 递归删除子目录
-					QDir subDir(filePath);
-					if (!subDir.removeRecursively())
-						qWarning() << "无法删除子目录:" << filePath;
-				}
-				else
-				{
-					// 删除文件或符号链接
-					if (!QFile::remove(filePath))
-						qWarning() << "无法删除文件:" << filePath;
-				}
-			}
-		}
-
-		qint64 i1 = QDateTime::currentMSecsSinceEpoch();
-		bool ret = croppedPixmap.save(strFile);
-		qint64 i2 = QDateTime::currentMSecsSinceEpoch();
-		qDebug() << __FUNCTION__ << "save file:" << strFile
-			<< "used time:" << (i2 - i1);
+		QString timestamp = generateImageId();
+		QString abPath = save2Buffer(timestamp, croppedPixmap);
 
 		QMimeData* mimeData = new QMimeData;
 		QList<QUrl> urls;
-		urls << QUrl::fromLocalFile(strFile);
+		urls << QUrl::fromLocalFile(abPath);
 		mimeData->setUrls(urls);
 		QClipboard* clipboard = QApplication::clipboard();
 		clipboard->setMimeData(mimeData);
@@ -394,6 +386,50 @@ void OneGrab::finishGrab()
 	mouseWindow_->hide();
 	btnBar_->onFinishGrab();
 	hide();
+}
+
+QString OneGrab::save2Buffer(const QString& timestamp, const QPixmap& pixmap)
+{
+	QString strFile = QCoreApplication::applicationDirPath();
+	strFile += QString("/temp/OneGrab_%1.png").arg(timestamp);
+
+	QFileInfo fileInfo(strFile);
+	QDir().mkpath(fileInfo.absolutePath());
+
+	// 如果图片数量超出了COPY_TEMP_SIZE，删除最老的缓存图片
+	QFileInfoList entries = fileInfo.absoluteDir().entryInfoList(QDir::NoDotAndDotDot | QDir::Files
+		, QDir::Name | QDir::IgnoreCase);
+
+	if (entries.size() > COPY_TEMP_SIZE)
+	{
+		for (int i = 0; i < entries.size() - COPY_TEMP_SIZE; ++i)
+		{
+			const QFileInfo& entry = entries[i];
+			QString filePath = entry.absoluteFilePath();
+
+			// 其实entries里只有文件，没有文件夹
+			if (entry.isDir() && !entry.isSymLink())
+			{
+				// 递归删除子目录
+				QDir subDir(filePath);
+				if (!subDir.removeRecursively())
+					qWarning() << "无法删除子目录:" << filePath;
+			}
+			else
+			{
+				// 删除文件或符号链接
+				if (!QFile::remove(filePath))
+					qWarning() << "无法删除文件:" << filePath;
+			}
+		}
+	}
+
+	qint64 i1 = QDateTime::currentMSecsSinceEpoch();
+	bool ret = pixmap.save(strFile);
+	qint64 i2 = QDateTime::currentMSecsSinceEpoch();
+	qDebug() << __FUNCTION__ << "save file:" << strFile
+		<< "used time:" << (i2 - i1);
+	return strFile;
 }
 
 void OneGrab::resizeEvent(QResizeEvent* event)

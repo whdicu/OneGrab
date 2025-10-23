@@ -68,6 +68,7 @@ void SettingHandler::writeAll()
 	wholeObject.insert("BrightBorder", settingStruct.BrightBorder);
 	wholeObject.insert("Copy2File", settingStruct.Copy2File);
 	wholeObject.insert("MouseScaleNum", settingStruct.MouseScaleNum);
+	wholeObject.insert("IslandNum", settingStruct.IslandNum);
 	HDQt::writeJson(strFile, wholeObject);
 }
 
@@ -95,8 +96,9 @@ void SettingHandler::readAll()
 	settingStruct.UseDefaultSavePath = obj["UseDefaultSavePath"].toBool(false);
 	settingStruct.DefaultSavePath = obj["DefaultSavePath"].toString();
 	settingStruct.BrightBorder = obj["BrightBorder"].toBool(true);
-	settingStruct.Copy2File = obj["Copy2File"].toBool(true);
+	settingStruct.Copy2File = obj["Copy2File"].toBool(false);
 	settingStruct.MouseScaleNum = obj["MouseScaleNum"].toInt(8);
+	settingStruct.IslandNum = obj["IslandNum"].toInt(64);
 	setSettingStruct(std::move(settingStruct));
 }
 

@@ -72,9 +72,19 @@ void SettingDialog::on_sb_scale_num_valueChanged(int value)
 	SETTING_HANDLER->setMouseScaleNum(value);
 }
 
+void SettingDialog::on_sb_island_num_valueChanged(int value)
+{
+	SETTING_HANDLER->setIslandNum(value);
+}
+
 void SettingDialog::on_btn_base_clicked()
 {
 	ui.stackedWidget->setCurrentIndex(0);
+}
+
+void SettingDialog::on_btn_advanced_clicked()
+{
+	ui.stackedWidget->setCurrentIndex(1);
 }
 
 void SettingDialog::on_btn_about_clicked()
@@ -106,7 +116,6 @@ SettingDialog::SettingDialog(QWidget *parent)
 	ui.setupUi(this);
 	setAttribute(Qt::WA_TranslucentBackground);
 
-	ui.btn_other->hide();
 	ui.btn_about->hide();
 
 	ui.stackedWidget->setCurrentIndex(0);
@@ -176,6 +185,7 @@ void SettingDialog::refreshByStruct()
 	ui.cb_bright_border->setChecked(stru.BrightBorder);
 	ui.cb_copy2file->setChecked(stru.Copy2File);
 	ui.sb_scale_num->setValue(stru.MouseScaleNum);
+	ui.sb_island_num->setValue(stru.IslandNum);
 }
 
 QString SettingDialog::convertDateFormat(const QString& strDate)

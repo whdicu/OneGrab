@@ -1,11 +1,14 @@
 ﻿#pragma once
+#include "HDBase/DQueue.hpp"
 #include "hook.h"
-#include <QtWidgets/QWidget>
+#include <QSet>
+#include <QWidget>
 #include "ui_OneGrab.h"
 #include <windows.h>
 
-class MouseWindow;
 class BtnBar;
+class LabelIsland;
+class MouseWindow;
 
 class OneGrab : public QWidget
 {
@@ -20,6 +23,7 @@ public slots:
 
 private slots:
 	void slotFixed();
+	void slotFixedOldOne();
 	void slotSave();
 	void slotCopy();
 	void slotSelectionChanged(const QRectF& rect);
@@ -33,6 +37,9 @@ private:
 	QColor getPixelColor(const QPoint& pos);
 	void finishGrab();
 
+	// 保存图片到缓冲区，返回图片的绝对路径
+	QString save2Buffer(const QString& timestamp, const QPixmap& pixmap);
+
 	void resizeEvent(QResizeEvent* event) override;
 	//void mousePressEvent(QMouseEvent* event) override;
 	//void mouseMoveEvent(QMouseEvent* event) override;
@@ -43,4 +50,5 @@ private:
 	MouseWindow* mouseWindow_;
 	QPixmap fullPixmap_;
 	bool ignoreKeyPress_;  // 忽略键盘按键
+	DQueue<LabelIsland*> islandBuffer_;
 };

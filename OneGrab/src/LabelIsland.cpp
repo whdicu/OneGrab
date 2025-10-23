@@ -74,7 +74,6 @@ void LabelIsland::keyPressEvent(QKeyEvent* event)
 	{
 	case Qt::Key_Escape:
 		hide();
-		deleteLater();
 		break;
 	}
 }

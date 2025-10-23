@@ -21,7 +21,9 @@ private slots:
 	void on_cb_bright_border_stateChanged(int state);
 	void on_cb_copy2file_stateChanged(int state);
 	void on_sb_scale_num_valueChanged(int value);
+	void on_sb_island_num_valueChanged(int value);
 	void on_btn_base_clicked();
+	void on_btn_advanced_clicked();
 	void on_btn_about_clicked();
 	void on_btn_color_clicked();
 

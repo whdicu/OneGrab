@@ -27,7 +27,7 @@ LRESULT CALLBACK keyProc(int nCode, WPARAM wParam, LPARAM lParam)
         switch (pkbhs->vkCode)
         {
         case 112ul:
-            Hook::getInstance()->sendSignal(info);
+            Hook::getInstance()->sendSignalNoBlock(info);
             return true;
 		case 27ul:
 		case 37ul:
@@ -68,6 +68,11 @@ bool Hook::sendSignal(const KeyInfo& info)
 		blockOnce_ = false;
 		return true;
 	}
+}
+
+void Hook::sendSignalNoBlock(const KeyInfo& info)
+{
+	emit sendKeyTypeQueue(info);
 }
 
 Hook::Hook()

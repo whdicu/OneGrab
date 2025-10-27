@@ -23,10 +23,12 @@ public:
 	void installHook();
 	void unInstallHook();
     bool sendSignal(const KeyInfo& info);
+    void sendSignalNoBlock(const KeyInfo& info);
 	void blockOnce() { blockOnce_ = true; }
 
 signals:
 	void sendKeyType(const KeyInfo& info);
+	void sendKeyTypeQueue(const KeyInfo& info);
 
 private:
 	Hook();

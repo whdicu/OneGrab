@@ -38,10 +38,10 @@ LabelIsland::LabelIsland(const QPixmap& pixmap, const QPoint& pos, QWidget* pare
 	animation_ = new QPropertyAnimation(this, "geometry");
 	animation_->setDuration(SCALE_ANIMATION_TIME);
 	connect(animation_, &QPropertyAnimation::finished, sizeLabel_, &QLabel::hide);
-	connect(animation_, &QPropertyAnimation::valueChanged, this, [this](const QVariant &value)
-	{
-		update();
-	});
+	//connect(animation_, &QPropertyAnimation::valueChanged, this, [this](const QVariant &value)
+	//{
+	//	update();
+	//});
 
 	sizeLabel_->setWindowFlags(Qt::FramelessWindowHint | Qt::Tool | Qt::WindowStaysOnTopHint);
 	sizeLabel_->resize(80, 36);

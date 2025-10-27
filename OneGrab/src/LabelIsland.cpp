@@ -2,6 +2,7 @@
 #include "DMenu.h"
 #include "HDBase/DStringList.hpp"
 #include "HDQt/HD2QT.hpp"
+#include "ImageThread.h"
 #include <QApplication>
 #include <QClipboard>
 #include <QDateTime>
@@ -143,11 +144,15 @@ void LabelIsland::slotBtnClicked(const QString& text)
 			int i = fileurl.lastIndexOf('/');
 			settingStruct.LastSavePath = fileurl.mid(0, i);
 			SETTING_HANDLER->setSettingStruct(settingStruct);
+
+			ImageInfo info;
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-			pixmap().save(fileurl);
+			info.pixmap = pixmap();
 #else
-			pixmap()->save(fileurl);
+			info.pixmap = *pixmap();
 #endif
+			info.abPath = fileurl;
+			IMAGE_THREAD->addImage(info);
 		}
 		break;
 	}

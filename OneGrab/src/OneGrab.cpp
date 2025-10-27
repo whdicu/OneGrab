@@ -1,6 +1,7 @@
 ﻿#include "OneGrab.h"
 #include "BtnBar.h"
 #include "HDCore/DBoolSetter.hpp"
+#include "ImageThread.h"
 #include "LabelIsland.h"
 #include "LabelIsland2.h"
 #include "MouseWindow.h"
@@ -216,7 +217,6 @@ void OneGrab::slotSave()
 {
 	DBoolSetter setter(ignoreKeyPress_, true);
 	QRect uselessRect;
-	QPixmap croppedPixmap = ui.view->getSelectionPixmap(uselessRect);
 	// 保存截图到文件
 	QString timestamp = generateImageId();
 	QString filename = QString("OneGrab_%1.png").arg(timestamp);
@@ -235,11 +235,14 @@ void OneGrab::slotSave()
 			fileurl = fileurl.replace('\\', '/');
 			int i = fileurl.lastIndexOf('/');
 			settingStruct.LastSavePath = fileurl.mid(0, i);
+			SETTING_HANDLER->setSettingStruct(settingStruct);
 		}
 	}
 
-	SETTING_HANDLER->setSettingStruct(settingStruct);
-	croppedPixmap.save(fileurl);
+	ImageInfo info;
+	info.pixmap = ui.view->getSelectionPixmap(uselessRect);
+	info.abPath = fileurl;
+	IMAGE_THREAD->addImage(info);
 	finishGrab();
 }
 
@@ -405,30 +408,18 @@ QString OneGrab::save2Buffer(const QString& timestamp, const QPixmap& pixmap)
 		for (int i = 0; i < entries.size() - COPY_TEMP_SIZE; ++i)
 		{
 			const QFileInfo& entry = entries[i];
-			QString filePath = entry.absoluteFilePath();
-
-			// 其实entries里只有文件，没有文件夹
-			if (entry.isDir() && !entry.isSymLink())
-			{
-				// 递归删除子目录
-				QDir subDir(filePath);
-				if (!subDir.removeRecursively())
-					qWarning() << "无法删除子目录:" << filePath;
-			}
-			else
-			{
-				// 删除文件或符号链接
-				if (!QFile::remove(filePath))
-					qWarning() << "无法删除文件:" << filePath;
-			}
+			ImageInfo deleteInfo;
+			deleteInfo.abPath = entry.absoluteFilePath();
+			deleteInfo.isSave = false;
+			IMAGE_THREAD->addImage(deleteInfo);
 		}
 	}
 
-	qint64 i1 = QDateTime::currentMSecsSinceEpoch();
-	bool ret = pixmap.save(strFile);
-	qint64 i2 = QDateTime::currentMSecsSinceEpoch();
-	qDebug() << __FUNCTION__ << "save file:" << strFile
-		<< "used time:" << (i2 - i1);
+	ImageInfo info;
+	info.pixmap = pixmap;
+	info.abPath = strFile;
+	IMAGE_THREAD->addImage(info);
+
 	return strFile;
 }
 

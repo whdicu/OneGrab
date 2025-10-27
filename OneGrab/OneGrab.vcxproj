@@ -17,6 +17,7 @@
     <ClCompile Include="src\DSystemTrayMenu.cpp" />
     <ClCompile Include="src\hook.cpp" />
     <ClCompile Include="src\DGrabView.cpp" />
+    <ClCompile Include="src\ImageThread.cpp" />
     <ClCompile Include="src\LabelIsland2.cpp" />
     <ClCompile Include="src\MaskItem.cpp" />
     <ClCompile Include="src\LabelIsland.cpp" />
@@ -64,6 +65,7 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="src\DGraphicsItem.h" />
     <QtMoc Include="src\DLineEdit.h" />
+    <QtMoc Include="src\ImageThread.h" />
     <ClInclude Include="src\WinHandler.h" />
     <QtMoc Include="src\LabelIsland2.h" />
     <QtMoc Include="src\DMenu.h" />

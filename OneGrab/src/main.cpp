@@ -1,6 +1,7 @@
 ﻿#include "DSystemTrayMenu.h"
 #include "HDBase/DList.hpp"
 #include "hook.h"
+#include "ImageThread.h"
 #include "OneGrab.h"
 #include <QApplication>
 #include <QDebug>
@@ -76,6 +77,8 @@ int main(int argc, char *argv[])
 	QObject::connect(Hook::getInstance(), &Hook::sendKeyType, &w, &OneGrab::slotKeyPressed, Qt::DirectConnection);
 	QObject::connect(Hook::getInstance(), &Hook::sendKeyTypeQueue, &w, &OneGrab::slotKeyPressed, Qt::QueuedConnection);
 	QObject::connect(&a, &QApplication::aboutToQuit, Hook::getInstance(), &Hook::unInstallHook);
+
+	IMAGE_THREAD->start();
 
     return a.exec();
 }

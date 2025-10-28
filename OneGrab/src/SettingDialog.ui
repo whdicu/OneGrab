@@ -77,11 +77,11 @@
 #widget_left&gt;QPushButton {
 	color: white;
 	background-color: #5c5c66;
-	border-radius: 10px;
+	border-radius: 16px;
 }
 
 #stackedWidget {
-	border-radius: 10px;
+	border-radius: 16px;
 	background-color: white;
 }
 </string>
@@ -398,7 +398,7 @@
          </font>
         </property>
         <property name="currentIndex">
-         <number>1</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="base_page">
          <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -476,14 +476,14 @@
              <widget class="QPushButton" name="btn_color">
               <property name="minimumSize">
                <size>
-                <width>24</width>
-                <height>24</height>
+                <width>26</width>
+                <height>26</height>
                </size>
               </property>
               <property name="maximumSize">
                <size>
-                <width>24</width>
-                <height>24</height>
+                <width>26</width>
+                <height>26</height>
                </size>
               </property>
               <property name="font">

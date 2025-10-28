@@ -275,7 +275,7 @@ void DGrabView::mouseMoveEvent(QMouseEvent* event)
 			break;
 
 		unsigned char border = MaskItem::None;
-		if (event->pos().y() > selectionRect.top() && event->pos().y() < selectionRect.bottom())
+		if (event->pos().y() > selectionRect.top() - DRAG_SPACE && event->pos().y() < selectionRect.bottom() + DRAG_SPACE)
 		{
 			if (dAbs(selectionRect.left() - event->pos().x()) < DRAG_SPACE)
 			{
@@ -289,7 +289,7 @@ void DGrabView::mouseMoveEvent(QMouseEvent* event)
 			}
 		}
 		
-		if (event->pos().x() > selectionRect.left() && event->pos().x() < selectionRect.right())
+		if (event->pos().x() > selectionRect.left() - DRAG_SPACE && event->pos().x() < selectionRect.right() + DRAG_SPACE)
 		{
 			if (dAbs(selectionRect.top() - event->pos().y()) < DRAG_SPACE)
 			{

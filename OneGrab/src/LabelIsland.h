@@ -13,6 +13,9 @@ public:
 	~LabelIsland();
 	void onRefreshSetting();
 
+signals:
+	void sigHide();
+
 private:
 	void keyPressEvent(QKeyEvent* event) override;
 	void wheelEvent(QWheelEvent* event) override;

@@ -58,7 +58,11 @@ LabelIsland::LabelIsland(const QPixmap& pixmap, const QPoint& pos, QWidget* pare
 LabelIsland::~LabelIsland()
 {
 	qDebug() << __FUNCTION__;
-	sizeLabel_->deleteLater();
+	if (nullptr != sizeLabel_)
+	{
+		sizeLabel_->deleteLater();
+		sizeLabel_ = nullptr;
+	}
 }
 
 void LabelIsland::onRefreshSetting()
@@ -75,6 +79,7 @@ void LabelIsland::keyPressEvent(QKeyEvent* event)
 	{
 	case Qt::Key_Escape:
 		hide();
+		emit sigHide();
 		break;
 	}
 }
@@ -175,7 +180,7 @@ void LabelIsland::slotBtnClicked(const QString& text)
 		break;
 	case 5:
 		hide();
-		deleteLater();
+		emit sigHide();
 		break;
 	case 4:
 	default:

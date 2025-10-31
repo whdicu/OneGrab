@@ -190,6 +190,11 @@ void OneGrab::slotFixed()
 
 	LabelIsland* island = new LabelIsland(croppedPixmap, croppedRect.topLeft() + pos());
 	connect(SettingDialog::getInstance(), &SettingDialog::sigRefreshSetting, island, &LabelIsland::onRefreshSetting);
+	connect(island, &LabelIsland::sigHide, this, [this, island]()
+	{
+		islandBuffer_.removeFirst(island);
+		islandBuffer_.enqueue(island);
+	});
 	island->show();
 	islandBuffer_.enqueue(island);
 	while (islandBuffer_.size() > SETTING_HANDLER->getIslandNum())

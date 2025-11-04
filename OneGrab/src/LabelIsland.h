@@ -26,9 +26,10 @@ private:
 	void slotBtnClicked(const QString& text);
 	void scale(bool bigger);
 
-	QPoint pressPoint_;
+	QPoint pressedPoint_;
 	int sizeIndex_;
 	QRect originRect_;
+	QPoint pointToOrigin_;
 	QPropertyAnimation* animation_;
 	QLabel* sizeLabel_;
 	DMenu* menu_;

@@ -11,6 +11,7 @@
 #include <QLabel>
 #include <QMouseEvent>
 #include <QPropertyAnimation>
+#include <QScreen>
 #include <QVBoxLayout>
 #include "SettingHandler.h"
 
@@ -18,6 +19,7 @@
 const static int SCALE_ANIMATION_TIME = 150;
 const static int BORDER_SIZE = 2;
 const static int ORIGIN_SIZE_INDEX = 8;
+const static int BORDER_MIN_PIXEL = 10;  // 边缘至少显示10像素
 const static QVector<int> SIZE_V =
 //{10, 15, 22, 33, 51, 76, 114, 171, 256, 384, 577, 865/*, 1297, 1946, 2919, 4379*/};
 {10, 13, 17, 22, 29, 37, 48, 63, 82, 106, 138, 179, 232, 303, 394, 512, 665};
@@ -26,6 +28,7 @@ const static DStringList MENU_TEXT = { "存下来", "复制", "变大", "变小"
 LabelIsland::LabelIsland(const QPixmap& pixmap, const QPoint& pos, QWidget* parent /*= nullptr*/)
 	: QLabel(parent)
 	, sizeIndex_(ORIGIN_SIZE_INDEX)
+	, pointToOrigin_(0, 0)
 	, sizeLabel_(new QLabel("100%"))
 	, menu_(new DMenu(MENU_TEXT, this))
 {
@@ -94,9 +97,6 @@ void LabelIsland::wheelEvent(QWheelEvent* event)
 	sizeLabel_->move(event->globalPos() + QPoint(15, 0));
 #endif
 	sizeLabel_->show();
-
-	//move(originRect_.topLeft() + QPoint(dSize.width() / 2, dSize.height() / 2));
-	//resize(newSize);
 }
 
 void LabelIsland::mousePressEvent(QMouseEvent* event)
@@ -104,7 +104,7 @@ void LabelIsland::mousePressEvent(QMouseEvent* event)
 	switch (event->button())
 	{
 	case Qt::LeftButton:
-		pressPoint_ = event->pos();
+		pressedPoint_ = event->pos() + pointToOrigin_;
 		break;
 	case Qt::RightButton:
 		menu_->show(event->pos());
@@ -120,8 +120,45 @@ void LabelIsland::mouseMoveEvent(QMouseEvent* event)
 	Qt::MouseButtons btns = event->buttons();
 	if (btns & Qt::LeftButton)
 	{
-		originRect_.moveTo(originRect_.topLeft() - pressPoint_ + event->pos());
-		move(pos() - pressPoint_ + event->pos());
+		// 一种保护，可不用
+		// 获取容纳所有显示器图片的矩形
+		//QRect okRect;
+		//QList<QScreen*> screens = QGuiApplication::screens();
+		//for (QScreen *screen : screens)
+		//{
+		//	QRect scRect = screen->geometry();
+		//	if (scRect.x() < okRect.x())
+		//		okRect.setX(scRect.x());
+		//	if (scRect.y() < okRect.y())
+		//		okRect.setY(scRect.y());
+		//	okRect = okRect.united(scRect);
+		//}
+
+		//okRect.setTop(okRect.top() + BORDER_MIN_PIXEL);
+		//okRect.setBottom(okRect.bottom() - BORDER_MIN_PIXEL);
+		//okRect.setLeft(okRect.left() + BORDER_MIN_PIXEL);
+		//okRect.setRight(okRect.right() - BORDER_MIN_PIXEL);
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+		auto globalPos = event->globalPosition().toPoint();
+#else
+		auto globalPos = event->globalPos();
+#endif
+
+		originRect_.moveTo(globalPos - pressedPoint_);
+
+		// 一种保护，可不用
+		//if (originRect_.top() > okRect.bottom())
+		//	originRect_.moveTop(okRect.bottom());
+		//else if (originRect_.bottom() < okRect.top())
+		//	originRect_.moveBottom(okRect.top());
+
+		//if (originRect_.left() > okRect.right())
+		//	originRect_.moveLeft(okRect.right());
+		//else if (originRect_.right() < okRect.left())
+		//	originRect_.moveRight(okRect.left());
+
+		move(originRect_.topLeft() + pointToOrigin_);
 	}
 }
 
@@ -201,9 +238,11 @@ void LabelIsland::scale(bool bigger)
 	QSize newSize = originRect_.size() * scale;
 	QSize dSize = originRect_.size() - newSize;
 
+	pointToOrigin_ = QPoint(dSize.width() / 2, dSize.height() / 2);
+	
 	animation_->stop();
 	animation_->setEasingCurve(QEasingCurve::Linear);
 	animation_->setStartValue(geometry());
-	animation_->setEndValue(QRect(originRect_.topLeft() + QPoint(dSize.width() / 2, dSize.height() / 2), newSize));
+	animation_->setEndValue(QRect(originRect_.topLeft() + pointToOrigin_, newSize));
 	animation_->start();
 }

@@ -300,37 +300,48 @@ void OneGrab::slotSelectionChanged(const QRectF& rectf)
 
 void OneGrab::slotRefreshPixelInfo(const QPoint& mousePos)
 {
-	int scaleNum = SETTING_HANDLER->getMouseScaleNum();
+	int sc = SETTING_HANDLER->getMouseScaleNum();
+	double scaleNum = pow(1.2, sc);
 	QColor color = getPixelColor(mousePos);
-	QSize windowSize = mouseWindow_->getWindowSize() / scaleNum;  // scaleNum 倍放大
-	QRect targetRect = QRect(mousePos
-		- QPoint(windowSize.width() / 2, windowSize.height() / 2), windowSize);
+	const QSize windowSize = mouseWindow_->getWindowSize();
+	const QSize windowSizeInFull = windowSize / scaleNum;
 
-	QPixmap windowPixmap(windowSize);
-	windowPixmap.fill(Qt::black);
-
+	QRect baseTargetRect = QRect(mousePos - QPoint(windowSizeInFull.width() / 2, windowSizeInFull.height() / 2)
+		, windowSizeInFull + QSize(1, 1));
 	// 计算原图中可以截取的有效区域（和src交集）
-	QRect srcRect = targetRect & QRect(0, 0, fullPixmap_.width(), fullPixmap_.height());
-
-	if (!srcRect.isEmpty())
+	QRect baseSrcRect = baseTargetRect & QRect(0, 0, fullPixmap_.width(), fullPixmap_.height());
+	// 裁剪
+	QPixmap basePixmap(baseTargetRect.size());
+	basePixmap.fill(Qt::black);
+	if (!baseSrcRect.isEmpty())
 	{
 		// 从原图中截取有效部分
-		QPixmap cropped = fullPixmap_.copy(srcRect);
-
+		QPixmap cropped = fullPixmap_.copy(baseSrcRect);
 		// 计算将cropped粘贴到result中的位置（相对位置）
-		QPoint destTopLeft = srcRect.topLeft() - targetRect.topLeft();
-		QPainter painter(&windowPixmap);
+		QPoint destTopLeft = baseSrcRect.topLeft() - baseTargetRect.topLeft();
+		QPainter painter(&basePixmap);
 		painter.drawPixmap(destTopLeft, cropped);
 		painter.end();
 	}
 
 	// 画鼠标所在像素的矩形框
 	QColor mainColor = SETTING_HANDLER->getMainColor();
-	QPainter painter(&windowPixmap);
+	QPainter painter(&basePixmap);
 	painter.setPen(QPen(mainColor, 1));
-	painter.drawRect(QRect(windowSize.width() / 2 - 1, windowSize.height() / 2 - 1, 2, 2));
-	
-	mouseWindow_->refreshInfo(mousePos, color, windowPixmap.scaled(windowSize * scaleNum));
+	painter.drawRect(QRect(mousePos - baseTargetRect.topLeft() - QPoint(1, 1), QSize(2, 2)));
+
+	// 放大
+	QPixmap scaledBasePixmap = basePixmap.scaled(basePixmap.size() * scaleNum
+		, Qt::KeepAspectRatio, Qt::FastTransformation);
+
+	// 获取实际要裁剪的图像，在scaledBasePixmap中的rect
+	QPoint pointInScaledBase = (mousePos - baseTargetRect.topLeft()) * scaleNum
+		+ QPoint(0.5 * scaleNum, 0.5 * scaleNum)
+		- QPoint(windowSize.width() / 2, windowSize.height() / 2);
+	QRect rectInScaledBase = QRect(pointInScaledBase, windowSize);
+
+	QPixmap windowPixmap = scaledBasePixmap.copy(rectInScaledBase);
+	mouseWindow_->refreshInfo(mousePos, color, windowPixmap);
 }
 
 void OneGrab::slotMouseEventInWindow(QMouseEvent* event)

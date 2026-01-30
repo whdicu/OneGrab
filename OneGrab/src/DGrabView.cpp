@@ -112,7 +112,7 @@ void DGrabView::wheelEvent(QWheelEvent* event)
 	}
 	else  // 下滚
 	{
-		if (scaleNum > 1)
+		if (scaleNum > 0)
 			SETTING_HANDLER->setMouseScaleNum(scaleNum - 1);
 	}
 	SETTING_HANDLER->syncToFile();

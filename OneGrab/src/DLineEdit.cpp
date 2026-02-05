@@ -52,10 +52,10 @@ DLineEdit::DLineEdit(QWidget* parent)
 	QWidget* box = new QWidget;
 	box->setObjectName("dlineedit_box");
 	QHBoxLayout* layout = new QHBoxLayout;
-	layout->setContentsMargins(BTN_MARGIN, BORDER_SIZE, BORDER_SIZE, BORDER_SIZE);
+	layout->setContentsMargins(BORDER_SIZE, BORDER_SIZE, BORDER_SIZE, BORDER_SIZE);
 	layout->setSpacing(BORDER_SIZE);
-	layout->addWidget(lineEdit_);
 	layout->addLayout(btnLayout);
+	layout->addWidget(lineEdit_);
 	box->setLayout(layout);
 
 	QHBoxLayout* l = new QHBoxLayout;

@@ -41,7 +41,7 @@ OneGrab::OneGrab(QWidget *parent)
 
 	connect(btnBar_, &BtnBar::sigDrawing, this, [this](int isDrawing)
 	{
-		ignoreKeyPress_ = isDrawing == DrawTextS;  // 只有绘制文字时屏蔽按键
+		ignoreKeyPress_ = isDrawing == DrawWordS;  // 只有绘制文字时屏蔽按键
 		ui.view->setDrawingState(isDrawing);
 	});
 	connect(btnBar_, &BtnBar::sigClose, this, &OneGrab::finishGrab);
@@ -157,9 +157,21 @@ void OneGrab::slotKeyPressed(const KeyInfo& info)
 		else
 			slotCopy();  // 这个函数里已调 finishGrab
 		break;
+	case 'A':  // 画箭头
+		btnBar_->setDrawMode(DrawArrowS);
+		break;
+	case 'L':  // 画直线
+		btnBar_->setDrawMode(DrawLineS);
+		break;
+	case 'P':  // 随便画
+		btnBar_->setDrawMode(DrawPenS);
+		break;
 	case 'Q':
 		if (!info.ctrlPressed)
 			finishGrab();
+		break;
+	case 'R':  // 画矩形
+		btnBar_->setDrawMode(DrawRectS);
 		break;
 	case 'S':
 		if (!info.ctrlPressed)
@@ -168,6 +180,9 @@ void OneGrab::slotKeyPressed(const KeyInfo& info)
 	case 'T':
 		if (!info.ctrlPressed)
 			slotFixed();  // 这个函数里已调 finishGrab
+		break;
+	case 'W':  // 画文字
+		btnBar_->setDrawMode(DrawWordS);
 		break;
 	case 'Z':
 		if (info.ctrlPressed)

@@ -2,6 +2,7 @@
 #include <QWidget>
 #include "SettingHandler.h"
 #include "ui_BtnBar.h"
+#include "DGrabView.h"
 
 class BtnBar : public QWidget
 {
@@ -14,6 +15,7 @@ public:
 	void setSizeLabelText(const QSize& sz);
 	void onFinishGrab();
 	int getDrawingType() { return isDrawing_; }
+	void setDrawMode(MouseState drawMode);
 
 signals:
 	void sigDrawing(int isDrawing);

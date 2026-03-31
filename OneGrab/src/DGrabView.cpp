@@ -149,7 +149,7 @@ void DGrabView::mousePressEvent(QMouseEvent *event)
 		case DrawPenS:  // 随便画
 			addLines(selectionStart_, SETTING_HANDLER->getPenColor());
 			break;
-		case DrawTextS:  // 画文字
+		case DrawWordS:  // 画文字
 			addText(selectionStart_, SETTING_HANDLER->getTextColor());
 			break;
 		default:
@@ -226,7 +226,7 @@ void DGrabView::mouseMoveEvent(QMouseEvent* event)
 	case DrawRectS:  // 画矩形
 	case DrawLineS:  // 画矩形
 	case DrawArrowS:  // 画箭头
-	case DrawTextS:  // 画箭头
+	case DrawWordS:  // 画箭头
 	case DrawPenS:  // 随便画
 	{
 		if (nullptr != editingItem_)
@@ -353,7 +353,7 @@ void DGrabView::mouseReleaseEvent(QMouseEvent *event)
 		case DrawArrowS:
 		case DrawPenS:
 			break;
-		case DrawTextS:
+		case DrawWordS:
 			if (editingItem_)
 				editingItem_->onMouseRelese();
 			break;

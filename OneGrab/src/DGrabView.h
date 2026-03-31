@@ -15,7 +15,7 @@ enum MouseState
 	DrawLineS = 4,
 	DrawArrowS = 5,
 	DrawPenS = 6,
-	DrawTextS = 7,
+	DrawWordS = 7,
 	MoveItem = 8,
 	dragLeft = 0x10,
 	dragTop = 0x20,

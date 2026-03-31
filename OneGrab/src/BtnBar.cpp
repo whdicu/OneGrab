@@ -1,6 +1,6 @@
 #include "BtnBar.h"
-#include "DGrabView.h"
 #include <QColorDialog>
+#include <QDebug>
 
 const static QString NORMAL_STYLE = R"(QPushButton
 {
@@ -46,6 +46,35 @@ void BtnBar::onFinishGrab()
 	ui.widget_2->hide();
 }
 
+void BtnBar::setDrawMode(MouseState drawMode)
+{
+	QPushButton* btn = nullptr;
+	switch (drawMode)
+	{
+	case DrawRectS:
+		btn = ui.btn_rect;
+		break;
+	case DrawLineS:
+		btn = ui.btn_line;
+		break;
+	case DrawArrowS:
+		btn = ui.btn_arrow;
+		break;
+	case DrawPenS:
+		btn = ui.btn_pen;
+		break;
+	case DrawWordS:
+		btn = ui.btn_text;
+		break;
+	default:
+		qWarning() << __FUNCTION__ << "error drawMode:" << drawMode;
+		return;
+	}
+
+	if (nullptr != btn)
+		drawBtnClicked(btn, drawMode);
+}
+
 void BtnBar::on_btn_rect_clicked()
 {
 	drawBtnClicked(ui.btn_rect, DrawRectS);
@@ -68,7 +97,7 @@ void BtnBar::on_btn_pen_clicked()
 
 void BtnBar::on_btn_text_clicked()
 {
-	drawBtnClicked(ui.btn_text, DrawTextS);
+	drawBtnClicked(ui.btn_text, DrawWordS);
 }
 
 void BtnBar::on_btn_close_clicked()
@@ -110,7 +139,7 @@ void BtnBar::on_btn_color_clicked()
 	case DrawPenS:
 		c = &stru.PenColor;
 		break;
-	case DrawTextS:
+	case DrawWordS:
 		c = &stru.TextColor;
 		break;
 	default:
@@ -193,7 +222,7 @@ void BtnBar::refreshUI()
 		color = SETTING_HANDLER->getPenColor();
 		lineWidth = SETTING_HANDLER->getPenLineWidth();
 		break;
-	case DrawTextS:
+	case DrawWordS:
 		color = SETTING_HANDLER->getTextColor();
 		lineWidth = SETTING_HANDLER->getTextLineWidth();
 		break;
@@ -235,7 +264,7 @@ void BtnBar::refreshLineBtn(LineWidth lineWidth)
 	case DrawPenS:
 		mainColorStr = SETTING_HANDLER->getPenColor().name().toUpper();
 		break;
-	case DrawTextS:
+	case DrawWordS:
 		mainColorStr = SETTING_HANDLER->getTextColor().name().toUpper();
 		ui.btn_line1->hide();
 		ui.btn_line2->hide();
@@ -285,7 +314,7 @@ void BtnBar::setLineWidth(LineWidth lineWidth)
 	case DrawPenS:
 		SETTING_HANDLER->setPenLineWidth(lineWidth);
 		break;
-	case DrawTextS:
+	case DrawWordS:
 		SETTING_HANDLER->setTextLineWidth(lineWidth);
 		break;
 	}

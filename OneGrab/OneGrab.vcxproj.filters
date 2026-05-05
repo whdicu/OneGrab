@@ -81,6 +81,9 @@
     <ClCompile Include="src\ImageThread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\DUpdateHelper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="src\OneGrab.h">
@@ -126,6 +129,9 @@
       <Filter>Widgets</Filter>
     </QtMoc>
     <QtMoc Include="src\ImageThread.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="src\DUpdateHelper.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

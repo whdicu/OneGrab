@@ -15,6 +15,7 @@
     <ClCompile Include="src\DLineEdit.cpp" />
     <ClCompile Include="src\DMenu.cpp" />
     <ClCompile Include="src\DSystemTrayMenu.cpp" />
+    <ClCompile Include="src\DUpdateHelper.cpp" />
     <ClCompile Include="src\hook.cpp" />
     <ClCompile Include="src\DGrabView.cpp" />
     <ClCompile Include="src\ImageThread.cpp" />
@@ -66,6 +67,8 @@
     <ClInclude Include="src\DGraphicsItem.h" />
     <QtMoc Include="src\DLineEdit.h" />
     <QtMoc Include="src\ImageThread.h" />
+    <QtMoc Include="src\DUpdateHelper.h" />
+    <ClInclude Include="src\version.h" />
     <ClInclude Include="src\WinHandler.h" />
     <QtMoc Include="src\LabelIsland2.h" />
     <QtMoc Include="src\DMenu.h" />
@@ -136,7 +139,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'" Label="QtSettings">
     <QtInstall>qt5.9.4-msvc2017-x64</QtInstall>
-    <QtModules>core;gui;svg;widgets</QtModules>
+    <QtModules>core;gui;network;svg;widgets</QtModules>
     <QtBuildConfig>release</QtBuildConfig>
   </PropertyGroup>
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.props')">

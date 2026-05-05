@@ -1,6 +1,7 @@
 ﻿#include "OneGrab.h"
 #include "BtnBar.h"
 #include "HDCore/DBoolSetter.hpp"
+#include "DUpdateHelper.h"
 #include "ImageThread.h"
 #include "LabelIsland.h"
 #include "LabelIsland2.h"
@@ -15,6 +16,7 @@
 #include <QScreen>
 #include "SettingDialog.h"
 #include "SettingHandler.h"
+#include "version.h"
 
 
 const static int MARGIN = 5;
@@ -32,6 +34,7 @@ OneGrab::OneGrab(QWidget *parent)
 	, btnBar_(new BtnBar)
 	, mouseWindow_(new MouseWindow)
 	, ignoreKeyPress_(false)
+	, updateHelper_(new DUpdateHelper(this))
 {
     ui.setupUi(this);
 	setAttribute(Qt::WA_TranslucentBackground);
@@ -77,6 +80,25 @@ OneGrab::OneGrab(QWidget *parent)
 	{
 		ui.view->setDrawingState(btnBar_->getDrawingType());
 	});
+
+	// 检查更新相关
+	connect(updateHelper_, &DUpdateHelper::sigNewVersionAvailable, this, &OneGrab::slotNewVersionAvailable);
+
+	connect(updateHelper_, &DUpdateHelper::sigAlreadyLatest,
+		this, [](const QString &version)
+	{
+		qDebug() << "Already the latest version:" << version;
+	});
+
+	connect(updateHelper_, &DUpdateHelper::sigCheckFailed,
+		this, [](const QString &error)
+	{
+		qDebug() << "Update check failed:" << error;
+	});
+
+	updateHelper_->setInfos(GITEE_NAME, PROJECT_NAME, APP_VERSION_STR);
+	updateHelper_->setSkipPrerelease(false);
+	updateHelper_->doCheck();
 }
 
 void OneGrab::doGrab()
@@ -381,6 +403,14 @@ void OneGrab::slotMouseEventInWindow(QMouseEvent* event)
 void OneGrab::slotPosChanged(const QPoint& pos)
 {
 	mouseWindow_->moveAndRefresh(pos, geometry());
+}
+
+void OneGrab::slotNewVersionAvailable(const QString& version, const QString& url, const QString& notes, const QString& download)
+{
+	qDebug() << "New version available:" << version;
+	qDebug() << "Release URL:" << url;
+	qDebug() << "Release notes:" << notes;
+	qDebug() << "Download URL:" << download;
 }
 
 QPixmap OneGrab::getFullPixmap(QRect& screenRect)

@@ -7,6 +7,7 @@
 #include <windows.h>
 
 class BtnBar;
+class DUpdateHelper;
 class LabelIsland;
 class MouseWindow;
 
@@ -30,6 +31,8 @@ private slots:
 	void slotRefreshPixelInfo(const QPoint& mousePos);
 	void slotMouseEventInWindow(QMouseEvent* event);
 	void slotPosChanged(const QPoint& pos);
+	void slotNewVersionAvailable(const QString& version, const QString& url
+		, const QString& notes, const QString& download);
 
 private:
 	// 获取所有显示器组成的一张图片
@@ -51,4 +54,5 @@ private:
 	QPixmap fullPixmap_;
 	bool ignoreKeyPress_;  // 忽略键盘按键
 	DQueue<LabelIsland*> islandBuffer_;
+	DUpdateHelper* updateHelper_;
 };

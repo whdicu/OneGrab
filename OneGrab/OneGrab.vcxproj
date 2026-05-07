@@ -14,6 +14,7 @@
     <ClCompile Include="src\BtnBar.cpp" />
     <ClCompile Include="src\DLineEdit.cpp" />
     <ClCompile Include="src\DMenu.cpp" />
+    <ClCompile Include="src\DProgressBox.cpp" />
     <ClCompile Include="src\DSystemTrayMenu.cpp" />
     <ClCompile Include="src\DUpdateHelper.cpp" />
     <ClCompile Include="src\hook.cpp" />
@@ -27,6 +28,7 @@
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\MouseWindow.cpp" />
     <ClCompile Include="src\OneGrab.cpp" />
+    <ClCompile Include="src\DMessageBox.cpp" />
     <ClCompile Include="src\SettingDialog.cpp" />
     <ClCompile Include="src\SettingHandler.cpp" />
     <ClCompile Include="src\WinHandler.cpp" />
@@ -68,6 +70,8 @@
     <QtMoc Include="src\DLineEdit.h" />
     <QtMoc Include="src\ImageThread.h" />
     <QtMoc Include="src\DUpdateHelper.h" />
+    <QtMoc Include="src\DMessageBox.h" />
+    <QtMoc Include="src\DProgressBox.h" />
     <ClInclude Include="src\version.h" />
     <ClInclude Include="src\WinHandler.h" />
     <QtMoc Include="src\LabelIsland2.h" />

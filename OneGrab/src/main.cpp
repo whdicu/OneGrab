@@ -51,20 +51,37 @@ int main(int argc, char *argv[])
 		}
 	});
 
+	enum TrayType
+	{
+		Snap,
+		Setting,
+		CheckUpdate,
+		Exit
+	};
+
 	// 任务栏图标右键菜单
-	const static DList<TrayItemInfo> infos = { TrayItemInfo(QObject::tr("截屏")), TrayItemInfo(QObject::tr("设置")), TrayItemInfo(QObject::tr("退出")) };
+	const static DList<TrayItemInfo> infos =
+	{
+		TrayItemInfo(QObject::tr("截屏"), QIcon(), Snap),
+		TrayItemInfo(QObject::tr("设置"), QIcon(), Setting),
+		TrayItemInfo(QObject::tr("检查更新"), QIcon(), CheckUpdate),
+		TrayItemInfo(QObject::tr("退出"), QIcon(), Exit)
+	};
 	DSystemTrayMenu trayMenu(infos);
 	QObject::connect(&trayMenu, &DSystemTrayMenu::sigItemClicked, [&w, &a](QString text, QVariant data)
 	{
-		switch (infos.indexOf(text))
+		switch ((TrayType)data.toInt())
 		{
-		case 0:  // 截屏
+		case Snap:  // 截屏
 			w.doGrab();
 			break;
-		case 1:  // 设置
+		case Setting:  // 设置
 			SettingDialog::getInstance()->show();
 			break;
-		case 2:  // 退出
+		case CheckUpdate:  // 检查更新
+			w.checkUpdate();
+			break;
+		case Exit:  // 退出
 			a.quit();
 			break;
 		}
@@ -73,10 +90,11 @@ int main(int argc, char *argv[])
 	trayIcon.setContextMenu(&trayMenu);
 	trayIcon.show();
 
-	Hook::getInstance()->installHook();
+	//Hook::getInstance()->installHook();
 	QObject::connect(Hook::getInstance(), &Hook::sendKeyType, &w, &OneGrab::slotKeyPressed, Qt::DirectConnection);
 	QObject::connect(Hook::getInstance(), &Hook::sendKeyTypeQueue, &w, &OneGrab::slotKeyPressed, Qt::QueuedConnection);
 	QObject::connect(&a, &QApplication::aboutToQuit, Hook::getInstance(), &Hook::unInstallHook);
+	QObject::connect(SettingDialog::getInstance(), &SettingDialog::sigCheckUpdate, &w, &OneGrab::checkUpdate);
 
 	IMAGE_THREAD->start();
 

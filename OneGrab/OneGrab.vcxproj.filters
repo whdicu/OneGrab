@@ -84,6 +84,12 @@
     <ClCompile Include="src\DUpdateHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\DMessageBox.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DProgressBox.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="src\OneGrab.h">
@@ -134,6 +140,12 @@
     <QtMoc Include="src\DUpdateHelper.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="src\DMessageBox.h">
+      <Filter>Widgets</Filter>
+    </QtMoc>
+    <QtMoc Include="src\DProgressBox.h">
+      <Filter>Widgets</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="src\OneGrab.ui">
@@ -165,6 +177,9 @@
       <Filter>Widgets</Filter>
     </ClInclude>
     <ClInclude Include="src\WinHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\version.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

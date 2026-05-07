@@ -1,12 +1,15 @@
 ﻿#include "OneGrab.h"
 #include "BtnBar.h"
 #include "HDCore/DBoolSetter.hpp"
+#include "DMessageBox.h"
+#include "DProgressBox.h"
 #include "DUpdateHelper.h"
 #include "ImageThread.h"
 #include "LabelIsland.h"
 #include "LabelIsland2.h"
 #include "MouseWindow.h"
 #include <QClipboard>
+#include <QCoreApplication>
 #include <QDateTime>
 #include <QDebug>
 #include <QFileDialog>
@@ -35,6 +38,7 @@ OneGrab::OneGrab(QWidget *parent)
 	, mouseWindow_(new MouseWindow)
 	, ignoreKeyPress_(false)
 	, updateHelper_(new DUpdateHelper(this))
+	, progressBox_(new DProgressBox(this, "下载更新", "正在下载更新文件，请稍候..."))
 {
     ui.setupUi(this);
 	setAttribute(Qt::WA_TranslucentBackground);
@@ -82,23 +86,45 @@ OneGrab::OneGrab(QWidget *parent)
 	});
 
 	// 检查更新相关
-	connect(updateHelper_, &DUpdateHelper::sigNewVersionAvailable, this, &OneGrab::slotNewVersionAvailable);
+	connect(updateHelper_, &DUpdateHelper::sigNewVersionAvailable, this, &OneGrab::slotNewVersionAvailable, Qt::QueuedConnection);
 
 	connect(updateHelper_, &DUpdateHelper::sigAlreadyLatest,
 		this, [](const QString &version)
 	{
 		qDebug() << "Already the latest version:" << version;
-	});
+	}, Qt::QueuedConnection);
 
 	connect(updateHelper_, &DUpdateHelper::sigCheckFailed,
 		this, [](const QString &error)
 	{
 		qDebug() << "Update check failed:" << error;
+	}, Qt::QueuedConnection);
+
+	// 下载进度
+	connect(updateHelper_, &DUpdateHelper::sigDownloadProgress, this, [this](qint64 bytesReceived, qint64 bytesTotal)
+	{
+		if (progressBox_ && bytesTotal > 0)
+			progressBox_->setProgress(bytesReceived * 100.0 / bytesTotal);
 	});
+
+	// 下载完成
+	connect(updateHelper_, &DUpdateHelper::sigDownloadFinished, this, [](const QString& filePath)
+	{
+		
+	});
+
+	// 下载失败
+	connect(updateHelper_, &DUpdateHelper::sigDownloadFailed, this, [](const QString& errMsg)
+	{
+
+	});
+
+	progressBox_->setAutoCloseOnComplete(false);
 
 	updateHelper_->setInfos(GITEE_NAME, PROJECT_NAME, APP_VERSION_STR);
 	updateHelper_->setSkipPrerelease(false);
-	updateHelper_->doCheck();
+	if (SETTING_HANDLER->getCheckUpdateOnStart())
+		checkUpdate();
 }
 
 void OneGrab::doGrab()
@@ -117,6 +143,11 @@ void OneGrab::doGrab()
 	mouseWindow_->show();
 
 	ui.view->setFocus();
+}
+
+void OneGrab::checkUpdate()
+{
+	updateHelper_->doCheck();
 }
 
 QColor OneGrab::getPixelColor(const QPoint& pos)
@@ -411,6 +442,17 @@ void OneGrab::slotNewVersionAvailable(const QString& version, const QString& url
 	qDebug() << "Release URL:" << url;
 	qDebug() << "Release notes:" << notes;
 	qDebug() << "Download URL:" << download;
+
+	int ret = DMessageBox::information(this, tr("好消息"), tr("检测到新版本，是否立即更新？"), ALL_BTN);
+
+	if (ret == QDialog::Accepted)
+	{
+		progressBox_->setProgress(0);
+		progressBox_->show();
+
+		QString saveDir = QCoreApplication::applicationDirPath() + "/update";
+		updateHelper_->downloadFile(download, saveDir);
+	}
 }
 
 QPixmap OneGrab::getFullPixmap(QRect& screenRect)
@@ -432,7 +474,7 @@ QPixmap OneGrab::getFullPixmap(QRect& screenRect)
 
 	// 将每个屏幕的内容绘制到 combinedPixmap
 	QPainter painter(&combinedPixmap);
-	for (QScreen *screen : screens)
+	for (QScreen* screen : screens)
 	{
 		QPixmap pixmap = screen->grabWindow(0);
 		painter.drawPixmap(screen->geometry().topLeft() - screenRect.topLeft(), pixmap);

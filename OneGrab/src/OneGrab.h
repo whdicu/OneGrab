@@ -7,6 +7,7 @@
 #include <windows.h>
 
 class BtnBar;
+class DProgressBox;
 class DUpdateHelper;
 class LabelIsland;
 class MouseWindow;
@@ -18,6 +19,7 @@ class OneGrab : public QWidget
 public:
     OneGrab(QWidget *parent = Q_NULLPTR);
 	void doGrab();
+	void checkUpdate();
 
 public slots:
 	void slotKeyPressed(const KeyInfo& info);
@@ -55,4 +57,5 @@ private:
 	bool ignoreKeyPress_;  // 忽略键盘按键
 	DQueue<LabelIsland*> islandBuffer_;
 	DUpdateHelper* updateHelper_;
+	DProgressBox* progressBox_;
 };

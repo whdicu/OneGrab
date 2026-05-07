@@ -38,7 +38,7 @@ struct SettingStruct
 		, PenColor(QColor(255, 66, 66)), PenLineWidth(Line2)
 		, TextColor(QColor(255, 66, 66)), TextLineWidth(Line2)
 		, UseDefaultSavePath(false), DefaultSavePath(""), BrightBorder(true)
-		, Copy2File(false), MouseScaleNum(8), IslandNum(64) {}
+		, Copy2File(false), MouseScaleNum(8), IslandNum(64), CheckUpdateOnStart(true) {}
 	~SettingStruct() = default;
 
 	QString LastSavePath;
@@ -59,6 +59,7 @@ struct SettingStruct
 	bool Copy2File;
 	int MouseScaleNum;
 	int IslandNum;
+	bool CheckUpdateOnStart;
 };
 
 
@@ -91,6 +92,7 @@ public:
 	REG_GET_FUNC(Copy2File)
 	REG_GET_FUNC(MouseScaleNum)
 	REG_GET_FUNC(IslandNum)
+	REG_GET_FUNC(CheckUpdateOnStart)
 
 private:
     SettingHandler();

@@ -139,6 +139,7 @@ void LabelIsland::mouseMoveEvent(QMouseEvent* event)
 		//okRect.setLeft(okRect.left() + BORDER_MIN_PIXEL);
 		//okRect.setRight(okRect.right() - BORDER_MIN_PIXEL);
 
+		// event->pos()的值有时会瞬间变化，导致图片岛漂移
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 		auto globalPos = event->globalPosition().toPoint();
 #else

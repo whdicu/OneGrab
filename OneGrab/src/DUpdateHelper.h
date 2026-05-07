@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QStringList>
 #include <QVersionNumber>
 
 class QNetworkAccessManager;
@@ -38,8 +39,16 @@ public:
 	// 设置是否跳过预发布版本，默认跳过
 	void setSkipPrerelease(bool skip);
 
+	// 设置下载文件拓展名列表，默认只匹配 exe
+	void setDownloadExtensions(const QStringList &extensions);
+
 	// 主动调用一次更新检查（不启动定时器）
 	void doCheck();
+
+	// 下载文件
+	// url: 下载地址
+	// saveDir: 保存文件夹路径
+	void downloadFile(const QString& url, const QString& saveDir);
 
 signals:
 	// 发现新版本
@@ -51,21 +60,29 @@ signals:
 	void sigAlreadyLatest(const QString& currentVersion);
 	// 检查失败
 	void sigCheckFailed(const QString& errorMessage);
+	// 下载完成
+	void sigDownloadFinished(const QString& filePath);
+	// 下载失败
+	void sigDownloadFailed(const QString& errorMessage);
+	// 下载进度（已接收字节, 总字节）
+	void sigDownloadProgress(qint64 bytesReceived, qint64 bytesTotal);
 
 private slots:
 	void slotReplyFinished(QNetworkReply* reply);
+	void slotDownloadFinished(QNetworkReply* reply);
 
 private:
 	struct ReleaseInfo
 	{
 		QString tagName;
 		QVersionNumber versionNumber;
-		QString releaseUrl;
+		QString htmlUrl;
 		QString releaseNotes;
 		QString downloadUrl;
 	};
 
 	QNetworkAccessManager* networkManager_;
+	QNetworkAccessManager* downloadManager_;
 	QString owner_;
 	QString repo_;
 	QString currentVersion_;
@@ -73,6 +90,7 @@ private:
 	QTimer* timer_;
 	int checkIntervalMs_;
 	bool skipPrerelease_;
+	QStringList downloadExtensions_;
 
 	ReleaseInfo getLatestRelease(const QJsonArray& releases);
 	QVersionNumber parseVersionString(const QString& tagName);

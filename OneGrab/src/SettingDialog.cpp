@@ -9,6 +9,7 @@
 #include <QSettings>
 #include "SettingHandler.h"
 #include <shlobj_core.h>
+#include "version.h"
 #include <windows.h>
 
 
@@ -49,6 +50,11 @@ void SettingDialog::on_cb_start_by_pc_clicked()
 	QStringList args = { "name=" + applicationName, "path=" + applicationPath, "start=" + QString::number(startByPC) };
 	if (!QProcess::startDetached(exePath, args))
 		ui.cb_start_by_pc->setChecked(!startByPC);
+}
+
+void SettingDialog::on_cb_check_update_on_start_stateChanged(int state)
+{
+	SETTING_HANDLER->setCheckUpdateOnStart(state);
 }
 
 void SettingDialog::on_cb_use_default_save_path_stateChanged(int state)
@@ -108,6 +114,11 @@ void SettingDialog::on_btn_color_clicked()
 		.arg(stru.MainColor.red()).arg(stru.MainColor.green()).arg(stru.MainColor.blue()));
 }
 
+void SettingDialog::on_btn_check_update_clicked()
+{
+	emit sigCheckUpdate();
+}
+
 SettingDialog::SettingDialog(QWidget *parent)
 	: QWidget(parent, Qt::FramelessWindowHint)
 	, pressPos_(0, 0)
@@ -116,12 +127,11 @@ SettingDialog::SettingDialog(QWidget *parent)
 	ui.setupUi(this);
 	setAttribute(Qt::WA_TranslucentBackground);
 
-	ui.btn_check_update->hide();
 	ui.label_about->hide();
 	ui.btn_visti_website->hide();
 
 	ui.stackedWidget->setCurrentIndex(0);
-	ui.label_version->setText(tr("软件版本：V%1").arg(convertDateFormat(__DATE__)));
+	ui.label_version->setText(tr("软件版本：%1").arg(APP_VERSION_STR));
 
 	refreshByStruct();
 
@@ -188,6 +198,7 @@ void SettingDialog::refreshByStruct()
 	ui.cb_copy2file->setChecked(stru.Copy2File);
 	ui.sb_scale_num->setValue(stru.MouseScaleNum);
 	ui.sb_island_num->setValue(stru.IslandNum);
+	ui.cb_check_update_on_start->setChecked(stru.CheckUpdateOnStart);
 }
 
 QString SettingDialog::convertDateFormat(const QString& strDate)

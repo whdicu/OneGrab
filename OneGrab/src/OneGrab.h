@@ -8,7 +8,7 @@
 
 class BtnBar;
 class DProgressBox;
-class DUpdateHelper;
+class DUpdateHandler;
 class LabelIsland;
 class MouseWindow;
 
@@ -56,6 +56,6 @@ private:
 	QPixmap fullPixmap_;
 	bool ignoreKeyPress_;  // 忽略键盘按键
 	DQueue<LabelIsland*> islandBuffer_;
-	DUpdateHelper* updateHelper_;
+	DUpdateHandler* updateHelper_;
 	DProgressBox* progressBox_;
 };

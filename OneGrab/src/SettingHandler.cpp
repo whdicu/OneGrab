@@ -1,6 +1,6 @@
 ﻿#include "SettingHandler.h"
-#include "HDQt/DStyle.hpp"
-#include "HDQt/HDQt.hpp"
+#include "DStyle.h"
+#include "HDQt.h"
 #include <mutex>
 #include <QColor>
 #include <QCoreApplication>

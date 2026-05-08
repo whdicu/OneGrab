@@ -12,11 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\BtnBar.cpp" />
-    <ClCompile Include="src\DLineEdit.cpp" />
-    <ClCompile Include="src\DMenu.cpp" />
-    <ClCompile Include="src\DProgressBox.cpp" />
     <ClCompile Include="src\DSystemTrayMenu.cpp" />
-    <ClCompile Include="src\DUpdateHelper.cpp" />
     <ClCompile Include="src\hook.cpp" />
     <ClCompile Include="src\DGrabView.cpp" />
     <ClCompile Include="src\ImageThread.cpp" />
@@ -28,7 +24,6 @@
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\MouseWindow.cpp" />
     <ClCompile Include="src\OneGrab.cpp" />
-    <ClCompile Include="src\DMessageBox.cpp" />
     <ClCompile Include="src\SettingDialog.cpp" />
     <ClCompile Include="src\SettingHandler.cpp" />
     <ClCompile Include="src\WinHandler.cpp" />
@@ -67,15 +62,10 @@
   <ItemGroup>
     <ClInclude Include="resource.h" />
     <ClInclude Include="src\DGraphicsItem.h" />
-    <QtMoc Include="src\DLineEdit.h" />
     <QtMoc Include="src\ImageThread.h" />
-    <QtMoc Include="src\DUpdateHelper.h" />
-    <QtMoc Include="src\DMessageBox.h" />
-    <QtMoc Include="src\DProgressBox.h" />
     <ClInclude Include="src\version.h" />
     <ClInclude Include="src\WinHandler.h" />
     <QtMoc Include="src\LabelIsland2.h" />
-    <QtMoc Include="src\DMenu.h" />
     <ClInclude Include="src\MaskItem.h" />
     <QtMoc Include="src\DGrabView.h" />
     <QtMoc Include="src\SettingDialog.h" />
@@ -124,11 +114,13 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>..\..\OneDer\src;.\;.\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\OneDer\src;..\..\OneDer\src\HDQt\include;.\;.\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
+      <AdditionalLibraryDirectories>../../OneDer/bin/HDQt;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>OneDerQt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

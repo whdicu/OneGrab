@@ -1,7 +1,7 @@
 ﻿#include "LabelIsland.h"
 #include "DMenu.h"
 #include "HDBase/DStringList.hpp"
-#include "HDQt/HD2QT.hpp"
+#include "HDQt.h"
 #include "ImageThread.h"
 #include <QApplication>
 #include <QClipboard>
@@ -171,7 +171,7 @@ void LabelIsland::mouseReleaseEvent(QMouseEvent* event)
 void LabelIsland::slotBtnClicked(const QString& text)
 {
 	// "存下来", "复制", "变大", "变小", "返回", "关掉"
-	DSizeType i = MENU_TEXT.indexOf(HD2QT::QString2DString(text));
+	DSizeType i = MENU_TEXT.indexOf(HDQt::QString2DString(text));
 	switch (i)
 	{
 	case 0:

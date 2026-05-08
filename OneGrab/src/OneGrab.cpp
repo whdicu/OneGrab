@@ -3,7 +3,7 @@
 #include "HDCore/DBoolSetter.hpp"
 #include "DMessageBox.h"
 #include "DProgressBox.h"
-#include "DUpdateHelper.h"
+#include "DUpdateHandler.h"
 #include "ImageThread.h"
 #include "LabelIsland.h"
 #include "LabelIsland2.h"
@@ -16,6 +16,7 @@
 #include <QKeyEvent>
 #include <QMimeData>
 #include <QPainter>
+#include <QProcess>
 #include <QScreen>
 #include "SettingDialog.h"
 #include "SettingHandler.h"
@@ -37,7 +38,7 @@ OneGrab::OneGrab(QWidget *parent)
 	, btnBar_(new BtnBar)
 	, mouseWindow_(new MouseWindow)
 	, ignoreKeyPress_(false)
-	, updateHelper_(new DUpdateHelper(this))
+	, updateHelper_(new DUpdateHandler(this))
 	, progressBox_(new DProgressBox(this, "下载更新", "正在下载更新文件，请稍候..."))
 {
     ui.setupUi(this);
@@ -86,35 +87,46 @@ OneGrab::OneGrab(QWidget *parent)
 	});
 
 	// 检查更新相关
-	connect(updateHelper_, &DUpdateHelper::sigNewVersionAvailable, this, &OneGrab::slotNewVersionAvailable, Qt::QueuedConnection);
+	connect(updateHelper_, &DUpdateHandler::sigNewVersionAvailable, this, &OneGrab::slotNewVersionAvailable, Qt::QueuedConnection);
 
-	connect(updateHelper_, &DUpdateHelper::sigAlreadyLatest,
+	connect(updateHelper_, &DUpdateHandler::sigAlreadyLatest,
 		this, [](const QString &version)
 	{
 		qDebug() << "Already the latest version:" << version;
 	}, Qt::QueuedConnection);
 
-	connect(updateHelper_, &DUpdateHelper::sigCheckFailed,
+	connect(updateHelper_, &DUpdateHandler::sigCheckFailed,
 		this, [](const QString &error)
 	{
 		qDebug() << "Update check failed:" << error;
 	}, Qt::QueuedConnection);
 
 	// 下载进度
-	connect(updateHelper_, &DUpdateHelper::sigDownloadProgress, this, [this](qint64 bytesReceived, qint64 bytesTotal)
+	connect(updateHelper_, &DUpdateHandler::sigDownloadProgress, this, [this](qint64 bytesReceived, qint64 bytesTotal)
 	{
 		if (progressBox_ && bytesTotal > 0)
 			progressBox_->setProgress(bytesReceived * 100.0 / bytesTotal);
 	});
 
 	// 下载完成
-	connect(updateHelper_, &DUpdateHelper::sigDownloadFinished, this, [](const QString& filePath)
+	connect(updateHelper_, &DUpdateHandler::sigDownloadFinished, this, [](const QString& filePath)
 	{
-		
+		QString dir = QApplication::applicationDirPath();  // 找到应用的目录
+
+		QString exePath = QApplication::applicationDirPath() + "/updater/OneUpdater.exe";
+		if (!QFile::exists(exePath))
+		{
+			DMessageBox::warning(nullptr, tr("有些事情好像不太行"), tr("文件缺失：%1").arg(exePath));
+			return;
+		}
+
+		QStringList args = { "zip=" + filePath, "dir=" + dir };
+		bool ret = QProcess::startDetached(exePath, args);
+		QApplication::quit();
 	});
 
 	// 下载失败
-	connect(updateHelper_, &DUpdateHelper::sigDownloadFailed, this, [](const QString& errMsg)
+	connect(updateHelper_, &DUpdateHandler::sigDownloadFailed, this, [](const QString& errMsg)
 	{
 
 	});

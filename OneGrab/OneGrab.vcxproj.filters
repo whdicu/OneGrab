@@ -69,26 +69,11 @@
     <ClCompile Include="src\LabelIsland2.cpp">
       <Filter>Widgets</Filter>
     </ClCompile>
-    <ClCompile Include="src\DMenu.cpp">
-      <Filter>Widgets</Filter>
-    </ClCompile>
     <ClCompile Include="src\WinHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\DLineEdit.cpp">
-      <Filter>Widgets</Filter>
-    </ClCompile>
     <ClCompile Include="src\ImageThread.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\DUpdateHelper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\DMessageBox.cpp">
-      <Filter>Widgets</Filter>
-    </ClCompile>
-    <ClCompile Include="src\DProgressBox.cpp">
-      <Filter>Widgets</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -128,23 +113,8 @@
     <QtMoc Include="src\LabelIsland2.h">
       <Filter>Widgets</Filter>
     </QtMoc>
-    <QtMoc Include="src\DMenu.h">
-      <Filter>Widgets</Filter>
-    </QtMoc>
-    <QtMoc Include="src\DLineEdit.h">
-      <Filter>Widgets</Filter>
-    </QtMoc>
     <QtMoc Include="src\ImageThread.h">
       <Filter>Header Files</Filter>
-    </QtMoc>
-    <QtMoc Include="src\DUpdateHelper.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
-    <QtMoc Include="src\DMessageBox.h">
-      <Filter>Widgets</Filter>
-    </QtMoc>
-    <QtMoc Include="src\DProgressBox.h">
-      <Filter>Widgets</Filter>
     </QtMoc>
   </ItemGroup>
   <ItemGroup>

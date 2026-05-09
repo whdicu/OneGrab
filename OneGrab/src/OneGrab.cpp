@@ -90,9 +90,10 @@ OneGrab::OneGrab(QWidget *parent)
 	connect(updateHelper_, &DUpdateHandler::sigNewVersionAvailable, this, &OneGrab::slotNewVersionAvailable, Qt::QueuedConnection);
 
 	connect(updateHelper_, &DUpdateHandler::sigAlreadyLatest,
-		this, [](const QString &version)
+		this, [this](const QString &version)
 	{
 		qDebug() << "Already the latest version:" << version;
+		int ret = DMessageBox::information(this, tr("好消息"), tr("当前已经是最新版本"), ACCEPT_BTN);
 	}, Qt::QueuedConnection);
 
 	connect(updateHelper_, &DUpdateHandler::sigCheckFailed,

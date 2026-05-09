@@ -29,6 +29,7 @@ private slots:
 	void on_btn_about_clicked();
 	void on_btn_color_clicked();
 	void on_btn_check_update_clicked();
+	void on_btn_visti_gitee_clicked();
 
 private:
 	SettingDialog(QWidget *parent = Q_NULLPTR);

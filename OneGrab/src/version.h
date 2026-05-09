@@ -1,7 +1,7 @@
 #ifndef VERSION_H
 #define VERSION_H
 
-#define _DEBUG_ true
+//#define _DEBUG_ true
 
 // gitee仓库账号名
 const static QString GITEE_NAME = "dress_a";
@@ -9,7 +9,7 @@ const static QString GITEE_NAME = "dress_a";
 // 项目名称
 const static QString PROJECT_NAME = "one-grab";
 
-#if _DEBUG_
+#ifdef _DEBUG_
 
 #define APP_VERSION_MAJOR 0
 #define APP_VERSION_MINOR 0

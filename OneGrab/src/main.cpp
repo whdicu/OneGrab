@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
 	trayIcon.setContextMenu(&trayMenu);
 	trayIcon.show();
 
-	//Hook::getInstance()->installHook();
+	Hook::getInstance()->installHook();
 	QObject::connect(Hook::getInstance(), &Hook::sendKeyType, &w, &OneGrab::slotKeyPressed, Qt::DirectConnection);
 	QObject::connect(Hook::getInstance(), &Hook::sendKeyTypeQueue, &w, &OneGrab::slotKeyPressed, Qt::QueuedConnection);
 	QObject::connect(&a, &QApplication::aboutToQuit, Hook::getInstance(), &Hook::unInstallHook);

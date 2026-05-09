@@ -2,6 +2,7 @@
 #include <mutex>
 #include <QColorDialog>
 #include <QDebug>
+#include <QDesktopServices>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QMouseEvent>
@@ -11,6 +12,9 @@
 #include <shlobj_core.h>
 #include "version.h"
 #include <windows.h>
+
+
+const static QString GITEE_URL = "https://gitee.com/dress_a/one-grab";
 
 
 static std::once_flag onceFlag;
@@ -119,6 +123,11 @@ void SettingDialog::on_btn_check_update_clicked()
 	emit sigCheckUpdate();
 }
 
+void SettingDialog::on_btn_visti_gitee_clicked()
+{
+	QDesktopServices::openUrl(QUrl(GITEE_URL));
+}
+
 SettingDialog::SettingDialog(QWidget *parent)
 	: QWidget(parent, Qt::FramelessWindowHint)
 	, pressPos_(0, 0)
@@ -127,8 +136,7 @@ SettingDialog::SettingDialog(QWidget *parent)
 	ui.setupUi(this);
 	setAttribute(Qt::WA_TranslucentBackground);
 
-	ui.label_about->hide();
-	ui.btn_visti_website->hide();
+	ui.label_gitee->setText(tr("gitee主页：") + GITEE_URL);
 
 	ui.stackedWidget->setCurrentIndex(0);
 	ui.label_version->setText(tr("软件版本：%1").arg(APP_VERSION_STR));

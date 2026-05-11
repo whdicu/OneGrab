@@ -93,7 +93,11 @@ OneGrab::OneGrab(QWidget *parent)
 		this, [this](const QString &version)
 	{
 		qDebug() << "Already the latest version:" << version;
-		int ret = DMessageBox::information(this, tr("好消息"), tr("当前已经是最新版本"), ACCEPT_BTN);
+		if (showLatestDialog_)
+		{
+			showLatestDialog_ = false;
+			DMessageBox::information(this, tr("好消息"), tr("当前已经是最新版本"), ACCEPT_BTN);
+		}
 	}, Qt::QueuedConnection);
 
 	connect(updateHelper_, &DUpdateHandler::sigCheckFailed,
@@ -158,8 +162,9 @@ void OneGrab::doGrab()
 	ui.view->setFocus();
 }
 
-void OneGrab::checkUpdate()
+void OneGrab::checkUpdate(bool showDialogOnLatest)
 {
+	showLatestDialog_ = showDialogOnLatest;
 	updateHelper_->doCheck();
 }
 

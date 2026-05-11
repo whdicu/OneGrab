@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
 			SettingDialog::getInstance()->show();
 			break;
 		case CheckUpdate:  // 检查更新
-			w.checkUpdate();
+			w.checkUpdate(true);
 			break;
 		case Exit:  // 退出
 			a.quit();
@@ -94,7 +94,10 @@ int main(int argc, char *argv[])
 	QObject::connect(Hook::getInstance(), &Hook::sendKeyType, &w, &OneGrab::slotKeyPressed, Qt::DirectConnection);
 	QObject::connect(Hook::getInstance(), &Hook::sendKeyTypeQueue, &w, &OneGrab::slotKeyPressed, Qt::QueuedConnection);
 	QObject::connect(&a, &QApplication::aboutToQuit, Hook::getInstance(), &Hook::unInstallHook);
-	QObject::connect(SettingDialog::getInstance(), &SettingDialog::sigCheckUpdate, &w, &OneGrab::checkUpdate);
+	QObject::connect(SettingDialog::getInstance(), &SettingDialog::sigCheckUpdate, &w, [&w]()
+	{
+		w.checkUpdate(true);
+	});
 
 	IMAGE_THREAD->start();
 

@@ -19,7 +19,7 @@ class OneGrab : public QWidget
 public:
     OneGrab(QWidget *parent = Q_NULLPTR);
 	void doGrab();
-	void checkUpdate();
+	void checkUpdate(bool showDialogOnLatest = false);
 
 public slots:
 	void slotKeyPressed(const KeyInfo& info);
@@ -58,4 +58,5 @@ private:
 	DQueue<LabelIsland*> islandBuffer_;
 	DUpdateHandler* updateHelper_;
 	DProgressBox* progressBox_;
+	bool showLatestDialog_ = false;
 };

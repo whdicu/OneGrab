@@ -117,7 +117,7 @@ OneGrab::OneGrab(QWidget *parent)
 		QString exePath = QApplication::applicationDirPath() + "/updater/OneUpdater.exe";
 		if (!QFile::exists(exePath))
 		{
-			DMessageBox::warning(nullptr, tr("有些事情好像不太行"), tr("文件缺失：%1").arg(exePath));
+			DMessageBox::warning(nullptr, tr("有些事情好像不太行"), tr("文件缺失：\n%1").arg(exePath));
 			return;
 		}
 
@@ -129,7 +129,7 @@ OneGrab::OneGrab(QWidget *parent)
 	// 下载失败
 	connect(updateHelper_, &DUpdateHandler::sigDownloadFailed, this, [](const QString& errMsg)
 	{
-
+		DMessageBox::warning(nullptr, tr("出问题了"), tr("下载失败：\n%1").arg(errMsg));
 	});
 
 	progressBox_->setAutoCloseOnComplete(false);

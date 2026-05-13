@@ -17,7 +17,6 @@ public:
 	void switchColorStrMode();
 
 signals:
-	void sigNeedRefresh(const QPoint& mousePos);
 	void sigMousePress(QMouseEvent* event);
 	void sigMouseMove(QMouseEvent* event);
 	void sigMouseRelease(QMouseEvent* event);

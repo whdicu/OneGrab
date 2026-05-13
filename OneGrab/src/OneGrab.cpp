@@ -61,7 +61,6 @@ OneGrab::OneGrab(QWidget *parent)
 	{
 		ignoreKeyPress_ = ignore;
 	}, Qt::DirectConnection);
-	connect(mouseWindow_, &MouseWindow::sigNeedRefresh, this, &OneGrab::slotRefreshPixelInfo);
 	connect(mouseWindow_, &MouseWindow::sigMousePress, this, &OneGrab::slotMouseEventInWindow);
 	connect(mouseWindow_, &MouseWindow::sigMouseMove, this, &OneGrab::slotMouseEventInWindow);
 	connect(mouseWindow_, &MouseWindow::sigMouseRelease, this, &OneGrab::slotMouseEventInWindow);
@@ -156,10 +155,13 @@ void OneGrab::doGrab()
 	setGeometry(screenRect);
 	show();
 
-	mouseWindow_->moveAndRefresh(QCursor::pos() - pos(), geometry());
+	QPoint pixPoint = QCursor::pos() - pos();
+	mouseWindow_->moveAndRefresh(pixPoint, geometry());
 	mouseWindow_->show();
 
 	ui.view->setFocus();
+
+	slotRefreshPixelInfo(pixPoint);
 }
 
 void OneGrab::checkUpdate(bool showDialogOnLatest)
@@ -452,6 +454,7 @@ void OneGrab::slotMouseEventInWindow(QMouseEvent* event)
 void OneGrab::slotPosChanged(const QPoint& pos)
 {
 	mouseWindow_->moveAndRefresh(pos, geometry());
+	slotRefreshPixelInfo(pos);
 }
 
 void OneGrab::slotNewVersionAvailable(const QString& version, const QString& url, const QString& notes, const QString& download)
@@ -548,120 +551,3 @@ void OneGrab::resizeEvent(QResizeEvent* event)
 {
 	QWidget::resizeEvent(event);
 }
-
-//void OneGrab::mousePressEvent(QMouseEvent* event)
-//{
-//	if (event->button() == Qt::LeftButton)
-//	{
-//		mouseWindow_->hide();
-//		mouseWindow_->show();
-//
-//		selectionStart_ = event->pos();
-//		selectionEnd_ = event->pos();
-//		
-//		QRect selectionRect = labelMask_->getSelectionRect();
-//		mouseState_ = 0;
-//
-//		int isInBorder = 0;
-//		if (dAbs(selectionRect.left() - selectionStart_.x()) < DRAG_SPACE)
-//		{
-//			isInBorder |= dragLeft;
-//		}
-//		else if (dAbs(selectionRect.right() - selectionStart_.x()) < DRAG_SPACE)
-//		{
-//			isInBorder |= dragRight;
-//		}
-//		if (dAbs(selectionRect.top() - selectionStart_.y()) < DRAG_SPACE)
-//		{
-//			isInBorder |= dragTop;
-//		}
-//		else if (dAbs(selectionRect.bottom() - selectionStart_.y()) < DRAG_SPACE)
-//		{
-//			isInBorder |= dragBottom;
-//		}
-//
-//		if (isInBorder)
-//		{
-//			mouseState_ = isInBorder;
-//		}
-//		else
-//		{
-//			if (selectionRect.contains(selectionStart_))
-//			{
-//				mouseState_ = MoveState;
-//			}
-//			else
-//			{
-//				btnBar_->hide();
-//				mouseState_ = SelectState;
-//				labelMask_->setSelectionRect(QRect(selectionStart_, selectionEnd_));
-//			}
-//		}
-//	}
-//}
-
-//void OneGrab::mouseMoveEvent(QMouseEvent* event)
-//{
-//	mouseWindow_->moveAndRefresh(event->globalPos(), geometry());
-//
-//	switch (mouseState_)
-//	{
-//	case FreeState:
-//		break;
-//	case SelectState:
-//		labelMask_->setSelectionRect(QRect(selectionStart_, event->pos()));
-//		break;
-//	case MoveState:
-//	{
-//		int dX = event->pos().x() - selectionEnd_.x();
-//		int dY = event->pos().y() - selectionEnd_.y();
-//		labelMask_->moveSelectionRect(dX, dY);
-//		break;
-//	}
-//	default:
-//	{
-//		int dX = event->pos().x() - selectionEnd_.x();
-//		int dY = event->pos().y() - selectionEnd_.y();
-//		if (mouseState_ & dragLeft)
-//		{
-//			if (labelMask_->moveSelectionRectLeft(dX))
-//			{
-//				mouseState_ = (mouseState_ | dragRight) & (~dragLeft);
-//			}
-//		}
-//		else if (mouseState_ & dragRight)
-//		{
-//			if (labelMask_->moveSelectionRectRight(dX))
-//			{
-//				mouseState_ = (mouseState_ | dragLeft) & (~dragRight);
-//			}
-//		}
-//		if (mouseState_ & dragTop)
-//		{
-//			if (labelMask_->moveSelectionRectTop(dY))
-//			{
-//				mouseState_ = (mouseState_ | dragBottom) & (~dragTop);
-//			}
-//		}
-//		else if (mouseState_ & dragBottom)
-//		{
-//			if (labelMask_->moveSelectionRectBottom(dY))
-//			{
-//				mouseState_ = (mouseState_ | dragTop) & (~dragBottom);
-//			}
-//		}
-//		break;
-//	}
-//	}
-//	selectionEnd_ = event->pos();
-//}
-
-//void OneGrab::mouseReleaseEvent(QMouseEvent* event)
-//{
-//	if (event->button() == Qt::LeftButton)
-//	{
-//		mouseState_ = FreeState;
-//		mouseWindow_->show();
-//		btnBar_->show();
-//	}
-//}

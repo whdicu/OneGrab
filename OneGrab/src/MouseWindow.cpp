@@ -66,28 +66,32 @@ void MouseWindow::moveAndRefresh(const QPoint& pos, const QRect& fullPixmapRect)
 	{
 	case 0:  // 上
 	{
-		int dx = (pos.x() - x1) * (width() + MARGIN_TO_MOUSE * 2) / (x2 - x1);
+		int denom = x2 - x1;
+		int dx = (denom != 0) ? (pos.x() - x1) * (width() + MARGIN_TO_MOUSE * 2) / denom : 0;
 		p.setX(pos.x() - dx);
 		p.setY(pos.y() + MARGIN_TO_MOUSE);
 		break;
 	}
 	case 1:  // 右
 	{
-		int dy = (pos.y() - y2) * (height() + MARGIN_TO_MOUSE * 2) / (y1 - y2);
+		int denom = y1 - y2;
+		int dy = (denom != 0) ? (pos.y() - y2) * (height() + MARGIN_TO_MOUSE * 2) / denom : 0;
 		p.setX(pos.x() - width() - MARGIN_TO_MOUSE);
 		p.setY(pos.y() - dy);
 		break;
 	}
 	case 2:  // 左
 	{
-		int dy = (pos.y() - y1) * (height() + MARGIN_TO_MOUSE * 2) / (y2 - y1);
+		int denom = y2 - y1;
+		int dy = (denom != 0) ? (pos.y() - y1) * (height() + MARGIN_TO_MOUSE * 2) / denom : 0;
 		p.setX(pos.x() + MARGIN_TO_MOUSE);
 		p.setY(pos.y() - dy);
 		break;
 	}
 	default:  // 3 下
 	{
-		int dx = (pos.x() - x2) * (width() + MARGIN_TO_MOUSE * 2) / (x1 - x2);
+		int denom = x1 - x2;
+		int dx = (denom != 0) ? (pos.x() - x2) * (width() + MARGIN_TO_MOUSE * 2) / denom : 0;
 		p.setX(pos.x() - dx);
 		p.setY(pos.y() - height() - MARGIN_TO_MOUSE);
 		break;

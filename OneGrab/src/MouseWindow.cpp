@@ -6,7 +6,7 @@
 const static int MARGIN_TO_MOUSE = 15;
 
 
-MouseWindow::MouseWindow(QWidget *parent)
+MouseWindow::MouseWindow(QWidget* parent)
 	: QWidget(parent, Qt::FramelessWindowHint | Qt::Tool | Qt::WindowStaysOnTopHint)
 	, fullPixmapRect_(0, 0, 0, 0)
 	, isNumColor_(false)
@@ -152,18 +152,6 @@ void MouseWindow::mousePressEvent(QMouseEvent* event)
 
 void MouseWindow::mouseMoveEvent(QMouseEvent* event)
 {
-	QPoint toPos = pos() + event->pos() + QPoint(15, 0);
-	if (toPos.x() < fullPixmapRect_.left())
-		toPos.setX(fullPixmapRect_.left());
-	else if (toPos.x() > fullPixmapRect_.right() - width())
-		toPos.setX(fullPixmapRect_.right() - width());
-
-	if (toPos.y() < fullPixmapRect_.top())
-		toPos.setY(fullPixmapRect_.top());
-	else if (toPos.y() > fullPixmapRect_.bottom() - height())
-		toPos.setY(fullPixmapRect_.bottom() - height());
-
-	QWidget::move(toPos);
 	emit sigMouseMove(event);
 }
 

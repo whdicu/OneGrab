@@ -443,8 +443,13 @@ void OneGrab::slotMouseEventInWindow(QMouseEvent* event)
 		ui.view->mousePressEvent(newEvent);
 		break;
 	case QMouseEvent::MouseMove:
+	{
+		QPoint toPos = mouseWindow_->pos() + event->pos() - pos();
+		//qDebug() << 11111 << pos() << mouseWindow_->pos() << event->pos() << toPos;
+		slotPosChanged(toPos);
 		ui.view->mouseMoveEvent(newEvent);
 		break;
+	}
 	case QMouseEvent::MouseButtonRelease:
 		ui.view->mouseReleaseEvent(newEvent);
 		break;

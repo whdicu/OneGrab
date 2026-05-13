@@ -8,7 +8,7 @@ class MouseWindow : public QWidget
 	Q_OBJECT
 
 public:
-	MouseWindow(QWidget *parent = Q_NULLPTR);
+	MouseWindow(QWidget* parent = Q_NULLPTR);
 	~MouseWindow();
 	void moveAndRefresh(const QPoint& pos, const QRect& fullPixmapRect);
 	void refreshInfo(const QPoint& pos, const QColor& color, const QPixmap& pixmap);

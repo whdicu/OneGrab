@@ -57,6 +57,11 @@ OneGrab::OneGrab(QWidget *parent)
 	connect(btnBar_, &BtnBar::sigSave, this, &OneGrab::slotSave);
 	connect(btnBar_, &BtnBar::sigCopy, this, &OneGrab::slotCopy);
 	connect(btnBar_, &BtnBar::sigMouseEnter, ui.view, &DGrabView::removeBorderBright);
+	connect(btnBar_, &BtnBar::sigMouseMoveGlobal, this, [this](const QPoint& screenPos)
+	{
+		QPoint localPos = screenPos - pos();
+		slotPosChanged(localPos);
+	});
 	connect(btnBar_, &BtnBar::sigSetIgnoreKey, ui.view, [this](bool ignore)
 	{
 		ignoreKeyPress_ = ignore;

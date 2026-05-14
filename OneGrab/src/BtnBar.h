@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <QWidget>
 #include "SettingHandler.h"
 #include "ui_BtnBar.h"
@@ -24,6 +24,7 @@ signals:
 	void sigSave();
 	void sigCopy();
 	void sigMouseEnter();
+	void sigMouseMoveGlobal(const QPoint& screenPos);
 	void sigSetIgnoreKey(bool ignore);
 
 private slots:
@@ -49,8 +50,10 @@ private:
 	void refreshLineBtn(LineWidth lineWidth);
 	void setLineWidth(LineWidth lineWidth);
 	void enterEvent(QEvent* event) override;
+	void mouseMoveEvent(QMouseEvent* event) override;
+	bool eventFilter(QObject* watched, QEvent* event) override;
 
 	Ui::BtnBar ui;
-	int isDrawing_;  // 0Ã»»­ 1ÔÚ»­¾ØĞÎ 2ÔÚ»­¼ıÍ· 3Ëæ±ã»­ 4»­ÎÄ×Ö
+	int isDrawing_;  // 0æ²¡ç”» 1åœ¨ç”»çŸ©å½¢ 2åœ¨ç”»ç®­å¤´ 3éšä¾¿ç”» 4ç”»æ–‡å­—
 	QPushButton* choosedBtn_;
 };

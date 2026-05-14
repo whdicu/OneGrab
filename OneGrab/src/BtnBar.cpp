@@ -1,6 +1,23 @@
-#include "BtnBar.h"
+﻿#include "BtnBar.h"
 #include <QColorDialog>
 #include <QDebug>
+#include <QEvent>
+#include <QMouseEvent>
+
+
+static void setupChildMouseTracking(QObject* filterObj, QWidget* parent)
+{
+	for (QObject* child : parent->children())
+	{
+		if (child->isWidgetType())
+		{
+			QWidget* w = static_cast<QWidget*>(child);
+			w->installEventFilter(filterObj);
+			w->setMouseTracking(true);
+			setupChildMouseTracking(filterObj, w);  // 递归处理孙子控件
+		}
+	}
+}
 
 const static QString NORMAL_STYLE = R"(QPushButton
 {
@@ -19,6 +36,9 @@ BtnBar::BtnBar(QWidget *parent)
 {
 	ui.setupUi(this);
 	setAttribute(Qt::WA_TranslucentBackground);
+	setMouseTracking(true);
+	// 给所有子控件递归安装事件过滤器 + 启用鼠标追踪，拦截鼠标移动事件
+	setupChildMouseTracking(this, this);
 	ui.widget_2->hide();
 }
 
@@ -158,7 +178,7 @@ void BtnBar::on_btn_color_clicked()
 	*c = dlg.selectedColor();
 	SETTING_HANDLER->setSettingStruct(stru);
 
-	// Ϊ��ˢ�½�����ɫ��ʾ
+	// 为了刷新界面颜色显示
 	refreshUI();
 }
 
@@ -324,4 +344,21 @@ void BtnBar::setLineWidth(LineWidth lineWidth)
 void BtnBar::enterEvent(QEvent* event)
 {
 	emit sigMouseEnter();
+}
+
+void BtnBar::mouseMoveEvent(QMouseEvent* event)
+{
+	// 将鼠标在 BtnBar 上的坐标转为屏幕坐标，供 OneGrab 更新 MouseWindow 位置
+	emit sigMouseMoveGlobal(mapToGlobal(event->pos()));
+}
+
+bool BtnBar::eventFilter(QObject* watched, QEvent* event)
+{
+	if (event->type() == QEvent::MouseMove)
+	{
+		QMouseEvent* me = static_cast<QMouseEvent*>(event);
+		qDebug() << __FUNCTION__ << me->globalPos();
+		emit sigMouseMoveGlobal(me->globalPos());
+	}
+	return QWidget::eventFilter(watched, event);
 }

@@ -439,24 +439,24 @@ void OneGrab::slotRefreshPixelInfo(const QPoint& mousePos)
 
 void OneGrab::slotMouseEventInWindow(QMouseEvent* event)
 {
-	QMouseEvent* newEvent = new QMouseEvent(event->type(), event->localPos() + mouseWindow_->pos() - pos(), event->screenPos(),
+	QMouseEvent newEvent(event->type(), event->localPos() + mouseWindow_->pos() - pos(), event->screenPos(),
 		event->button(), event->buttons(), event->modifiers());
 	
 	switch (event->type())
 	{
 	case QMouseEvent::MouseButtonPress:
-		ui.view->mousePressEvent(newEvent);
+		ui.view->mousePressEvent(&newEvent);
 		break;
 	case QMouseEvent::MouseMove:
 	{
 		QPoint toPos = mouseWindow_->pos() + event->pos() - pos();
 		//qDebug() << 11111 << pos() << mouseWindow_->pos() << event->pos() << toPos;
 		slotPosChanged(toPos);
-		ui.view->mouseMoveEvent(newEvent);
+		ui.view->mouseMoveEvent(&newEvent);
 		break;
 	}
 	case QMouseEvent::MouseButtonRelease:
-		ui.view->mouseReleaseEvent(newEvent);
+		ui.view->mouseReleaseEvent(&newEvent);
 		break;
 	}
 }

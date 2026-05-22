@@ -5,8 +5,11 @@
 #include "DProgressBox.h"
 #include "DUpdateHandler.h"
 #include "ImageThread.h"
-#include "LabelIsland.h"
+#include "LabelIsland1.h"
 #include "LabelIsland2.h"
+#include "LabelIsland3.h"
+#include "LabelIsland4.h"
+#include "LabelIsland5.h"
 #include "MouseWindow.h"
 #include <QClipboard>
 #include <QCoreApplication>

@@ -42,9 +42,6 @@
     <ClCompile Include="src\SettingDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\LabelIsland.cpp">
-      <Filter>Widgets</Filter>
-    </ClCompile>
     <ClCompile Include="src\BtnBar.cpp">
       <Filter>Widgets</Filter>
     </ClCompile>
@@ -69,11 +66,23 @@
     <ClCompile Include="src\LabelIsland2.cpp">
       <Filter>Widgets</Filter>
     </ClCompile>
+    <ClCompile Include="src\LabelIsland3.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="src\LabelIsland4.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="src\LabelIsland5.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
     <ClCompile Include="src\WinHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\ImageThread.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\LabelIsland1.cpp">
+      <Filter>Widgets</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -88,9 +97,6 @@
     </QtMoc>
     <QtMoc Include="src\SettingDialog.h">
       <Filter>Header Files</Filter>
-    </QtMoc>
-    <QtMoc Include="src\LabelIsland.h">
-      <Filter>Widgets</Filter>
     </QtMoc>
     <QtMoc Include="src\BtnBar.h">
       <Filter>Widgets</Filter>
@@ -113,8 +119,20 @@
     <QtMoc Include="src\LabelIsland2.h">
       <Filter>Widgets</Filter>
     </QtMoc>
+    <QtMoc Include="src\LabelIsland3.h">
+      <Filter>Widgets</Filter>
+    </QtMoc>
+    <QtMoc Include="src\LabelIsland4.h">
+      <Filter>Widgets</Filter>
+    </QtMoc>
+    <QtMoc Include="src\LabelIsland5.h">
+      <Filter>Widgets</Filter>
+    </QtMoc>
     <QtMoc Include="src\ImageThread.h">
       <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="src\LabelIsland1.h">
+      <Filter>Widgets</Filter>
     </QtMoc>
   </ItemGroup>
   <ItemGroup>

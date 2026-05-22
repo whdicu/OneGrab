@@ -17,8 +17,11 @@
     <ClCompile Include="src\DGrabView.cpp" />
     <ClCompile Include="src\ImageThread.cpp" />
     <ClCompile Include="src\LabelIsland2.cpp" />
+    <ClCompile Include="src\LabelIsland3.cpp" />
+    <ClCompile Include="src\LabelIsland4.cpp" />
+    <ClCompile Include="src\LabelIsland5.cpp" />
     <ClCompile Include="src\MaskItem.cpp" />
-    <ClCompile Include="src\LabelIsland.cpp" />
+    <ClCompile Include="src\LabelIsland1.cpp" />
     <ClCompile Include="src\LabelMask.cpp" />
     <ClCompile Include="src\MaskLabel.cpp" />
     <ClCompile Include="src\main.cpp" />
@@ -57,7 +60,7 @@
     <QtMoc Include="src\SettingHandler.h" />
   </ItemGroup>
   <ItemGroup>
-    <QtMoc Include="src\LabelIsland.h" />
+    <QtMoc Include="src\LabelIsland1.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -66,6 +69,9 @@
     <ClInclude Include="src\version.h" />
     <ClInclude Include="src\WinHandler.h" />
     <QtMoc Include="src\LabelIsland2.h" />
+    <QtMoc Include="src\LabelIsland3.h" />
+    <QtMoc Include="src\LabelIsland4.h" />
+    <QtMoc Include="src\LabelIsland5.h" />
     <ClInclude Include="src\MaskItem.h" />
     <QtMoc Include="src\DGrabView.h" />
     <QtMoc Include="src\SettingDialog.h" />

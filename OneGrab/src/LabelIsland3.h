@@ -1,16 +1,17 @@
 ﻿#pragma once
 #include <QLabel>
+#include <QMap>
 
 class QPropertyAnimation;
 class DMenu;
 
-class LabelIsland : public QLabel
+class LabelIsland3 : public QLabel
 {
 	Q_OBJECT
 
 public:
-	LabelIsland(const QPixmap& pixmap, const QPoint& pos, QWidget* parent = nullptr);
-	~LabelIsland();
+	LabelIsland3(const QPixmap& pixmap, const QPoint& pos, QWidget* parent = nullptr);
+	~LabelIsland3();
 	void onRefreshSetting();
 
 signals:
@@ -25,7 +26,10 @@ private:
 
 	void slotBtnClicked(const QString& text);
 	void scale(bool bigger);
+	QPixmap getScaledPixmap(int sizeIndex);
 
+	QPixmap originalPixmap_;
+	QMap<int, QPixmap> scaledCache_;
 	QPoint pressedPoint_;
 	int sizeIndex_;
 	QRect originRect_;
@@ -34,4 +38,3 @@ private:
 	QLabel* sizeLabel_;
 	DMenu* menu_;
 };
-

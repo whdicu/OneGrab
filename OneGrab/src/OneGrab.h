@@ -9,8 +9,15 @@
 class BtnBar;
 class DProgressBox;
 class DUpdateHandler;
-class LabelIsland;
+class LabelIsland1;
+class LabelIsland2;
+class LabelIsland3;
+class LabelIsland4;
+class LabelIsland5;
 class MouseWindow;
+
+using LabelIsland = LabelIsland1;
+
 
 class OneGrab : public QWidget
 {

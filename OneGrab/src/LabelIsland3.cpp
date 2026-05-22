@@ -1,4 +1,4 @@
-﻿#include "LabelIsland.h"
+﻿#include "LabelIsland3.h"
 #include "DMenu.h"
 #include "HDBase/DStringList.hpp"
 #include "HDQt.h"
@@ -19,14 +19,14 @@
 const static int SCALE_ANIMATION_TIME = 150;
 const static int BORDER_SIZE = 2;
 const static int ORIGIN_SIZE_INDEX = 8;
-const static int BORDER_MIN_PIXEL = 10;  // 边缘至少显示10像素
+const static int BORDER_MIN_PIXEL = 10;
 const static QVector<int> SIZE_V =
-//{10, 15, 22, 33, 51, 76, 114, 171, 256, 384, 577, 865/*, 1297, 1946, 2919, 4379*/};
-{10, 13, 17, 22, 29, 37, 48, 63, 82, 106, 138, 179, 232, 303, 394, 512, 665};
+{ 10, 13, 17, 22, 29, 37, 48, 63, 82, 106, 138, 179, 232, 303, 394, 512, 665 };
 const static DStringList MENU_TEXT = { "存下来", "复制", "变大", "变小", "返回", "关掉" };
 
-LabelIsland::LabelIsland(const QPixmap& pixmap, const QPoint& pos, QWidget* parent /*= nullptr*/)
+LabelIsland3::LabelIsland3(const QPixmap& pixmap, const QPoint& pos, QWidget* parent /*= nullptr*/)
 	: QLabel(parent)
+	, originalPixmap_(pixmap)
 	, sizeIndex_(ORIGIN_SIZE_INDEX)
 	, pointToOrigin_(0, 0)
 	, sizeLabel_(new QLabel("100%"))
@@ -36,16 +36,17 @@ LabelIsland::LabelIsland(const QPixmap& pixmap, const QPoint& pos, QWidget* pare
 	originRect_.moveTo(pos - QPoint(BORDER_SIZE, BORDER_SIZE));
 	originRect_.setSize(pixmap.size() + QSize(BORDER_SIZE, BORDER_SIZE) * 2);
 	setScaledContents(true);
+
+	// 预缓存当前等级
+	double initScale = SIZE_V.at(ORIGIN_SIZE_INDEX) / (double)SIZE_V.at(ORIGIN_SIZE_INDEX);
+	scaledCache_[ORIGIN_SIZE_INDEX] = pixmap;
+
 	setPixmap(pixmap);
 	setGeometry(originRect_);
 
 	animation_ = new QPropertyAnimation(this, "geometry");
 	animation_->setDuration(SCALE_ANIMATION_TIME);
 	connect(animation_, &QPropertyAnimation::finished, sizeLabel_, &QLabel::hide);
-	//connect(animation_, &QPropertyAnimation::valueChanged, this, [this](const QVariant &value)
-	//{
-	//	update();
-	//});
 
 	sizeLabel_->setWindowFlags(Qt::FramelessWindowHint | Qt::Tool | Qt::WindowStaysOnTopHint);
 	sizeLabel_->resize(80, 36);
@@ -53,12 +54,12 @@ LabelIsland::LabelIsland(const QPixmap& pixmap, const QPoint& pos, QWidget* pare
 	sizeLabel_->setStyleSheet("QLabel { color: #5c5c66; background-color: white; padding-left: 5px; }");
 	sizeLabel_->setAlignment(Qt::AlignCenter);
 
-	connect(menu_, &DMenu::sigBtnClicked, this, &LabelIsland::slotBtnClicked);
+	connect(menu_, &DMenu::sigBtnClicked, this, &LabelIsland3::slotBtnClicked);
 
 	onRefreshSetting();
 }
 
-LabelIsland::~LabelIsland()
+LabelIsland3::~LabelIsland3()
 {
 	qDebug() << __FUNCTION__;
 	if (nullptr != sizeLabel_)
@@ -68,7 +69,7 @@ LabelIsland::~LabelIsland()
 	}
 }
 
-void LabelIsland::onRefreshSetting()
+void LabelIsland3::onRefreshSetting()
 {
 	QColor mainColor = SETTING_HANDLER->getMainColor();
 	setStyleSheet(QString("QLabel { border: %1px solid %2; }")
@@ -76,7 +77,7 @@ void LabelIsland::onRefreshSetting()
 	menu_->setBgColor(mainColor);
 }
 
-void LabelIsland::keyPressEvent(QKeyEvent* event)
+void LabelIsland3::keyPressEvent(QKeyEvent* event)
 {
 	switch (event->key())
 	{
@@ -87,7 +88,7 @@ void LabelIsland::keyPressEvent(QKeyEvent* event)
 	}
 }
 
-void LabelIsland::wheelEvent(QWheelEvent* event)
+void LabelIsland3::wheelEvent(QWheelEvent* event)
 {
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 	scale(event->angleDelta().y() > 0);
@@ -99,7 +100,7 @@ void LabelIsland::wheelEvent(QWheelEvent* event)
 	sizeLabel_->show();
 }
 
-void LabelIsland::mousePressEvent(QMouseEvent* event)
+void LabelIsland3::mousePressEvent(QMouseEvent* event)
 {
 	switch (event->button())
 	{
@@ -115,31 +116,11 @@ void LabelIsland::mousePressEvent(QMouseEvent* event)
 	menu_->setInLoseFocue(false);
 }
 
-void LabelIsland::mouseMoveEvent(QMouseEvent* event)
+void LabelIsland3::mouseMoveEvent(QMouseEvent* event)
 {
 	Qt::MouseButtons btns = event->buttons();
 	if (btns & Qt::LeftButton)
 	{
-		// 一种保护，可不用
-		// 获取容纳所有显示器图片的矩形
-		//QRect okRect;
-		//QList<QScreen*> screens = QGuiApplication::screens();
-		//for (QScreen *screen : screens)
-		//{
-		//	QRect scRect = screen->geometry();
-		//	if (scRect.x() < okRect.x())
-		//		okRect.setX(scRect.x());
-		//	if (scRect.y() < okRect.y())
-		//		okRect.setY(scRect.y());
-		//	okRect = okRect.united(scRect);
-		//}
-
-		//okRect.setTop(okRect.top() + BORDER_MIN_PIXEL);
-		//okRect.setBottom(okRect.bottom() - BORDER_MIN_PIXEL);
-		//okRect.setLeft(okRect.left() + BORDER_MIN_PIXEL);
-		//okRect.setRight(okRect.right() - BORDER_MIN_PIXEL);
-
-		// event->pos()的值有时会瞬间变化，导致图片岛漂移
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 		auto globalPos = event->globalPosition().toPoint();
 #else
@@ -147,30 +128,17 @@ void LabelIsland::mouseMoveEvent(QMouseEvent* event)
 #endif
 
 		originRect_.moveTo(globalPos - pressedPoint_);
-
-		// 一种保护，可不用
-		//if (originRect_.top() > okRect.bottom())
-		//	originRect_.moveTop(okRect.bottom());
-		//else if (originRect_.bottom() < okRect.top())
-		//	originRect_.moveBottom(okRect.top());
-
-		//if (originRect_.left() > okRect.right())
-		//	originRect_.moveLeft(okRect.right());
-		//else if (originRect_.right() < okRect.left())
-		//	originRect_.moveRight(okRect.left());
-
 		move(originRect_.topLeft() + pointToOrigin_);
 	}
 }
 
-void LabelIsland::mouseReleaseEvent(QMouseEvent* event)
+void LabelIsland3::mouseReleaseEvent(QMouseEvent* event)
 {
-	
+
 }
 
-void LabelIsland::slotBtnClicked(const QString& text)
+void LabelIsland3::slotBtnClicked(const QString& text)
 {
-	// "存下来", "复制", "变大", "变小", "返回", "关掉"
 	DSizeType i = MENU_TEXT.indexOf(HDQt::QString2DString(text));
 	switch (i)
 	{
@@ -226,7 +194,22 @@ void LabelIsland::slotBtnClicked(const QString& text)
 	}
 }
 
-void LabelIsland::scale(bool bigger)
+QPixmap LabelIsland3::getScaledPixmap(int sizeIndex)
+{
+	if (scaledCache_.contains(sizeIndex))
+		return scaledCache_[sizeIndex];
+
+	double scale = SIZE_V.at(sizeIndex) / (double)SIZE_V.at(ORIGIN_SIZE_INDEX);
+	QSize targetSize = originalPixmap_.size() * scale;
+	QPixmap scaled = originalPixmap_.scaled(targetSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+	if (scaled.isNull())
+		return originalPixmap_;  // OOM 回退
+
+	scaledCache_[sizeIndex] = scaled;
+	return scaled;
+}
+
+void LabelIsland3::scale(bool bigger)
 {
 	sizeIndex_ += bigger ? 1 : -1;
 	if (sizeIndex_ < 0)
@@ -240,7 +223,10 @@ void LabelIsland::scale(bool bigger)
 	QSize dSize = originRect_.size() - newSize;
 
 	pointToOrigin_ = QPoint(dSize.width() / 2, dSize.height() / 2);
-	
+
+	// 预缩放缓存置换：将 QLabel 的 pixmap 替换为接近目标尺寸的缓存版本
+	setPixmap(getScaledPixmap(sizeIndex_));
+
 	animation_->stop();
 	animation_->setEasingCurve(QEasingCurve::Linear);
 	animation_->setStartValue(geometry());

@@ -95,6 +95,12 @@ void BtnBar::setDrawMode(MouseState drawMode)
 		drawBtnClicked(btn, drawMode);
 }
 
+void BtnBar::setLineWidth(LineWidth lineWidth)
+{
+	setLineWidthToFile(lineWidth);
+	refreshLineBtn(lineWidth);
+}
+
 void BtnBar::on_btn_rect_clicked()
 {
 	drawBtnClicked(ui.btn_rect, DrawRectS);
@@ -184,25 +190,25 @@ void BtnBar::on_btn_color_clicked()
 
 void BtnBar::on_btn_line1_clicked()
 {
-	setLineWidth(Line1);
+	setLineWidthToFile(Line1);
 	refreshLineBtn(Line1);
 }
 
 void BtnBar::on_btn_line2_clicked()
 {
-	setLineWidth(Line2);
+	setLineWidthToFile(Line2);
 	refreshLineBtn(Line2);
 }
 
 void BtnBar::on_btn_line3_clicked()
 {
-	setLineWidth(Line3);
+	setLineWidthToFile(Line3);
 	refreshLineBtn(Line3);
 }
 
 void BtnBar::on_btn_line4_clicked()
 {
-	setLineWidth(Line4);
+	setLineWidthToFile(Line4);
 	refreshLineBtn(Line4);
 }
 
@@ -318,7 +324,7 @@ void BtnBar::refreshLineBtn(LineWidth lineWidth)
 	}
 }
 
-void BtnBar::setLineWidth(LineWidth lineWidth)
+void BtnBar::setLineWidthToFile(LineWidth lineWidth)
 {
 	switch (isDrawing_)
 	{

@@ -16,6 +16,7 @@ public:
 	void onFinishGrab();
 	int getDrawingType() { return isDrawing_; }
 	void setDrawMode(MouseState drawMode);
+	void setLineWidth(LineWidth lineWidth);
 
 signals:
 	void sigDrawing(int isDrawing);
@@ -48,7 +49,7 @@ private:
 	void drawBtnClicked(QPushButton* btn, int drawType);
 	void refreshUI();
 	void refreshLineBtn(LineWidth lineWidth);
-	void setLineWidth(LineWidth lineWidth);
+	void setLineWidthToFile(LineWidth lineWidth);
 	void enterEvent(QEvent* event) override;
 	void mouseMoveEvent(QMouseEvent* event) override;
 	bool eventFilter(QObject* watched, QEvent* event) override;

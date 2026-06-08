@@ -228,6 +228,22 @@ void OneGrab::slotKeyPressed(const KeyInfo& info)
 	case 46ul:  // delete
 		ui.view->deleteHoverItem();
 		break;
+	case 49ul:  // 1
+		if (btnBar_->getDrawingType())
+			btnBar_->setLineWidth(Line1);
+		break;
+	case 50ul:  // 2
+		if (btnBar_->getDrawingType())
+			btnBar_->setLineWidth(Line2);
+		break;
+	case 51ul:  // 3
+		if (btnBar_->getDrawingType())
+			btnBar_->setLineWidth(Line3);
+		break;
+	case 52ul:  // 4
+		if (btnBar_->getDrawingType())
+			btnBar_->setLineWidth(Line4);
+		break;
 	case 'C':
 		if (info.ctrlPressed)
 		{

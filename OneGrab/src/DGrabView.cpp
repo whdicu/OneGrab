@@ -20,6 +20,10 @@ DGrabView::DGrabView(QWidget* parent)
 	, selectionStart_(0, 0)
 	, mousePosBeforeMove_(0, 0)
 	, choosedBorder_(0)
+	, hoveredRectIndex_(-1)
+	, clickOnWindowRect_(false)
+	, hadSelectionBeforeHover_(false)
+	, selectionConfirmed_(false)
 {
 	setMouseTracking(true);
 	setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -38,6 +42,15 @@ QGraphicsPixmapItem* DGrabView::setImg(const QPixmap& img)
 	scene()->addItem(maskItem_);
 
 	return imgItem_;
+}
+
+void DGrabView::setWindowRects(const QList<QRect>& rects)
+{
+	windowRects_ = rects;
+	hoveredRectIndex_ = -1;
+	clickOnWindowRect_ = false;
+	hadSelectionBeforeHover_ = false;
+	selectionConfirmed_ = false;
 }
 
 void DGrabView::onFinishGrab()
@@ -154,6 +167,15 @@ void DGrabView::mousePressEvent(QMouseEvent *event)
 			break;
 		default:
 			mousePosBeforeMove_ = event->pos();
+
+			// 鼠标在窗口矩形内按下 → 点击候选（不进入 SelectState/MoveState）
+			if (hoveredRectIndex_ >= 0)
+			{
+				clickOnWindowRect_ = true;
+				choosedBorder_ = 0;
+				break;
+			}
+
 			if (choosedBorder_)  // 要拖动边框
 			{
 				mouseState_ |= choosedBorder_;
@@ -202,6 +224,73 @@ void DGrabView::mouseMoveEvent(QMouseEvent* event)
 
 	// 根据鼠标位置设置鼠标样式
 	unsetCursor();
+
+	// 窗口矩形吸附：FreeState 下的悬停预览与点击候选拖拽阈值检测
+	// 一旦确认过选区，不再自动吸附矩形
+	if (mouseState_ == FreeState && !selectionConfirmed_)
+	{
+		if ((event->buttons() & Qt::LeftButton) && clickOnWindowRect_)
+		{
+			// 按住并移动超过阈值 → 转入 SelectState 自由拖选
+			if ((event->pos() - selectionStart_).manhattanLength() >= 3)
+			{
+				clickOnWindowRect_ = false;
+				hoveredRectIndex_ = -1;
+				emit sigMousePressed();
+				mouseState_ = SelectState;
+				maskItem_->setSelectionRect(QRect(selectionStart_, selectionStart_));
+				emit sigSelectionChanged(maskItem_->getSelectionRect());
+			}
+		}
+		else if (!(event->buttons() & Qt::LeftButton))
+		{
+			// 无按键悬停 → 检测鼠标是否进入窗口矩形
+			int newHovered = -1;
+			for (int i = 0; i < windowRects_.size(); ++i)
+			{
+				if (windowRects_[i].contains(event->pos()))
+				{
+					newHovered = i;
+					break;
+				}
+			}
+
+			if (newHovered != hoveredRectIndex_)
+			{
+				// 进入矩形时保存当前选区，以便移出后恢复
+				if (newHovered >= 0 && hoveredRectIndex_ < 0)
+				{
+					savedSelectionRect_ = maskItem_->getSelectionRect();
+					hadSelectionBeforeHover_ = !savedSelectionRect_.isEmpty();
+				}
+				hoveredRectIndex_ = newHovered;
+
+				if (hoveredRectIndex_ >= 0)
+					maskItem_->setSelectionRect(windowRects_[hoveredRectIndex_]);
+				else if (hadSelectionBeforeHover_)
+				{
+					maskItem_->setSelectionRect(savedSelectionRect_);
+					hadSelectionBeforeHover_ = false;
+				}
+				else
+					maskItem_->setSelectionRect(QRect());
+			}
+		}
+
+		// 窗口矩形交互中（悬停或点击候选），跳过后续 border 检测
+		if (hoveredRectIndex_ >= 0 || clickOnWindowRect_)
+		{
+			if (hoveredRectIndex_ >= 0)
+				setCursor(Qt::PointingHandCursor);
+			choosedBorder_ = 0;
+			mousePosBeforeMove_ = event->pos();
+			emit sigPosChanged(event->pos());
+			QGraphicsView::mouseMoveEvent(event);
+			update();
+			return;
+		}
+	}
+
 	switch (mouseState_)
 	{
 	case SelectState:
@@ -346,6 +435,18 @@ void DGrabView::mouseReleaseEvent(QMouseEvent *event)
 
 	if (event->button() == Qt::LeftButton)
 	{
+		// 窗口矩形点击确认：未拖拽即释放 → 直接选定该矩形
+		if (clickOnWindowRect_)
+		{
+			clickOnWindowRect_ = false;
+			hoveredRectIndex_ = -1;
+			selectionConfirmed_ = true;
+			emit sigSelectionChanged(maskItem_->getSelectionRect());
+			editingItem_ = nullptr;
+			emit sigMouseReleased();
+			return;
+		}
+
 		switch (mouseState_)
 		{
 		case DrawRectS:
@@ -363,6 +464,7 @@ void DGrabView::mouseReleaseEvent(QMouseEvent *event)
 			break;
 		default:
 			mouseState_ = FreeState;
+			selectionConfirmed_ = true;
 			break;
 		}
 		

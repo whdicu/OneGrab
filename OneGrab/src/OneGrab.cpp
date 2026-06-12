@@ -1,6 +1,7 @@
 ﻿#include "OneGrab.h"
 #include "BtnBar.h"
 #include "HDCore/DBoolSetter.hpp"
+#include "HDCore/DSys.hpp"
 #include "DMessageBox.h"
 #include "DProgressBox.h"
 #include "DUpdateHandler.h"
@@ -159,6 +160,26 @@ void OneGrab::doGrab()
 	// x y 可以是负数
 	QRect screenRect(0, 0, 0, 0);
 	fullPixmap_ = getFullPixmap(screenRect);
+
+
+	// 将所有可见窗口矩形画到截图上，并传入 DGrabView 用于吸附选择
+	{
+		auto rects = DSys::GetAllVisibleWindowRects();
+		//QPainter painter(&fullPixmap_);
+		//painter.setPen(QPen(Qt::red, 2));
+		QPoint offset = -screenRect.topLeft();
+		QList<QRect> qRects;
+		for (const WindowRectInfo& r : rects)
+		{
+			QRect qr(r.rect.left + offset.x(), r.rect.top + offset.y(),
+				r.rect.right - r.rect.left, r.rect.bottom - r.rect.top);
+			//painter.drawRect(qr);
+			qRects.append(qr);
+		}
+		ui.view->setWindowRects(qRects);
+	}
+
+
 	ui.view->setImg(fullPixmap_);
 	setGeometry(screenRect);
 	show();
@@ -492,6 +513,12 @@ void OneGrab::slotNewVersionAvailable(const QString& version, const QString& url
 	qDebug() << "Release URL:" << url;
 	qDebug() << "Release notes:" << notes;
 	qDebug() << "Download URL:" << download;
+
+	if (download.isEmpty())
+	{
+		DMessageBox::warning(this, tr("警告"), tr("开发者好像忘记上传更新文件了。"));
+		return;
+	}
 
 	int ret = DMessageBox::information(this, tr("好消息"), tr("检测到新版本，是否立即更新？"), ALL_BTN);
 

@@ -44,7 +44,7 @@ QGraphicsPixmapItem* DGrabView::setImg(const QPixmap& img)
 	return imgItem_;
 }
 
-void DGrabView::setWindowRects(const QList<QRect>& rects)
+void DGrabView::setWindowRects(const DList<QRect>& rects)
 {
 	windowRects_ = rects;
 	hoveredRectIndex_ = -1;
@@ -169,7 +169,8 @@ void DGrabView::mousePressEvent(QMouseEvent *event)
 			mousePosBeforeMove_ = event->pos();
 
 			// 鼠标在窗口矩形内按下 → 点击候选（不进入 SelectState/MoveState）
-			if (hoveredRectIndex_ >= 0)
+			if (SETTING_HANDLER->getAutoGrabWindow()
+				&& hoveredRectIndex_ >= 0)
 			{
 				clickOnWindowRect_ = true;
 				choosedBorder_ = 0;
@@ -227,7 +228,9 @@ void DGrabView::mouseMoveEvent(QMouseEvent* event)
 
 	// 窗口矩形吸附：FreeState 下的悬停预览与点击候选拖拽阈值检测
 	// 一旦确认过选区，不再自动吸附矩形
-	if (mouseState_ == FreeState && !selectionConfirmed_)
+	if (SETTING_HANDLER->getAutoGrabWindow()
+		&& mouseState_ == FreeState
+		&& !selectionConfirmed_)
 	{
 		if ((event->buttons() & Qt::LeftButton) && clickOnWindowRect_)
 		{
@@ -436,7 +439,7 @@ void DGrabView::mouseReleaseEvent(QMouseEvent *event)
 	if (event->button() == Qt::LeftButton)
 	{
 		// 窗口矩形点击确认：未拖拽即释放 → 直接选定该矩形
-		if (clickOnWindowRect_)
+		if (SETTING_HANDLER->getAutoGrabWindow() && clickOnWindowRect_)
 		{
 			clickOnWindowRect_ = false;
 			hoveredRectIndex_ = -1;

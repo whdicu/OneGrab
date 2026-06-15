@@ -363,7 +363,7 @@ bool BtnBar::eventFilter(QObject* watched, QEvent* event)
 	if (event->type() == QEvent::MouseMove)
 	{
 		QMouseEvent* me = static_cast<QMouseEvent*>(event);
-		qDebug() << __FUNCTION__ << me->globalPos();
+		//qDebug() << __FUNCTION__ << me->globalPos();
 		emit sigMouseMoveGlobal(me->globalPos());
 	}
 	return QWidget::eventFilter(watched, event);

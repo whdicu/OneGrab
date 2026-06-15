@@ -65,6 +65,7 @@ void SettingHandler::writeAll()
 	wholeObject.insert("TextLineWidth", settingStruct.TextLineWidth);
 	wholeObject.insert("UseDefaultSavePath", settingStruct.UseDefaultSavePath);
 	wholeObject.insert("DefaultSavePath", settingStruct.DefaultSavePath);
+	wholeObject.insert("AutoGrabWindow", settingStruct.AutoGrabWindow);
 	wholeObject.insert("BrightBorder", settingStruct.BrightBorder);
 	wholeObject.insert("Copy2File", settingStruct.Copy2File);
 	wholeObject.insert("MouseScaleNum", settingStruct.MouseScaleNum);
@@ -96,6 +97,7 @@ void SettingHandler::readAll()
 	settingStruct.TextLineWidth = (LineWidth)obj["TextLineWidth"].toInt(2);
 	settingStruct.UseDefaultSavePath = obj["UseDefaultSavePath"].toBool(false);
 	settingStruct.DefaultSavePath = obj["DefaultSavePath"].toString();
+	settingStruct.AutoGrabWindow = obj["AutoGrabWindow"].toBool(true);
 	settingStruct.BrightBorder = obj["BrightBorder"].toBool(true);
 	settingStruct.Copy2File = obj["Copy2File"].toBool(false);
 	settingStruct.MouseScaleNum = obj["MouseScaleNum"].toInt(8);

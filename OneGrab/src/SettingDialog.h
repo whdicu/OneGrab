@@ -20,6 +20,7 @@ private slots:
 	void on_cb_start_by_pc_clicked();
 	void on_cb_check_update_on_start_stateChanged(int state);
 	void on_cb_use_default_save_path_stateChanged(int state);
+	void on_cb_auto_grab_window_stateChanged(int state);
 	void on_cb_bright_border_stateChanged(int state);
 	void on_cb_copy2file_stateChanged(int state);
 	void on_sb_scale_num_valueChanged(int value);

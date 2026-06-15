@@ -42,7 +42,7 @@ public:
 	QPixmap getSelectionPixmap(QRect& rect);
 	void deleteHoverItem();
 	void removeBorderBright();
-	void setWindowRects(const QList<QRect>& rects);
+	void setWindowRects(const DList<QRect>& rects);
 
 	virtual void wheelEvent(QWheelEvent* event);
 	virtual void mousePressEvent(QMouseEvent* event);
@@ -82,7 +82,7 @@ private:
 	int choosedBorder_;
 
 	// 窗口矩形吸附选择
-	QList<QRect> windowRects_;
+	DList<QRect> windowRects_;
 	int hoveredRectIndex_;  // 当前鼠标悬停的窗口矩形索引，-1 表示未悬停
 	bool clickOnWindowRect_;  // 在矩形内按下左键但尚未释放，等待判断点击还是拖拽
 	QRect savedSelectionRect_;  // 进入矩形前的已有选区，用于移出后恢复

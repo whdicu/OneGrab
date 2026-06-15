@@ -67,6 +67,11 @@ void SettingDialog::on_cb_use_default_save_path_stateChanged(int state)
 	SETTING_HANDLER->setUseDefaultSavePath(state);
 }
 
+void SettingDialog::on_cb_auto_grab_window_stateChanged(int state)
+{
+	SETTING_HANDLER->setAutoGrabWindow(state);
+}
+
 void SettingDialog::on_cb_bright_border_stateChanged(int state)
 {
 	SETTING_HANDLER->setBrightBorder(state);
@@ -202,6 +207,7 @@ void SettingDialog::refreshByStruct()
 	ui.edit_default_save_path->setEnabled(stru.UseDefaultSavePath);
 	ui.edit_default_save_path->setText(stru.DefaultSavePath);
 	ui.edit_default_save_path->setEditable(false);
+	ui.cb_auto_grab_window->setChecked(stru.AutoGrabWindow);
 	ui.cb_bright_border->setChecked(stru.BrightBorder);
 	ui.cb_copy2file->setChecked(stru.Copy2File);
 	ui.sb_scale_num->setValue(stru.MouseScaleNum);

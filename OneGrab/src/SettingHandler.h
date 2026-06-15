@@ -55,6 +55,7 @@ struct SettingStruct
 	LineWidth TextLineWidth;
 	bool UseDefaultSavePath;
 	QString DefaultSavePath;
+	bool AutoGrabWindow;
 	bool BrightBorder;
 	bool Copy2File;
 	int MouseScaleNum;
@@ -88,6 +89,7 @@ public:
 	REG_GET_FUNC(TextLineWidth)
 	REG_GET_FUNC(UseDefaultSavePath)
 	REG_GET_FUNC(DefaultSavePath)
+	REG_GET_FUNC(AutoGrabWindow)
 	REG_GET_FUNC(BrightBorder)
 	REG_GET_FUNC(Copy2File)
 	REG_GET_FUNC(MouseScaleNum)

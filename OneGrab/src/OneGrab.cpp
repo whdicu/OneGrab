@@ -165,6 +165,24 @@ void OneGrab::doGrab()
 	// 将所有可见窗口矩形画到截图上，并传入 DGrabView 用于吸附选择
 	{
 		auto rects = DSys::GetAllVisibleWindowRects();
+
+		// 过滤掉等于显示器大小的矩形（桌面窗口等）
+		auto screens = QGuiApplication::screens();
+		for (int i = rects.size() - 1; i >= 0; --i)
+		{
+			const RECT& wr = rects.at(i).rect;
+			for (auto* screen : screens)
+			{
+				QRect sr = screen->geometry();
+				if (wr.left == sr.left() && wr.top == sr.top()
+					&& wr.right == sr.right() && wr.bottom == sr.bottom())
+				{
+					rects.removeAt(i);
+					break;
+				}
+			}
+		}
+
 		//QPainter painter(&fullPixmap_);
 		//painter.setPen(QPen(Qt::red, 2));
 		QPoint offset = -screenRect.topLeft();

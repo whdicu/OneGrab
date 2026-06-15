@@ -164,36 +164,41 @@ void OneGrab::doGrab()
 
 	// 将所有可见窗口矩形画到截图上，并传入 DGrabView 用于吸附选择
 	{
-		auto rects = DSys::GetAllVisibleWindowRects();
+		auto rectInfos = DSys::GetAllVisibleWindowRects();
+		QList<QRect> qRects;
+		QPoint offset = -screenRect.topLeft();
+		//QPainter painter(&fullPixmap_);
+		//painter.setPen(QPen(Qt::red, 2));
 
 		// 过滤掉等于显示器大小的矩形（桌面窗口等）
 		auto screens = QGuiApplication::screens();
-		for (int i = rects.size() - 1; i >= 0; --i)
+		for (const WindowRectInfo& rectInfo : rectInfos)
 		{
-			const RECT& wr = rects.at(i).rect;
-			for (auto* screen : screens)
+			const RECT& wr = rectInfo.rect;
+			//bool isScreen = false;
+			//for (auto* screen : screens)
+			//{
+			//	QRect sr = screen->geometry();
+			//	int srr = sr.left() + sr.width();
+			//	int srb = sr.top() + sr.height();
+			//	if (wr.left == sr.left() && wr.top == sr.top()
+			//		&& wr.right == srr && wr.bottom == srb)
+			//	{
+			//		isScreen = true;
+			//		break;
+			//	}
+			//}
+				//qDebug() << wr.left << "    " << wr.top
+				//<< "    " << wr.right << "    " << wr.bottom;
+			//if (!isScreen)
 			{
-				QRect sr = screen->geometry();
-				if (wr.left == sr.left() && wr.top == sr.top()
-					&& wr.right == sr.right() && wr.bottom == sr.bottom())
-				{
-					rects.removeAt(i);
-					break;
-				}
+				QRect qr(wr.left + offset.x(), wr.top + offset.y(),
+					wr.right - wr.left, wr.bottom - wr.top);
+				//painter.drawRect(qr);
+				qRects.append(qr);
 			}
 		}
 
-		//QPainter painter(&fullPixmap_);
-		//painter.setPen(QPen(Qt::red, 2));
-		QPoint offset = -screenRect.topLeft();
-		QList<QRect> qRects;
-		for (const WindowRectInfo& r : rects)
-		{
-			QRect qr(r.rect.left + offset.x(), r.rect.top + offset.y(),
-				r.rect.right - r.rect.left, r.rect.bottom - r.rect.top);
-			//painter.drawRect(qr);
-			qRects.append(qr);
-		}
 		ui.view->setWindowRects(qRects);
 	}
 

@@ -8,10 +8,10 @@ const static QString GITEE_NAME = "dress_a";
 const static QString PROJECT_NAME = "one-grab";
 
 #define APP_VERSION_MAJOR 1
-#define APP_VERSION_MINOR 2
+#define APP_VERSION_MINOR 3
 #define APP_VERSION_PATCH 26
-#define APP_VERSION_BUILD 608
-#define APP_VERSION_STR "1.2.26.608"
+#define APP_VERSION_BUILD 615
+#define APP_VERSION_STR "1.3.26.615"
 
 
 #endif // VERSION_H

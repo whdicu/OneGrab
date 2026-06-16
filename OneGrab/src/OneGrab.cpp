@@ -150,6 +150,19 @@ OneGrab::OneGrab(QWidget *parent)
 	updateHelper_->setSkipPrerelease(false);
 	if (SETTING_HANDLER->getCheckUpdateOnStart())
 		checkUpdate();
+
+	// 程序启动时清空 temp 文件夹中的所有缓存图片
+	QString tempDir = QCoreApplication::applicationDirPath() + "/temp";
+	QDir dir(tempDir);
+	if (dir.exists())
+	{
+		QFileInfoList entries = dir.entryInfoList(QDir::NoDotAndDotDot | QDir::Files);
+		for (const QFileInfo& entry : entries)
+		{
+			QFile::remove(entry.absoluteFilePath());
+		}
+	}
+
 }
 
 void OneGrab::doGrab()

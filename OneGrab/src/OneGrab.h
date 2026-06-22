@@ -52,6 +52,9 @@ private:
 	// 保存图片到缓冲区，返回图片的绝对路径
 	QString save2Buffer(const QString& timestamp, const QPixmap& pixmap);
 
+	// 获取所有LabelIsland的rect，onlyShowing控制是否只返回正在显示的
+	DList<QRect> getLabelIslandRects(bool onlyShowing);
+
 	void resizeEvent(QResizeEvent* event) override;
 	//void mousePressEvent(QMouseEvent* event) override;
 	//void mouseMoveEvent(QMouseEvent* event) override;

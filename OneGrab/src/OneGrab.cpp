@@ -174,7 +174,6 @@ void OneGrab::doGrab()
 	QRect screenRect(0, 0, 0, 0);
 	fullPixmap_ = getFullPixmap(screenRect);
 
-
 	// 将所有可见窗口矩形画到截图上，并传入 DGrabView 用于吸附选择
 	if (SETTING_HANDLER->getAutoGrabWindow())
 	{
@@ -211,6 +210,13 @@ void OneGrab::doGrab()
 				//painter.drawRect(qr);
 				qRects.append(qr);
 			}
+		}
+
+		auto islandRects = getLabelIslandRects(true);
+		for (QRect& r : islandRects)
+		{
+			r.translate(offset);
+			qRects.pushFront(r);
 		}
 
 		ui.view->setWindowRects(qRects);
@@ -639,6 +645,21 @@ QString OneGrab::save2Buffer(const QString& timestamp, const QPixmap& pixmap)
 	IMAGE_THREAD->addImage(info);
 
 	return strFile;
+}
+
+DList<QRect> OneGrab::getLabelIslandRects(bool onlyShowing)
+{
+	DList<QRect> ret;
+	for (LabelIsland* li : islandBuffer_)
+	{
+		bool ok = onlyShowing ? !li->isHidden() : true;
+
+		qDebug() << __FUNCTION__ << ok << li->geometry();
+
+		if (ok)
+			ret.pushBack(li->geometry());
+	}
+	return ret;
 }
 
 void OneGrab::resizeEvent(QResizeEvent* event)

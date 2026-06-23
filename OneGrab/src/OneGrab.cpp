@@ -401,7 +401,7 @@ void OneGrab::slotSave()
 	QRect uselessRect;
 	// 保存截图到文件
 	QString timestamp = generateImageId();
-	QString filename = QString("OneGrab_%1.png").arg(timestamp);
+	QString filename = QString("OneGrab_%1.%2").arg(timestamp).arg(SETTING_HANDLER->getImgTypeStr());
 
 	SettingStruct settingStruct = SETTING_HANDLER->getSettingStruct();
 	QString fileurl;
@@ -411,7 +411,18 @@ void OneGrab::slotSave()
 	}
 	else
 	{
-		fileurl = QFileDialog::getSaveFileName(this, tr("保存文件"), settingStruct.LastSavePath + '/' + filename);
+		QString imgType = SETTING_HANDLER->getImgTypeStr();
+		DList<QString> imgTypeList = SETTING_HANDLER->getImgTypeStrs().values();
+		QStringList filters;
+		for (const QString& ext : imgTypeList)
+		{
+			filters << tr("%1 文件 (*.%1)").arg(ext);
+		}
+		QString filter = filters.join(";;");
+		QString selectedFilter = tr("%1 文件 (*.%1)").arg(imgType);
+
+		fileurl = QFileDialog::getSaveFileName(this, tr("保存文件"),
+			settingStruct.LastSavePath + '/' + filename, filter, &selectedFilter);
 		if (!fileurl.isEmpty())
 		{
 			fileurl = fileurl.replace('\\', '/');

@@ -133,6 +133,16 @@ void SettingDialog::on_btn_visti_gitee_clicked()
 	QDesktopServices::openUrl(QUrl(GITEE_URL));
 }
 
+void SettingDialog::on_cmb_img_type_currentIndexChanged(int index)
+{
+	if (index < 0)
+		return;
+
+	ImgType newType = (ImgType)ui.cmb_img_type->itemData(index).toInt();
+	if (newType != SETTING_HANDLER->getImgSaveType())
+		SETTING_HANDLER->setImgSaveType(newType);
+}
+
 SettingDialog::SettingDialog(QWidget *parent)
 	: QWidget(parent, Qt::FramelessWindowHint)
 	, pressPos_(0, 0)
@@ -146,7 +156,13 @@ SettingDialog::SettingDialog(QWidget *parent)
 	ui.stackedWidget->setCurrentIndex(0);
 	ui.label_version->setText(tr("软件版本：%1").arg(APP_VERSION_STR));
 
+	ui.cmb_img_type->blockSignals(true);
+	DMap<ImgType, QString> imgTypeMap = SETTING_HANDLER->getImgTypeStrs();
+	for (auto it = imgTypeMap.cbegin(); it != imgTypeMap.cend(); ++it)
+		ui.cmb_img_type->addItem(it.value(), it.key());
+
 	refreshByStruct();
+	ui.cmb_img_type->blockSignals(false);
 
 	connect(ui.edit_default_save_path, &DLineEdit::sigBtnClicked, this, [this]()
 	{
@@ -207,6 +223,9 @@ void SettingDialog::refreshByStruct()
 	ui.edit_default_save_path->setEnabled(stru.UseDefaultSavePath);
 	ui.edit_default_save_path->setText(stru.DefaultSavePath);
 	ui.edit_default_save_path->setEditable(false);
+	int index = ui.cmb_img_type->findData(stru.ImgSaveType);
+	if (index != -1)
+		ui.cmb_img_type->setCurrentIndex(index);
 	ui.cb_auto_grab_window->setChecked(stru.AutoGrabWindow);
 	ui.cb_bright_border->setChecked(stru.BrightBorder);
 	ui.cb_copy2file->setChecked(stru.Copy2File);

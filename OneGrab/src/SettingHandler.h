@@ -1,5 +1,6 @@
-#ifndef SETTINGHANDLER_H
+Ôªø#ifndef SETTINGHANDLER_H
 #define SETTINGHANDLER_H
+#include "HDBase/DMap.hpp"
 #include <QColor>
 #include <QObject>
 #include <QReadWriteLock>
@@ -29,6 +30,12 @@ enum LineWidth : int
 	Line4 = 7,
 };
 
+enum ImgType
+{
+	PNG,
+	JPG,
+};
+
 struct SettingStruct
 {
 	SettingStruct()
@@ -55,6 +62,7 @@ struct SettingStruct
 	LineWidth TextLineWidth;
 	bool UseDefaultSavePath;
 	QString DefaultSavePath;
+	ImgType ImgSaveType;
 	bool AutoGrabWindow;
 	bool BrightBorder;
 	bool Copy2File;
@@ -74,7 +82,10 @@ public:
 	void setSettingStruct(const SettingStruct& settingStruct);
 	void syncToFile();
 
-	// …œ“ª¥Œ±£¥Ê¬∑æ∂
+	QString getImgTypeStr();
+	DMap<ImgType, QString> getImgTypeStrs();
+
+	// ‰∏ä‰∏ÄÊ¨°‰øùÂ≠òË∑ØÂæÑ
 	REG_GET_FUNC(LastSavePath)
 	REG_GET_FUNC(MainColor)
 	REG_GET_FUNC(RectColor)
@@ -89,6 +100,7 @@ public:
 	REG_GET_FUNC(TextLineWidth)
 	REG_GET_FUNC(UseDefaultSavePath)
 	REG_GET_FUNC(DefaultSavePath)
+	REG_GET_FUNC(ImgSaveType)
 	REG_GET_FUNC(AutoGrabWindow)
 	REG_GET_FUNC(BrightBorder)
 	REG_GET_FUNC(Copy2File)

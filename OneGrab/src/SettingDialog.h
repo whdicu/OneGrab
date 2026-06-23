@@ -31,6 +31,7 @@ private slots:
 	void on_btn_color_clicked();
 	void on_btn_check_update_clicked();
 	void on_btn_visti_gitee_clicked();
+	void on_cmb_img_type_currentIndexChanged(int index);
 
 private:
 	SettingDialog(QWidget *parent = Q_NULLPTR);

@@ -13,6 +13,13 @@
 #include <QJsonObject>
 
 
+const static DMap<ImgType, QString> CSMAP_IMG_TYPE_STRS =
+{
+	{ PNG, "png" },
+	{ JPG, "jpg" }
+};
+
+
 static std::once_flag onceFlag;
 static SettingHandler* setting_handler = nullptr;
 SettingHandler* SettingHandler::getInstance()
@@ -36,6 +43,17 @@ void SettingHandler::setSettingStruct(const SettingStruct& settingStruct)
 void SettingHandler::syncToFile()
 {
 	writeAll();
+}
+
+QString SettingHandler::getImgTypeStr()
+{
+	QReadLocker locker(&structLock_);
+	return CSMAP_IMG_TYPE_STRS.value(settingStruct_.ImgSaveType, "");
+}
+
+DMap<ImgType, QString> SettingHandler::getImgTypeStrs()
+{
+	return CSMAP_IMG_TYPE_STRS;
 }
 
 SettingHandler::SettingHandler()
@@ -65,6 +83,7 @@ void SettingHandler::writeAll()
 	wholeObject.insert("TextLineWidth", settingStruct.TextLineWidth);
 	wholeObject.insert("UseDefaultSavePath", settingStruct.UseDefaultSavePath);
 	wholeObject.insert("DefaultSavePath", settingStruct.DefaultSavePath);
+	wholeObject.insert("ImgSaveType", settingStruct.ImgSaveType);
 	wholeObject.insert("AutoGrabWindow", settingStruct.AutoGrabWindow);
 	wholeObject.insert("BrightBorder", settingStruct.BrightBorder);
 	wholeObject.insert("Copy2File", settingStruct.Copy2File);
@@ -97,6 +116,7 @@ void SettingHandler::readAll()
 	settingStruct.TextLineWidth = (LineWidth)obj["TextLineWidth"].toInt(2);
 	settingStruct.UseDefaultSavePath = obj["UseDefaultSavePath"].toBool(false);
 	settingStruct.DefaultSavePath = obj["DefaultSavePath"].toString();
+	settingStruct.ImgSaveType = (ImgType)obj["ImgSaveType"].toInt(0);
 	settingStruct.AutoGrabWindow = obj["AutoGrabWindow"].toBool(true);
 	settingStruct.BrightBorder = obj["BrightBorder"].toBool(true);
 	settingStruct.Copy2File = obj["Copy2File"].toBool(false);

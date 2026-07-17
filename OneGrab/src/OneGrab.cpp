@@ -293,6 +293,10 @@ void OneGrab::slotKeyPressed(const KeyInfo& info)
 	case 46ul:  // delete
 		ui.view->deleteHoverItem();
 		break;
+	case 48ul:  // 0
+		if (DrawRectS == btnBar_->getDrawingType())
+			btnBar_->setLineWidth(Line0);
+		break;
 	case 49ul:  // 1
 		if (btnBar_->getDrawingType())
 			btnBar_->setLineWidth(Line1);

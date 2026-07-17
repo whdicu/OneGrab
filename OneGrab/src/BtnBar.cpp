@@ -188,6 +188,12 @@ void BtnBar::on_btn_color_clicked()
 	refreshUI();
 }
 
+void BtnBar::on_btn_line0_clicked()
+{
+	setLineWidthToFile(Line0);
+	refreshLineBtn(Line0);
+}
+
 void BtnBar::on_btn_line1_clicked()
 {
 	setLineWidthToFile(Line1);
@@ -271,6 +277,7 @@ void BtnBar::refreshUI()
 
 void BtnBar::refreshLineBtn(LineWidth lineWidth)
 {
+	ui.btn_line0->hide();
 	ui.btn_line1->show();
 	ui.btn_line2->show();
 	ui.btn_line3->show();
@@ -280,6 +287,7 @@ void BtnBar::refreshLineBtn(LineWidth lineWidth)
 	{
 	case DrawRectS:
 		mainColorStr = SETTING_HANDLER->getRectColor().name().toUpper();
+		ui.btn_line0->show();
 		break;
 	case DrawLineS:
 		mainColorStr = SETTING_HANDLER->getLineColor().name().toUpper();
@@ -299,12 +307,17 @@ void BtnBar::refreshLineBtn(LineWidth lineWidth)
 		break;
 	}
 	
+	ui.btn_line0->setStyleSheet("border: none;");
 	ui.btn_line1->setStyleSheet("border: none;");
 	ui.btn_line2->setStyleSheet("border: none;");
 	ui.btn_line3->setStyleSheet("border: none;");
 	ui.btn_line4->setStyleSheet("border: none;");
 	switch (lineWidth)
 	{
+	case Line0:
+		ui.btn_line0->setStyleSheet(QString("border: 2px dashed %1; border-radius: 6px;")
+			.arg(mainColorStr));
+		break;
 	case Line1:
 		ui.btn_line1->setStyleSheet(QString("border: 2px dashed %1; border-radius: 6px;")
 			.arg(mainColorStr));

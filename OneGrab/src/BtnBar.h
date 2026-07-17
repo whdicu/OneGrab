@@ -9,7 +9,7 @@ class BtnBar : public QWidget
 	Q_OBJECT
 
 public:
-	BtnBar(QWidget *parent = Q_NULLPTR);
+	BtnBar(QWidget* parent = Q_NULLPTR);
 	~BtnBar();
 	void dMove(int dX, int dY);
 	void setSizeLabelText(const QSize& sz);
@@ -40,6 +40,7 @@ private slots:
 	void on_btn_copy_clicked();
 
 	void on_btn_color_clicked();
+	void on_btn_line0_clicked();
 	void on_btn_line1_clicked();
 	void on_btn_line2_clicked();
 	void on_btn_line3_clicked();

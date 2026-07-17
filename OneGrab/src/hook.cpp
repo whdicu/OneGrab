@@ -35,6 +35,7 @@ LRESULT CALLBACK keyProc(int nCode, WPARAM wParam, LPARAM lParam)
 		case 39ul:
 		case 40ul:
 		case 46ul:  // delete
+		case 48ul:  // 0
 		case 49ul:  // 1
 		case 50ul:  // 2
 		case 51ul:  // 3

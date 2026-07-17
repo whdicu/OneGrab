@@ -24,6 +24,7 @@ inline void set##VALUE##(const T& v) \
 
 enum LineWidth : int
 {
+	Line0 = 0,
 	Line1 = 1,
 	Line2 = 2,
 	Line3 = 4,

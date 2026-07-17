@@ -48,7 +48,8 @@ public:
 
 	virtual void hoverEnterEvent(QGraphicsSceneHoverEvent* event) override
 	{
-		penWidth_ = defaultPenWidth_ * HOVER_SCALE + 1;
+		if (penWidth_ != 0)
+			penWidth_ = defaultPenWidth_ * HOVER_SCALE + 1;
 		if (nullptr != imgView_)
 			imgView_->onMouseHover(this, true);
 		//update();
@@ -103,6 +104,8 @@ public:
 	{
 		QPen pen(color_, penWidth_);
 		painter->setPen(pen);
+		if (penWidth_ == 0)
+			painter->setBrush(color_);
 		painter->drawRect(rect_);
 	}
 };

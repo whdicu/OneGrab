@@ -34,6 +34,7 @@ public slots:
 private slots:
 	void slotFixed();
 	void slotFixedOldOne();
+	void slotFixedCopyOne();
 	void slotSave();
 	void slotCopy();
 	void slotSelectionChanged(const QRectF& rect);

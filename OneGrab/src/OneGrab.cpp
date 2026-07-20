@@ -257,6 +257,8 @@ void OneGrab::slotKeyPressed(const KeyInfo& info)
 		case 112ul:  // F1
 			if (info.ctrlPressed)
 				slotFixedOldOne();
+			else if (info.shiftPressed)
+				slotFixedCopyOne();
 			else
 				doGrab();
 			break;
@@ -397,6 +399,57 @@ void OneGrab::slotFixedOldOne()
 	{
 		lastUnshowIsland->show();
 	}
+}
+
+void OneGrab::slotFixedCopyOne()
+{
+	QClipboard* clipboard = QApplication::clipboard();
+	QPixmap pixmap;
+	QPoint mousePos = QCursor::pos();
+
+	auto loadFromUrl = [clipboard]() -> QPixmap
+	{
+		const QMimeData* mimeData = clipboard->mimeData();
+		if (mimeData && mimeData->hasUrls())
+		{
+			QList<QUrl> urls = mimeData->urls();
+			if (!urls.isEmpty())
+			{
+				QString filePath = urls.first().toLocalFile();
+				if (!filePath.isEmpty())
+					return QPixmap(filePath);
+			}
+		}
+		return QPixmap();
+	};
+
+	if (SETTING_HANDLER->getCopy2File())
+	{
+		pixmap = loadFromUrl();
+	}
+	else
+	{
+		pixmap = clipboard->pixmap();
+		// 直接转成图片失败，尝试用路径形式去读
+		if (pixmap.isNull())
+			pixmap = loadFromUrl();
+	}
+
+	if (pixmap.isNull())
+		return;
+
+	mousePos -= QPoint(pixmap.width() / 2, pixmap.height() / 2);
+	LabelIsland* island = new LabelIsland(pixmap, mousePos);
+	connect(SettingDialog::getInstance(), &SettingDialog::sigRefreshSetting, island, &LabelIsland::onRefreshSetting);
+	connect(island, &LabelIsland::sigHide, this, [this, island]()
+	{
+		islandBuffer_.removeFirst(island);
+		islandBuffer_.enqueue(island);
+	});
+	island->show();
+	islandBuffer_.enqueue(island);
+	while (islandBuffer_.size() > SETTING_HANDLER->getIslandNum())
+		islandBuffer_.dequeue()->deleteLater();
 }
 
 void OneGrab::slotSave()

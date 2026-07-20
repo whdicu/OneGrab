@@ -420,6 +420,13 @@ void OneGrab::slotFixedCopyOne()
 					return QPixmap(filePath);
 			}
 		}
+		// 用户拷贝的是字符串类型的文件绝对路径
+		if (mimeData && mimeData->hasText())
+		{
+			QString text = mimeData->text();
+			if (!text.isEmpty())
+				return QPixmap(text);
+		}
 		return QPixmap();
 	};
 

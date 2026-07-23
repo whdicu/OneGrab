@@ -16,9 +16,13 @@
 #include <QCoreApplication>
 #include <QDateTime>
 #include <QDebug>
+#include <QEventLoop>
 #include <QFileDialog>
 #include <QKeyEvent>
 #include <QMimeData>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
 #include <QPainter>
 #include <QProcess>
 #include <QScreen>
@@ -59,6 +63,7 @@ OneGrab::OneGrab(QWidget *parent)
 	connect(btnBar_, &BtnBar::sigClose, this, &OneGrab::finishGrab);
 	connect(btnBar_, &BtnBar::sigFixed, this, &OneGrab::slotFixed);
 	connect(btnBar_, &BtnBar::sigSave, this, &OneGrab::slotSave);
+	connect(this, &OneGrab::sigFixedImageDownloadFinished, this, &OneGrab::slotFixedImageDownloadFinished, Qt::QueuedConnection);
 	connect(btnBar_, &BtnBar::sigCopy, this, &OneGrab::slotCopy);
 	connect(btnBar_, &BtnBar::sigMouseEnter, ui.view, &DGrabView::removeBorderBright);
 	connect(btnBar_, &BtnBar::sigMouseMoveGlobal, this, [this](const QPoint& screenPos)
@@ -404,10 +409,9 @@ void OneGrab::slotFixedOldOne()
 void OneGrab::slotFixedCopyOne()
 {
 	QClipboard* clipboard = QApplication::clipboard();
-	QPixmap pixmap;
-	QPoint mousePos = QCursor::pos();
 
-	auto loadFromUrl = [clipboard]() -> QPixmap
+	// 从剪贴板提取 URL 字符串（本地路径或远程链接）
+	auto extractUrl = [clipboard]() -> QString
 	{
 		const QMimeData* mimeData = clipboard->mimeData();
 		if (mimeData && mimeData->hasUrls())
@@ -417,36 +421,69 @@ void OneGrab::slotFixedCopyOne()
 			{
 				QString filePath = urls.first().toLocalFile();
 				if (!filePath.isEmpty())
-					return QPixmap(filePath);
+					return filePath;
+				return urls.first().toString();
 			}
 		}
-		// 用户拷贝的是字符串类型的文件绝对路径
+
 		if (mimeData && mimeData->hasText())
-		{
-			QString text = mimeData->text();
-			if (!text.isEmpty())
-				return QPixmap(text);
-		}
-		return QPixmap();
+			return mimeData->text();
+
+		return QString();
 	};
 
-	if (SETTING_HANDLER->getCopy2File())
+	// 尝试直接转成图像
+	QPixmap pixmap = clipboard->pixmap();
+	if (!pixmap.isNull())
 	{
-		pixmap = loadFromUrl();
+		slotFixedImageDownloadFinished(pixmap);
+		return;
 	}
-	else
+	
+	QString urlStr = extractUrl();
+	if (urlStr.isEmpty())
+		return;
+
+	// 尝试从本地文件读取
+	pixmap = QPixmap(urlStr);
+	if (!pixmap.isNull())
 	{
-		pixmap = clipboard->pixmap();
-		// 直接转成图片失败，尝试用路径形式去读
-		if (pixmap.isNull())
-			pixmap = loadFromUrl();
+		slotFixedImageDownloadFinished(pixmap);
+		return;
 	}
 
+	// 尝试从url链接下载图片
+	if (urlStr.startsWith(tr("http://")) || urlStr.startsWith(tr("https://")))
+		DownloadImage(urlStr);
+}
+
+void OneGrab::DownloadImage(const QString& url)
+{
+	QNetworkAccessManager* manager = new QNetworkAccessManager(this);
+	QNetworkReply* reply = manager->get(QNetworkRequest(QUrl(url)));
+
+	connect(reply, &QNetworkReply::finished, this, [this, reply, manager]()
+	{
+		reply->deleteLater();
+		manager->deleteLater();
+
+		if (reply->error() == QNetworkReply::NoError)
+		{
+			QPixmap pixmap;
+			pixmap.loadFromData(reply->readAll());
+			if (!pixmap.isNull())
+				emit sigFixedImageDownloadFinished(pixmap);
+		}
+	});
+}
+
+void OneGrab::slotFixedImageDownloadFinished(QPixmap pixmap)
+{
 	if (pixmap.isNull())
 		return;
 
-	mousePos -= QPoint(pixmap.width() / 2, pixmap.height() / 2);
-	LabelIsland* island = new LabelIsland(pixmap, mousePos);
+	QPoint pos = QCursor::pos() - QPoint(pixmap.width() / 2, pixmap.height() / 2);
+	LabelIsland* island = new LabelIsland(pixmap, pos);
 	connect(SettingDialog::getInstance(), &SettingDialog::sigRefreshSetting, island, &LabelIsland::onRefreshSetting);
 	connect(island, &LabelIsland::sigHide, this, [this, island]()
 	{

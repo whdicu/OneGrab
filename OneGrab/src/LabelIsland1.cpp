@@ -82,6 +82,7 @@ void LabelIsland1::keyPressEvent(QKeyEvent* event)
 	{
 	case Qt::Key_Escape:
 		hide();
+		sizeLabel_->hide();
 		emit sigHide();
 		break;
 	}
@@ -218,6 +219,7 @@ void LabelIsland1::slotBtnClicked(const QString& text)
 		break;
 	case 5:
 		hide();
+		sizeLabel_->hide();
 		emit sigHide();
 		break;
 	case 4:

@@ -28,6 +28,9 @@ public:
 	void doGrab();
 	void checkUpdate(bool showDialogOnLatest = false);
 
+signals:
+	void sigFixedImageDownloadFinished(QPixmap pixmap);
+
 public slots:
 	void slotKeyPressed(const KeyInfo& info);
 
@@ -35,6 +38,7 @@ private slots:
 	void slotFixed();
 	void slotFixedOldOne();
 	void slotFixedCopyOne();
+	void slotFixedImageDownloadFinished(QPixmap pixmap);  // 其实这个函数就是把图片做成LabelIsland
 	void slotSave();
 	void slotCopy();
 	void slotSelectionChanged(const QRectF& rect);
@@ -49,6 +53,9 @@ private:
 	QPixmap getFullPixmap(QRect& screenRect);
 	QColor getPixelColor(const QPoint& pos);
 	void finishGrab();
+
+	// 异步下载网络图片
+	void DownloadImage(const QString& url);
 
 	// 保存图片到缓冲区，返回图片的绝对路径
 	QString save2Buffer(const QString& timestamp, const QPixmap& pixmap);

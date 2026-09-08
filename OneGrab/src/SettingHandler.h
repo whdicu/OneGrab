@@ -70,6 +70,13 @@ struct SettingStruct
 	int MouseScaleNum;
 	int IslandNum;
 	bool CheckUpdateOnStart;
+
+	// 防隐水印方法
+	bool FSYRandomEnable;
+	int FSYRandomMaxNum;
+	bool FSY33LBEnable;
+	int FSY33LBRound;
+	bool FSYRotateEnable;
 };
 
 
@@ -108,6 +115,13 @@ public:
 	REG_GET_FUNC(MouseScaleNum)
 	REG_GET_FUNC(IslandNum)
 	REG_GET_FUNC(CheckUpdateOnStart)
+
+	// 防隐水印方法
+	REG_GET_FUNC(FSYRandomEnable)
+	REG_GET_FUNC(FSYRandomMaxNum)
+	REG_GET_FUNC(FSY33LBEnable)
+	REG_GET_FUNC(FSY33LBRound)
+	REG_GET_FUNC(FSYRotateEnable)
 
 private:
     SettingHandler();

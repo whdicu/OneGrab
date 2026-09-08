@@ -5,7 +5,9 @@
 #include "DMessageBox.h"
 #include "DProgressBox.h"
 #include "DUpdateHandler.h"
+#include "ImageHandler.h"
 #include "ImageThread.h"
+#include <opencv2/imgproc.hpp>
 #include "LabelIsland1.h"
 #include "LabelIsland2.h"
 #include "LabelIsland3.h"
@@ -26,6 +28,7 @@
 #include <QPainter>
 #include <QProcess>
 #include <QScreen>
+#include <vector>
 #include "SettingDialog.h"
 #include "SettingHandler.h"
 #include "version.h"
@@ -35,9 +38,37 @@ const static int MARGIN = 5;
 const static int COPY_TEMP_SIZE = 64;  // 复制图片到文件的最大图片保存数量
 
 
-inline QString generateImageId()
+namespace
 {
-	return QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss");
+	inline QString generateImageId()
+	{
+		return QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss");
+	}
+
+	// 对每个像素的前 3 个颜色通道做 3×3 均值滤波：取周围 8 个像素（不含自身）该通道的平均值。
+	// 4 通道时 alpha 保持不变。kernel 中心为 0、周围 8 个为 1，再除以 8。
+	void apply33MeanFilter(cv::Mat& mat)
+	{
+		static const cv::Mat kernel = []()
+		{
+			cv::Mat k = cv::Mat::ones(3, 3, CV_32F);
+			k.at<float>(1, 1) = 0.0f;  // 中心为 0，表示不含自身
+			return k / 8.0f;
+		}();
+
+		const int channels = mat.channels();
+		const int colorChannels = (channels >= 3) ? 3 : channels;
+
+		std::vector<cv::Mat> planes;
+		cv::split(mat, planes);
+		for (int c = 0; c < colorChannels; ++c)
+		{
+			cv::Mat blurred;
+			cv::filter2D(planes[c], blurred, -1, kernel, cv::Point(-1, -1), 0, cv::BORDER_REPLICATE);
+			planes[c] = blurred;
+		}
+		cv::merge(planes, mat);
+	}
 }
 
 
@@ -177,7 +208,11 @@ void OneGrab::doGrab()
 
 	// x y 可以是负数
 	QRect screenRect(0, 0, 0, 0);
-	fullPixmap_ = getFullPixmap(screenRect);
+	DSharedPointer<QPixmap> fp = getFullPixmap(screenRect);
+	cv::Mat fullMat = ImageHandler::QImageToCvMat(fp->toImage());
+	doFSY(fullMat);
+	QImage fullImage = ImageHandler::cvMatToQImage(fullMat);
+	fullPixmap_.reset(new QPixmap(QPixmap::fromImage(fullImage)));
 
 	// 将所有可见窗口矩形画到截图上，并传入 DGrabView 用于吸附选择
 	if (SETTING_HANDLER->getAutoGrabWindow())
@@ -229,7 +264,7 @@ void OneGrab::doGrab()
 	else
 		ui.view->setWindowRects(DList<QRect>());
 
-	ui.view->setImg(fullPixmap_);
+	ui.view->setImg(*fullPixmap_);
 	setGeometry(screenRect);
 	show();
 
@@ -250,7 +285,7 @@ void OneGrab::checkUpdate(bool showDialogOnLatest)
 
 QColor OneGrab::getPixelColor(const QPoint& pos)
 {
-	return fullPixmap_.toImage().pixelColor(pos);
+	return fullPixmap_->toImage().pixelColor(pos);
 }
 
 void OneGrab::slotKeyPressed(const KeyInfo& info)
@@ -598,14 +633,14 @@ void OneGrab::slotRefreshPixelInfo(const QPoint& mousePos)
 	QRect baseTargetRect = QRect(mousePos - QPoint(windowSizeInFull.width() / 2, windowSizeInFull.height() / 2)
 		, windowSizeInFull + QSize(1, 1));
 	// 计算原图中可以截取的有效区域（和src交集）
-	QRect baseSrcRect = baseTargetRect & QRect(0, 0, fullPixmap_.width(), fullPixmap_.height());
+	QRect baseSrcRect = baseTargetRect & QRect(0, 0, fullPixmap_->width(), fullPixmap_->height());
 	// 裁剪
 	QPixmap basePixmap(baseTargetRect.size());
 	basePixmap.fill(Qt::black);
 	if (!baseSrcRect.isEmpty())
 	{
 		// 从原图中截取有效部分
-		QPixmap cropped = fullPixmap_.copy(baseSrcRect);
+		QPixmap cropped = fullPixmap_->copy(baseSrcRect);
 		// 计算将cropped粘贴到result中的位置（相对位置）
 		QPoint destTopLeft = baseSrcRect.topLeft() - baseTargetRect.topLeft();
 		QPainter painter(&basePixmap);
@@ -688,7 +723,7 @@ void OneGrab::slotNewVersionAvailable(const QString& version, const QString& url
 	}
 }
 
-QPixmap OneGrab::getFullPixmap(QRect& screenRect)
+DSharedPointer<QPixmap> OneGrab::getFullPixmap(QRect& screenRect)
 {
 	QList<QScreen*> screens = QGuiApplication::screens();
 
@@ -702,11 +737,11 @@ QPixmap OneGrab::getFullPixmap(QRect& screenRect)
 			screenRect.setY(scRect.y());
 		screenRect = screenRect.united(scRect);
 	}
-	QPixmap combinedPixmap(screenRect.size());
-	combinedPixmap.fill(Qt::transparent);
+	DSharedPointer<QPixmap> combinedPixmap(new QPixmap(screenRect.size()));
+	combinedPixmap->fill(Qt::transparent);
 
 	// 将每个屏幕的内容绘制到 combinedPixmap
-	QPainter painter(&combinedPixmap);
+	QPainter painter(combinedPixmap.getPtr());
 	for (QScreen* screen : screens)
 	{
 		QPixmap pixmap = screen->grabWindow(0);
@@ -714,6 +749,82 @@ QPixmap OneGrab::getFullPixmap(QRect& screenRect)
 	}
 	painter.end();
 	return combinedPixmap;
+}
+
+void OneGrab::doFSY(cv::Mat& mat)
+{
+	if (mat.empty())
+	{
+		qDebug() << __FUNCTION__ << "mat is empty";
+		return;
+	}
+
+	qint64 i0 = QDateTime::currentMSecsSinceEpoch();
+	const qint64 i00 = i0;
+
+	// 图像轻微旋转
+	if (SETTING_HANDLER->getFSYRotateEnable())
+	{
+		// 绕图像中心旋转一个很小角度，破坏隐水印的像素对齐。
+		// 随机选 -1° 或 +1°；BORDER_REPLICATE 用边缘像素填充旋转后露出的空白
+		cv::RNG rng(cv::getTickCount());
+		const double angle = (rng.uniform(0, 2) == 0) ? -1.0 : 1.0;
+		cv::Point2f center(mat.cols / 2.0f, mat.rows / 2.0f);
+		cv::Mat rot = cv::getRotationMatrix2D(center, angle, 1.0);
+
+		cv::Mat rotated;
+		cv::warpAffine(mat, rotated, rot, mat.size(), cv::INTER_LINEAR, cv::BORDER_REPLICATE);
+		mat = rotated;
+
+		qint64 i1 = QDateTime::currentMSecsSinceEpoch();
+		qDebug() << __FUNCTION__ << "rotate used time:" << (i1 - i0);
+		i0 = i1;
+	}
+
+	// 3×3邻域平均滤波
+	if (SETTING_HANDLER->getFSY33LBEnable())
+	{
+		for (int i = 0; i < SETTING_HANDLER->getFSY33LBRound(); ++i)
+		{
+			apply33MeanFilter(mat);
+		}
+
+		qint64 i1 = QDateTime::currentMSecsSinceEpoch();
+		qDebug() << __FUNCTION__ << "3*3 filter used time:" << (i1 - i0);
+		i0 = i1;
+	}
+
+	// 随机噪声
+	if (SETTING_HANDLER->getFSYRandomEnable())
+	{
+		const int maxNum = SETTING_HANDLER->getFSYRandomMaxNum();
+		if (maxNum <= 0)
+			return;
+
+		// 转到 16 位有符号，避免加噪声时溢出；alpha 通道保持原值不变
+		cv::Mat temp;
+		mat.convertTo(temp, CV_16SC4);
+
+		cv::Mat noise(temp.size(), temp.type());
+		cv::RNG rng(cv::getTickCount());
+		rng.fill(noise, cv::RNG::UNIFORM,
+			cv::Scalar(-maxNum, -maxNum, -maxNum, 0),
+			cv::Scalar(maxNum + 1, maxNum + 1, maxNum + 1, 1));
+
+		temp += noise;
+
+		// 转回原类型，saturate_cast 自动把越界值夹紧到 0~255
+		cv::Mat dst;
+		temp.convertTo(dst, mat.type());
+		mat = dst;
+
+		qint64 i1 = QDateTime::currentMSecsSinceEpoch();
+		qDebug() << __FUNCTION__ << "random salt used time:" << (i1 - i0);
+		i0 = i1;
+	}
+
+	qint64 i10000 = QDateTime::currentMSecsSinceEpoch();
+	qDebug() << __FUNCTION__ << "total used time:" << (i10000 - i00);
 }
 
 void OneGrab::finishGrab()

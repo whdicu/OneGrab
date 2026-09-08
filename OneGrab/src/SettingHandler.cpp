@@ -90,6 +90,11 @@ void SettingHandler::writeAll()
 	wholeObject.insert("MouseScaleNum", settingStruct.MouseScaleNum);
 	wholeObject.insert("IslandNum", settingStruct.IslandNum);
 	wholeObject.insert("CheckUpdateOnStart", settingStruct.CheckUpdateOnStart);
+	wholeObject.insert("FSYRandomEnable", settingStruct.FSYRandomEnable);
+	wholeObject.insert("FSYRandomMaxNum", settingStruct.FSYRandomMaxNum);
+	wholeObject.insert("FSY33LBEnable", settingStruct.FSY33LBEnable);
+	wholeObject.insert("FSY33LBRound", settingStruct.FSY33LBRound);
+	wholeObject.insert("FSYRotateEnable", settingStruct.FSYRotateEnable);
 	HDQt::writeJson(strFile, wholeObject);
 }
 
@@ -123,6 +128,11 @@ void SettingHandler::readAll()
 	settingStruct.MouseScaleNum = obj["MouseScaleNum"].toInt(8);
 	settingStruct.IslandNum = obj["IslandNum"].toInt(64);
 	settingStruct.CheckUpdateOnStart = obj["CheckUpdateOnStart"].toBool(true);
+	settingStruct.FSYRandomEnable = obj["FSYRandomEnable"].toBool(false);
+	settingStruct.FSYRandomMaxNum = obj["FSYRandomMaxNum"].toInt(3);
+	settingStruct.FSY33LBEnable = obj["FSY33LBEnable"].toBool(false);
+	settingStruct.FSY33LBRound = obj["FSY33LBRound"].toInt(1);
+	settingStruct.FSYRotateEnable = obj["FSYRotateEnable"].toBool(false);
 	setSettingStruct(std::move(settingStruct));
 }
 

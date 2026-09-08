@@ -82,6 +82,23 @@ void SettingDialog::on_cb_copy2file_stateChanged(int state)
 	SETTING_HANDLER->setCopy2File(state);
 }
 
+void SettingDialog::on_cb_fsy_random_stateChanged(int state)
+{
+	SETTING_HANDLER->setFSYRandomEnable(state);
+	ui.sb_fsy_random_max->setEnabled(state);
+}
+
+void SettingDialog::on_cb_fys_33_stateChanged(int state)
+{
+	SETTING_HANDLER->setFSY33LBEnable(state);
+	ui.sb_fsy_33_round->setEnabled(state);
+}
+
+void SettingDialog::on_cb_fsy_rotate_stateChanged(int state)
+{
+	SETTING_HANDLER->setFSYRotateEnable(state);
+}
+
 void SettingDialog::on_sb_scale_num_valueChanged(int value)
 {
 	SETTING_HANDLER->setMouseScaleNum(value);
@@ -90,6 +107,16 @@ void SettingDialog::on_sb_scale_num_valueChanged(int value)
 void SettingDialog::on_sb_island_num_valueChanged(int value)
 {
 	SETTING_HANDLER->setIslandNum(value);
+}
+
+void SettingDialog::on_sb_fsy_random_max_valueChanged(int value)
+{
+	SETTING_HANDLER->setFSYRandomMaxNum(value);
+}
+
+void SettingDialog::on_sb_fsy_33_round_valueChanged(int value)
+{
+	SETTING_HANDLER->setFSY33LBRound(value);
 }
 
 void SettingDialog::on_btn_base_clicked()
@@ -232,6 +259,12 @@ void SettingDialog::refreshByStruct()
 	ui.sb_scale_num->setValue(stru.MouseScaleNum);
 	ui.sb_island_num->setValue(stru.IslandNum);
 	ui.cb_check_update_on_start->setChecked(stru.CheckUpdateOnStart);
+	ui.cb_fsy_random->setChecked(stru.FSYRandomEnable);
+	ui.sb_fsy_random_max->setEnabled(stru.FSYRandomEnable);
+	ui.sb_fsy_random_max->setValue(stru.FSYRandomMaxNum);
+	ui.cb_fys_33->setChecked(stru.FSY33LBEnable);
+	ui.sb_fsy_33_round->setEnabled(stru.FSY33LBEnable);
+	ui.sb_fsy_33_round->setValue(stru.FSY33LBRound);
 }
 
 QString SettingDialog::convertDateFormat(const QString& strDate)

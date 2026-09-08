@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "HDBase/DQueue.hpp"
+#include "HDMemory/DSharedPointer.hpp"
 #include "hook.h"
 #include <QSet>
 #include <QWidget>
@@ -15,6 +16,10 @@ class LabelIsland3;
 class LabelIsland4;
 class LabelIsland5;
 class MouseWindow;
+namespace cv
+{
+	class Mat;
+};
 
 using LabelIsland = LabelIsland1;
 
@@ -50,7 +55,11 @@ private slots:
 
 private:
 	// 获取所有显示器组成的一张图片
-	QPixmap getFullPixmap(QRect& screenRect);
+	DSharedPointer<QPixmap> getFullPixmap(QRect& screenRect);
+
+	// 对图像做防隐水印处理
+	void doFSY(cv::Mat& mat);
+
 	QColor getPixelColor(const QPoint& pos);
 	void finishGrab();
 
@@ -71,7 +80,7 @@ private:
     Ui::OneGrabClass ui;
 	BtnBar* btnBar_;
 	MouseWindow* mouseWindow_;
-	QPixmap fullPixmap_;
+	DSharedPointer<QPixmap> fullPixmap_;
 	bool ignoreKeyPress_;  // 忽略键盘按键
 	DQueue<LabelIsland*> islandBuffer_;
 	DUpdateHandler* updateHelper_;

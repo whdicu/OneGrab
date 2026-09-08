@@ -84,6 +84,9 @@
     <ClCompile Include="src\LabelIsland1.cpp">
       <Filter>Widgets</Filter>
     </ClCompile>
+    <ClCompile Include="src\ImageHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="src\OneGrab.h">
@@ -133,6 +136,9 @@
     </QtMoc>
     <QtMoc Include="src\LabelIsland1.h">
       <Filter>Widgets</Filter>
+    </QtMoc>
+    <QtMoc Include="src\ImageHandler.h">
+      <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>
   <ItemGroup>

@@ -10,7 +10,9 @@
 #include <QFileDialog>
 #include <QLabel>
 #include <QMouseEvent>
+#include <QMoveEvent>
 #include <QPropertyAnimation>
+#include <QResizeEvent>
 #include <QScreen>
 #include <QVBoxLayout>
 #include "SettingHandler.h"
@@ -74,6 +76,24 @@ void LabelIsland1::onRefreshSetting()
 	setStyleSheet(QString("QLabel { border: %1px solid %2; }")
 		.arg(BORDER_SIZE).arg(mainColor.name().toUpper()));
 	menu_->setBgColor(mainColor);
+}
+
+void LabelIsland1::show()
+{
+	emit sigShow();
+	QLabel::show();
+}
+
+void LabelIsland1::moveEvent(QMoveEvent* event)
+{
+	QLabel::moveEvent(event);
+	emit sigGeometryChanged();
+}
+
+void LabelIsland1::resizeEvent(QResizeEvent* event)
+{
+	QLabel::resizeEvent(event);
+	emit sigGeometryChanged();
 }
 
 void LabelIsland1::keyPressEvent(QKeyEvent* event)

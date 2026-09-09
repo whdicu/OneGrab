@@ -12,11 +12,17 @@ public:
 	LabelIsland1(const QPixmap& pixmap, const QPoint& pos, QWidget* parent = nullptr);
 	~LabelIsland1();
 	void onRefreshSetting();
+	void show();
 
 signals:
 	void sigHide();
+	void sigShow();
+	// 位置或尺寸变化时发出（拖动移动、缩放动画都会触发）
+	void sigGeometryChanged();
 
 private:
+	void moveEvent(QMoveEvent* event) override;
+	void resizeEvent(QResizeEvent* event) override;
 	void keyPressEvent(QKeyEvent* event) override;
 	void wheelEvent(QWheelEvent* event) override;
 	void mousePressEvent(QMouseEvent* event) override;

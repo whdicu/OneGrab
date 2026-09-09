@@ -265,6 +265,7 @@ void SettingDialog::refreshByStruct()
 	ui.cb_fys_33->setChecked(stru.FSY33LBEnable);
 	ui.sb_fsy_33_round->setEnabled(stru.FSY33LBEnable);
 	ui.sb_fsy_33_round->setValue(stru.FSY33LBRound);
+	ui.cb_fsy_rotate->setEnabled(stru.FSYRotateEnable);
 }
 
 QString SettingDialog::convertDateFormat(const QString& strDate)

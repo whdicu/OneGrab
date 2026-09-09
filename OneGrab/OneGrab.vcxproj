@@ -11,6 +11,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\AIHandler.cpp" />
+    <ClCompile Include="src\AITalkWidget.cpp" />
     <ClCompile Include="src\BtnBar.cpp" />
     <ClCompile Include="src\DSystemTrayMenu.cpp" />
     <ClCompile Include="src\hook.cpp" />
@@ -36,6 +38,7 @@
     <QtMoc Include="src\OneGrab.h" />
   </ItemGroup>
   <ItemGroup>
+    <QtUic Include="src\AITalkWidget.ui" />
     <QtUic Include="src\BtnBar.ui" />
     <QtUic Include="src\MouseWindow.ui" />
     <QtUic Include="src\OneGrab.ui" />
@@ -65,6 +68,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
+    <QtMoc Include="src\AIHandler.h" />
+    <QtMoc Include="src\AITalkWidget.h" />
     <ClInclude Include="src\DGraphicsItem.h" />
     <QtMoc Include="src\ImageThread.h" />
     <QtMoc Include="src\ImageHandler.h" />

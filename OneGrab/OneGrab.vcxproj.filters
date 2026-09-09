@@ -87,6 +87,12 @@
     <ClCompile Include="src\ImageHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\AIHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AITalkWidget.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="src\OneGrab.h">
@@ -140,6 +146,12 @@
     <QtMoc Include="src\ImageHandler.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="src\AIHandler.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="src\AITalkWidget.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="src\OneGrab.ui">
@@ -153,6 +165,9 @@
     </QtUic>
     <QtUic Include="src\MouseWindow.ui">
       <Filter>Widgets</Filter>
+    </QtUic>
+    <QtUic Include="src\AITalkWidget.ui">
+      <Filter>Form Files</Filter>
     </QtUic>
   </ItemGroup>
   <ItemGroup>

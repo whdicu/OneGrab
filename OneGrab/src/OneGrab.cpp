@@ -1,4 +1,5 @@
 ﻿#include "OneGrab.h"
+#include "AITalkWidget.h"
 #include "BtnBar.h"
 #include "HDCore/DBoolSetter.hpp"
 #include "HDCore/DSys.hpp"
@@ -422,6 +423,27 @@ void OneGrab::slotFixed()
 	islandBuffer_.enqueue(island);
 	while (islandBuffer_.size() > SETTING_HANDLER->getIslandNum())
 		islandBuffer_.dequeue()->deleteLater();
+
+	// AI聊天Widget
+	AITalkWidget* talkWidget = new AITalkWidget;
+	talkWidget->show();
+	talkWidget->move(island->x() + island->width() + 10
+		, island->y() + island->height() - talkWidget->height());
+
+	// island 移动或缩放时，talkWidget 跟随
+	connect(island, &LabelIsland::sigGeometryChanged, talkWidget, [island, talkWidget]()
+	{
+		talkWidget->move(island->x() + island->width() + 10
+			, island->y() + island->height() - talkWidget->height());
+	});
+	connect(island, &LabelIsland::sigHide, this, [talkWidget]()
+	{
+		talkWidget->hide();
+	});
+	connect(island, &LabelIsland::sigShow, this, [talkWidget]()
+	{
+		talkWidget->show();
+	});
 
 	finishGrab();
 }

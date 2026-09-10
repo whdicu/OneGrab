@@ -15,10 +15,10 @@ TalkMsgBase::TalkMsgBase(const QString& text, QWidget* parent)
 	label = new AutoWrapLabel(this);
 	label->setMaximumWidth(LABEL_WIDTH);
 	label->setMinimumWidth(20);
-	label->setText(text);
 	label->setFont(FONT);
-	label->setWordWrap(true);
 	label->setMargin(5);
+	label->setWordWrap(true);
+	label->setMarkdown(text);  // 支持 Markdown，内部转成 HTML 渲染
 	label->setTextInteractionFlags(Qt::TextSelectableByMouse);
 }
 

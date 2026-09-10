@@ -1,6 +1,17 @@
 #include "AutoWrapLabel.h"
+#include "MarkdownHelper.h"
+
 #include <QFontMetrics>
 #include <QSizePolicy>
+#include <QTextDocument>
+#include <QtMath>
+
+
+namespace
+{
+// QLabel 未显式设置 margin 时，其内部 QTextDocument 使用的默认文档边距
+const static int DEFAULT_DOC_MARGIN = 4;
+}
 
 
 AutoWrapLabel::AutoWrapLabel(QWidget *parent /*= nullptr*/)
@@ -12,31 +23,52 @@ AutoWrapLabel::AutoWrapLabel(QWidget *parent /*= nullptr*/)
 	setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 }
 
+void AutoWrapLabel::setMarkdown(const QString& markdown)
+{
+	setText(MarkdownHelper::toHtml(markdown));
+}
+
+int AutoWrapLabel::contentMargin() const
+{
+	const int m = margin();
+	return m > 0 ? m : DEFAULT_DOC_MARGIN;
+}
+
+int AutoWrapLabel::idealContentWidth() const
+{
+	QTextDocument doc;
+	doc.setDefaultFont(font());
+	doc.setDocumentMargin(0);
+	doc.setHtml(text());
+	return qCeil(doc.idealWidth());
+}
+
+int AutoWrapLabel::contentHeightForWidth(int contentWidth) const
+{
+	QTextDocument doc;
+	doc.setDefaultFont(font());
+	doc.setDocumentMargin(0);
+	doc.setHtml(text());
+	doc.setTextWidth(qMax(1, contentWidth));
+	return qCeil(doc.size().height());
+}
+
 QSize AutoWrapLabel::sizeHint() const
 {
-	QFontMetrics fm(font());
-	// 单行文本宽度
-	//int textWidth = fm.horizontalAdvance(text()); // Qt 5.11+；旧版用 fm.width(text())
-	int textWidth = fm.width(text());
-	// 限制在 [minimumWidth, maximumWidth] 之间
-	int w = qBound(minimumWidth(), textWidth, maximumWidth());
-
-	// 计算在宽度 w 下换行后的高度
-	QRect rect = fm.boundingRect(QRect(0, 0, w, 0),
-		Qt::TextWordWrap | Qt::AlignLeft | Qt::AlignTop,
-		text());
-	int h = rect.height();
-
-	// 加上 QLabel 的内边距（如果有）
-	int margin = this->margin() * 2; // margin() 默认 0
-	return QSize(w + margin, h + margin);
+	// 富文本（HTML）的高度必须用 QTextDocument 量，不能用 QFontMetrics——
+	// text() 返回的是 HTML 源码，按纯文本量出来的宽高全是错的。
+	const int m = contentMargin();
+	const int ideal = idealContentWidth() + 2 * m;
+	const int w = qBound(minimumWidth(), ideal, maximumWidth());
+	const int h = contentHeightForWidth(w - 2 * m) + 2 * m;
+	return QSize(w, h);
 }
 
 QSize AutoWrapLabel::minimumSizeHint() const
 {
-	QFontMetrics fm(font());
-	int margin = this->margin() * 2;
-	// 最小高度取单行高度即可。绝不能按最小宽度折行计算，
+	const int m = contentMargin();
+	// 最小高度取单行高度。绝不能按最小宽度折行计算，
 	// 否则长文本会得到巨大的最小高度，把外层布局撑爆，导致整片消息不可见。
-	return QSize(minimumWidth() + margin, fm.lineSpacing() + margin);
+	const QFontMetrics fm(font());
+	return QSize(minimumWidth(), fm.lineSpacing() + 2 * m);
 }

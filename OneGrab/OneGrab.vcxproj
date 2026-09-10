@@ -14,6 +14,7 @@
     <ClCompile Include="src\AIHandler.cpp" />
     <ClCompile Include="src\AITalkWidget.cpp" />
     <ClCompile Include="src\AutoWrapLabel.cpp" />
+    <ClCompile Include="src\MarkdownHelper.cpp" />
     <ClCompile Include="src\BtnBar.cpp" />
     <ClCompile Include="src\DSystemTrayMenu.cpp" />
     <ClCompile Include="src\hook.cpp" />
@@ -75,6 +76,7 @@
     <QtMoc Include="src\AIHandler.h" />
     <QtMoc Include="src\AITalkWidget.h" />
     <ClInclude Include="src\AutoWrapLabel.h" />
+    <ClInclude Include="src\MarkdownHelper.h" />
     <ClInclude Include="src\DGraphicsItem.h" />
     <QtMoc Include="src\ImageThread.h" />
     <QtMoc Include="src\ImageHandler.h" />

@@ -108,6 +108,9 @@
     <ClCompile Include="src\AutoWrapLabel.cpp">
       <Filter>Widgets</Filter>
     </ClCompile>
+    <ClCompile Include="src\MarkdownHelper.cpp">
+      <Filter>AI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="src\OneGrab.h">
@@ -217,6 +220,9 @@
     </ClInclude>
     <ClInclude Include="src\AutoWrapLabel.h">
       <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MarkdownHelper.h">
+      <Filter>AI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

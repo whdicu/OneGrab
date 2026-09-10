@@ -25,7 +25,7 @@ const static int BORDER_MIN_PIXEL = 10;  // 边缘至少显示10像素
 const static QVector<int> SIZE_V =
 //{10, 15, 22, 33, 51, 76, 114, 171, 256, 384, 577, 865/*, 1297, 1946, 2919, 4379*/};
 {10, 13, 17, 22, 29, 37, 48, 63, 82, 106, 138, 179, 232, 303, 394, 512, 665};
-const static DStringList MENU_TEXT = { "存下来", "复制", "变大", "变小", "返回", "关掉" };
+const static DStringList MENU_TEXT = { "存下来", "问AI", "复制", "变大", "变小", "返回", "关掉" };
 
 LabelIsland1::LabelIsland1(const QPixmap& pixmap, const QPoint& pos, QWidget* parent /*= nullptr*/)
 	: QLabel(parent)
@@ -191,7 +191,7 @@ void LabelIsland1::mouseReleaseEvent(QMouseEvent* event)
 
 void LabelIsland1::slotBtnClicked(const QString& text)
 {
-	// "存下来", "复制", "变大", "变小", "返回", "关掉"
+	// "存下来", "问AI", "复制", "变大", "变小", "返回", "关掉"
 	DSizeType i = MENU_TEXT.indexOf(HDQt::QString2DString(text));
 	switch (i)
 	{
@@ -221,28 +221,33 @@ void LabelIsland1::slotBtnClicked(const QString& text)
 		break;
 	}
 	case 1:
+	{
+		emit sigNeedShowAITalk();
+		break;
+	}
+	case 2:
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 		QApplication::clipboard()->setPixmap(pixmap());
 #else
 		QApplication::clipboard()->setPixmap(*pixmap());
 #endif
 		break;
-	case 2:
+	case 3:
 		sizeLabel_->move(pos() + QPoint((width() - sizeLabel_->width()) / 2, (height() - sizeLabel_->height()) / 2));
 		sizeLabel_->show();
 		scale(true);
 		break;
-	case 3:
+	case 4:
 		sizeLabel_->move(pos() + QPoint((width() - sizeLabel_->width()) / 2, (height() - sizeLabel_->height()) / 2));
 		sizeLabel_->show();
 		scale(false);
 		break;
-	case 5:
+	case 6:
 		hide();
 		sizeLabel_->hide();
 		emit sigHide();
 		break;
-	case 4:
+	case 5:
 	default:
 		break;
 	}

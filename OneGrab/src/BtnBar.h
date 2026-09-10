@@ -19,6 +19,7 @@ public:
 	void setLineWidth(LineWidth lineWidth);
 
 signals:
+	void sigAskAI();
 	void sigDrawing(int isDrawing);
 	void sigClose();
 	void sigFixed();
@@ -29,6 +30,7 @@ signals:
 	void sigSetIgnoreKey(bool ignore);
 
 private slots:
+	void on_btn_ask_ai_clicked();
 	void on_btn_rect_clicked();
 	void on_btn_line_clicked();
 	void on_btn_arrow_clicked();

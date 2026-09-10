@@ -13,6 +13,7 @@
   <ItemGroup>
     <ClCompile Include="src\AIHandler.cpp" />
     <ClCompile Include="src\AITalkWidget.cpp" />
+    <ClCompile Include="src\AutoWrapLabel.cpp" />
     <ClCompile Include="src\BtnBar.cpp" />
     <ClCompile Include="src\DSystemTrayMenu.cpp" />
     <ClCompile Include="src\hook.cpp" />
@@ -32,6 +33,9 @@
     <ClCompile Include="src\OneGrab.cpp" />
     <ClCompile Include="src\SettingDialog.cpp" />
     <ClCompile Include="src\SettingHandler.cpp" />
+    <ClCompile Include="src\TalkMsgBase.cpp" />
+    <ClCompile Include="src\TalkMsgLeft.cpp" />
+    <ClCompile Include="src\TalkMsgRight.cpp" />
     <ClCompile Include="src\WinHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -70,9 +74,13 @@
     <ClInclude Include="resource.h" />
     <QtMoc Include="src\AIHandler.h" />
     <QtMoc Include="src\AITalkWidget.h" />
+    <ClInclude Include="src\AutoWrapLabel.h" />
     <ClInclude Include="src\DGraphicsItem.h" />
     <QtMoc Include="src\ImageThread.h" />
     <QtMoc Include="src\ImageHandler.h" />
+    <QtMoc Include="src\TalkMsgLeft.h" />
+    <QtMoc Include="src\TalkMsgRight.h" />
+    <QtMoc Include="src\TalkMsgBase.h" />
     <ClInclude Include="src\version.h" />
     <ClInclude Include="src\WinHandler.h" />
     <QtMoc Include="src\LabelIsland2.h" />

@@ -40,7 +40,7 @@ public slots:
 	void slotKeyPressed(const KeyInfo& info);
 
 private slots:
-	void slotFixed();
+	void slotFixed(bool showAI);
 	void slotFixedOldOne();
 	void slotFixedCopyOne();
 	void slotFixedImageDownloadFinished(QPixmap pixmap);  // 其实这个函数就是把图片做成LabelIsland

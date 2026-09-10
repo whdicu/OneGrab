@@ -10,6 +10,8 @@
 #include <QNetworkReply>
 #include <QJsonObject>
 
+class QPixmap;
+
 class AIHandler : public QObject
 {
 	Q_OBJECT
@@ -66,6 +68,7 @@ public:
 
 	// 把本地图片文件读成 base64 data URL（按扩展名推断 mime，未知默认 image/jpeg）。
 	// 读取失败返回空字符串。结果可直接填入 ChatMessage::images。
+	static QString imageFileToDataUrl(const QPixmap& pixmap);
 	static QString imageFileToDataUrl(const QString& filePath);
 
 signals:

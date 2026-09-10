@@ -25,6 +25,9 @@
     <Filter Include="Widgets">
       <UniqueIdentifier>{0053c6dc-6cc5-42f6-91b2-35ce537f2918}</UniqueIdentifier>
     </Filter>
+    <Filter Include="AI">
+      <UniqueIdentifier>{d5efbe00-294e-43c5-a3d6-fb44cafe2238}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -88,10 +91,22 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\AIHandler.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>AI</Filter>
     </ClCompile>
     <ClCompile Include="src\AITalkWidget.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>AI</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TalkMsgLeft.cpp">
+      <Filter>AI</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TalkMsgRight.cpp">
+      <Filter>AI</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TalkMsgBase.cpp">
+      <Filter>AI</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AutoWrapLabel.cpp">
+      <Filter>Widgets</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -147,10 +162,19 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="src\AIHandler.h">
-      <Filter>Header Files</Filter>
+      <Filter>AI</Filter>
     </QtMoc>
     <QtMoc Include="src\AITalkWidget.h">
-      <Filter>Header Files</Filter>
+      <Filter>AI</Filter>
+    </QtMoc>
+    <QtMoc Include="src\TalkMsgLeft.h">
+      <Filter>AI</Filter>
+    </QtMoc>
+    <QtMoc Include="src\TalkMsgRight.h">
+      <Filter>AI</Filter>
+    </QtMoc>
+    <QtMoc Include="src\TalkMsgBase.h">
+      <Filter>AI</Filter>
     </QtMoc>
   </ItemGroup>
   <ItemGroup>
@@ -167,7 +191,7 @@
       <Filter>Widgets</Filter>
     </QtUic>
     <QtUic Include="src\AITalkWidget.ui">
-      <Filter>Form Files</Filter>
+      <Filter>AI</Filter>
     </QtUic>
   </ItemGroup>
   <ItemGroup>
@@ -190,6 +214,9 @@
     </ClInclude>
     <ClInclude Include="src\version.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AutoWrapLabel.h">
+      <Filter>Widgets</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

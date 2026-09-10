@@ -1,5 +1,7 @@
 ﻿#include "AIHandler.h"
 
+#include <QBuffer>
+#include <QPixmap>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -40,6 +42,23 @@ void AIHandler::setApiKey(const QString& apiKey)
 QString AIHandler::apiKey() const
 {
 	return m_apiKey;
+}
+
+QString AIHandler::imageFileToDataUrl(const QPixmap& pixmap)
+{
+	if (pixmap.isNull())
+		return QString();
+
+	QByteArray data;
+	QBuffer buffer(&data);
+	if (!buffer.open(QIODevice::WriteOnly))
+		return QString();
+
+	if (!pixmap.save(&buffer, "PNG"))
+		return QString();
+	buffer.close();
+
+	return QString("data:%1;base64,%2").arg("image/png", QString::fromUtf8(data.toBase64()));
 }
 
 QString AIHandler::imageFileToDataUrl(const QString& filePath)

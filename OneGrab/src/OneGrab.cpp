@@ -74,7 +74,7 @@ namespace
 
 
 OneGrab::OneGrab(QWidget *parent)
-    : QWidget(parent, Qt::FramelessWindowHint | Qt::Tool | Qt::WindowStaysOnTopHint)
+    : QWidget(parent, Qt::FramelessWindowHint | Qt::Tool/* | Qt::WindowStaysOnTopHint*/)
 	, btnBar_(new BtnBar)
 	, mouseWindow_(new MouseWindow)
 	, ignoreKeyPress_(false)
@@ -87,13 +87,20 @@ OneGrab::OneGrab(QWidget *parent)
 	QGraphicsScene* lpScene = new QGraphicsScene;
 	ui.view->setScene(lpScene);
 
+	connect(btnBar_, &BtnBar::sigAskAI, this, [this]()
+	{
+		slotFixed(true);
+	});
 	connect(btnBar_, &BtnBar::sigDrawing, this, [this](int isDrawing)
 	{
 		ignoreKeyPress_ = isDrawing == DrawWordS;  // 只有绘制文字时屏蔽按键
 		ui.view->setDrawingState(isDrawing);
 	});
 	connect(btnBar_, &BtnBar::sigClose, this, &OneGrab::finishGrab);
-	connect(btnBar_, &BtnBar::sigFixed, this, &OneGrab::slotFixed);
+	connect(btnBar_, &BtnBar::sigFixed, this, [this]()
+	{
+		slotFixed(false);
+	});
 	connect(btnBar_, &BtnBar::sigSave, this, &OneGrab::slotSave);
 	connect(this, &OneGrab::sigFixedImageDownloadFinished, this, &OneGrab::slotFixedImageDownloadFinished, Qt::QueuedConnection);
 	connect(btnBar_, &BtnBar::sigCopy, this, &OneGrab::slotCopy);
@@ -388,7 +395,7 @@ void OneGrab::slotKeyPressed(const KeyInfo& info)
 		break;
 	case 'T':
 		if (!info.ctrlPressed)
-			slotFixed();  // 这个函数里已调 finishGrab
+			slotFixed(false);  // 这个函数里已调 finishGrab
 		break;
 	case 'W':  // 画文字
 		btnBar_->setDrawMode(DrawWordS);
@@ -407,7 +414,7 @@ void OneGrab::slotKeyPressed(const KeyInfo& info)
 	Hook::getInstance()->blockOnce();
 }
 
-void OneGrab::slotFixed()
+void OneGrab::slotFixed(bool showAI)
 {
 	QRect croppedRect;
 	QPixmap croppedPixmap = ui.view->getSelectionPixmap(croppedRect);
@@ -425,25 +432,11 @@ void OneGrab::slotFixed()
 		islandBuffer_.dequeue()->deleteLater();
 
 	// AI聊天Widget
-	AITalkWidget* talkWidget = new AITalkWidget;
-	talkWidget->show();
+	AITalkWidget* talkWidget = new AITalkWidget(island);
 	talkWidget->move(island->x() + island->width() + 10
 		, island->y() + island->height() - talkWidget->height());
-
-	// island 移动或缩放时，talkWidget 跟随
-	connect(island, &LabelIsland::sigGeometryChanged, talkWidget, [island, talkWidget]()
-	{
-		talkWidget->move(island->x() + island->width() + 10
-			, island->y() + island->height() - talkWidget->height());
-	});
-	connect(island, &LabelIsland::sigHide, this, [talkWidget]()
-	{
-		talkWidget->hide();
-	});
-	connect(island, &LabelIsland::sigShow, this, [talkWidget]()
-	{
+	if (showAI)
 		talkWidget->show();
-	});
 
 	finishGrab();
 }

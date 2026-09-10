@@ -19,6 +19,7 @@ signals:
 	void sigShow();
 	// 位置或尺寸变化时发出（拖动移动、缩放动画都会触发）
 	void sigGeometryChanged();
+	void sigNeedShowAITalk();
 
 private:
 	void moveEvent(QMoveEvent* event) override;

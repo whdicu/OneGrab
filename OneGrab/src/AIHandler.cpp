@@ -200,9 +200,6 @@ void AIHandler::sendStream(const Params& params, const QString& effectiveKey, co
 
 	QNetworkReply* reply = m_manager->post(request, body);
 
-	static int ii = 0;
-	qDebug() << ++ii;
-
 	auto* ctx = new RequestContext;
 	ctx->msgUuid = msgUuid;
 	ctx->stream = true;
@@ -338,7 +335,7 @@ void AIHandler::onReplyFinished()
 		if (!thinkingText.isEmpty())
 			emit thinkingReady(thinkingText);
 
-		emit replyReady(replyText);
+		emit replyReady(replyText, ctx->msgUuid);
 	}
 	else
 	{

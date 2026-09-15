@@ -25,7 +25,19 @@ AutoWrapLabel::AutoWrapLabel(QWidget *parent /*= nullptr*/)
 
 void AutoWrapLabel::setMarkdown(const QString& markdown)
 {
-	setText(MarkdownHelper::toHtml(markdown));
+	markdown_ = markdown;
+	setText(MarkdownHelper::toHtml(markdown_));
+}
+
+void AutoWrapLabel::appendMarkdown(const QString& markdown)
+{
+	if (markdown.isEmpty())
+		return;
+
+	// 累积源文本后整体重转一次：跨块的 Markdown（代码块、列表）这样才不会被截断。
+	// 消息长度有限，整体重转的开销可以忽略；真要做高频逐字流式，再考虑节流重绘
+	markdown_ += markdown;
+	setText(MarkdownHelper::toHtml(markdown_));
 }
 
 int AutoWrapLabel::contentMargin() const

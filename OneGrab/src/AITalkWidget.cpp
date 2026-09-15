@@ -60,11 +60,26 @@ AITalkWidget::AITalkWidget(LabelIsland* island, QWidget *parent)
 	// （窗口高度会随消息条数变化，所以位置统一交给 moveToIsland 算）
 	connect(island, &LabelIsland::sigGeometryChanged, this, &AITalkWidget::moveToIsland);
 
-	// 等布局跑完一帧再按内容定高，这时候量出来的尺寸才准
-	QTimer::singleShot(0, this, [this]()
+	// 消息在 widget_talks 内部追加 / 换行引起的高度变化，LayoutRequest 只会发给 widget_talks 自己，
+	// 顶层布局不会被动失效，所以这里额外盯着它
+	ui.widget_talks->installEventFilter(this);
+
+	// "滚到最新"不能只靠一次性 setValue：内容变高之后滚动条范围是稍后才更新的，
+	// 那一刻会差一截没到底。所以盯着 rangeChanged —— 范围一变（内容长高/变短）就贴到底部
+	connect(ui.scrollArea->verticalScrollBar(), &QScrollBar::rangeChanged, this, [this](int, int max)
 	{
-		updateHeightToTalks();
+		if (followBottom_)
+			ui.scrollArea->verticalScrollBar()->setValue(max);
 	});
+
+	// 用户自己往上翻的时候就别再把他拽回来；滚回底部（或拖到最底）时自动恢复跟随
+	connect(ui.scrollArea->verticalScrollBar(), &QScrollBar::valueChanged, this, [this](int value)
+	{
+		followBottom_ = (value >= ui.scrollArea->verticalScrollBar()->maximum());
+	});
+
+	// 等布局跑完一帧再按内容定高，这时候量出来的尺寸才准
+	requestHeightUpdate();
 
 	connect(island, &LabelIsland::sigHide, this, &QWidget::hide);
 	connect(island, &LabelIsland::sigShow, this, &QWidget::show);
@@ -72,7 +87,7 @@ AITalkWidget::AITalkWidget(LabelIsland* island, QWidget *parent)
 
 	// 创建聊天msg
 	aiParams_.model = "deepseek-flash";
-	aiParams_.stream = false;
+	aiParams_.stream = true;
 	aiParams_.baseUrl = "https://api.deepseek.com/v1";
 
 	// 思考模式开关：默认关闭
@@ -85,15 +100,22 @@ AITalkWidget::AITalkWidget(LabelIsland* island, QWidget *parent)
 	m1.content = SYSTEM_STR;
 	aiParams_.msgs.append(m1);
 
-	connect(aiHandler_, &AIHandler::replyReady, this, [this](const QString& reply)
+	// 非流式，一次性回复所有文字
+	connect(aiHandler_, &AIHandler::replyReady, this, [this](const QString& reply, const QString& UUID)
 	{
 		AIHandler::ChatMessage m1;
 		m1.role = AIHandler::Assistant;
 		m1.content = reply;
 		aiParams_.msgs.append(m1);
 		qDebug() << "[AI消息接收]" << reply;
-		addTalkMsg(true, reply);
+		addTalkMsg(UUID, true, reply);
 	});
+
+	// 流式回复文字
+	connect(aiHandler_, &AIHandler::streamChunk, this, &AITalkWidget::appendTalkMsg);
+
+	// 流式回复思考文字
+	//connect(aiHandler_, &AIHandler::thinkingChunk, this, &AITalkWidget::);
 
 	// test
 	//addTalkMsg(true, "asdasda阿三大苏打的是大大撒撒大大是大大萨达萨达撒啊时代的阿三大苏打的是大大撒撒大大是大大萨达萨达撒啊时代的");
@@ -163,12 +185,18 @@ void AITalkWidget::updateHeightToTalks(bool keepLatestVisible /*= false*/)
 	// 高度变了，贴着 island 的位置要跟着重算
 	moveToIsland();
 
-	if (keepLatestVisible)
-	{
-		// 内容顶到上限之后，保证最新一条还在视野里
-		QScrollBar* bar = ui.scrollArea->verticalScrollBar();
-		bar->setValue(bar->maximum());
-	}
+	// 有新内容时："只有视图本来就在最底部"才跟到底，用户正在往上翻看前面的消息就一律不动。
+	// 滚动条的 value 是"离顶部多少像素"，内容在底部变高不会改这个值，所以什么都不做就是保持原地
+	if (keepLatestVisible && followBottom_)
+		scrollToBottom();
+}
+
+void AITalkWidget::scrollToBottom()
+{
+	// 重新开始跟随底部，并立刻贴一次（范围万一还没更新，rangeChanged 会兜住）
+	followBottom_ = true;
+	QScrollBar* bar = ui.scrollArea->verticalScrollBar();
+	bar->setValue(bar->maximum());
 }
 
 void AITalkWidget::moveToIsland()
@@ -182,19 +210,39 @@ void AITalkWidget::moveToIsland()
 
 bool AITalkWidget::event(QEvent* event)
 {
-	// 布局需要重算（消息增减、气泡换行高度变化）时跟着重算窗口高度，
-	// 同一批请求用标志位合并成一次，免得连着 resize 好几次
-	if (event->type() == QEvent::LayoutRequest && !heightUpdatePending_)
-	{
-		heightUpdatePending_ = true;
-		QTimer::singleShot(0, this, [this]()
-		{
-			heightUpdatePending_ = false;
-			updateHeightToTalks();
-		});
-	}
+	// 自己的布局需要重算（消息增减）时跟着重算窗口高度
+	if (event->type() == QEvent::LayoutRequest)
+		requestHeightUpdate();
 
 	return QWidget::event(event);
+}
+
+bool AITalkWidget::eventFilter(QObject* watched, QEvent* event)
+{
+	// 消息气泡内部变高（流式追加文字、文字重新换行）时，LayoutRequest 是发给 widget_talks 的，
+	// 顶层收不到，所以在这里补一刀
+	if (watched == ui.widget_talks && event->type() == QEvent::LayoutRequest)
+		requestHeightUpdate();
+
+	return QWidget::eventFilter(watched, event);
+}
+
+void AITalkWidget::requestHeightUpdate(bool keepLatestVisible /*= false*/)
+{
+	// 同一批请求合并成每帧一次：流式追加一秒钟可能来几十次，每次 resize 一遍太浪费。
+	// keepLatestVisible 是"或"的关系，只要这批里有任意一次要滚到最新，就滚
+	keepLatestVisible_ = keepLatestVisible_ || keepLatestVisible;
+	if (heightUpdatePending_)
+		return;
+
+	heightUpdatePending_ = true;
+	QTimer::singleShot(0, this, [this]()
+	{
+		heightUpdatePending_ = false;
+		const bool keep = keepLatestVisible_;
+		keepLatestVisible_ = false;
+		updateHeightToTalks(keep);
+	});
 }
 
 void AITalkWidget::on_btn_close_clicked()
@@ -228,10 +276,14 @@ void AITalkWidget::on_btn_send_clicked()
 	aiParams_.msgs.append(m1);
 	aiHandler_->callDeepSeek(aiParams_);
 
-	addTalkMsg(false, str);
+	const QString msgUuid = QUuid::createUuid().toString();
+	addTalkMsg(msgUuid, false, str);
+
+	// 自己发的消息，直接跟到底部看最新
+	scrollToBottom();
 }
 
-QString AITalkWidget::addTalkMsg(bool isLeft, const QString& text)
+void AITalkWidget::addTalkMsg(const QString& UUID, bool isLeft, const QString& text)
 {
 	TalkMsgBase* talkMsg;
 	if (isLeft)
@@ -243,14 +295,32 @@ QString AITalkWidget::addTalkMsg(bool isLeft, const QString& text)
 	if (hLayout)
 		hLayout->addWidget(talkMsg);
 
-	const QString msgUuid = QUuid::createUuid().toString();
-	mapTalkMsgs_.insert(msgUuid, talkMsg);
+	mapTalkMsgs_.insert(UUID, talkMsg);
 
-	// 等布局跑完一帧再量高度（换行气泡要等布局算完才知道自己多高），并让最新一条可见
-	QTimer::singleShot(0, this, [this]()
+	// 流式追加时气泡会自己变高，这里跟着长高、并让最新文字保持可见
+	connect(talkMsg, &TalkMsgBase::sigTextAppended, this, [this]()
 	{
-		updateHeightToTalks(true);
+		requestHeightUpdate(true);
 	});
 
-	return msgUuid;
+	// 等布局跑完一帧再量高度（换行气泡要等布局算完才知道自己多高），并让最新一条可见
+	requestHeightUpdate(true);
+}
+
+void AITalkWidget::appendTalkMsg(const QString& UUID, const QString& text)
+{
+	// 这条消息收到的第一段文本
+	if (!mapTalkMsgs_.contains(UUID))
+	{
+		addTalkMsg(UUID, true, text);
+		return;
+	}
+	
+	TalkMsgBase* msg = mapTalkMsgs_.value(UUID, nullptr);
+	if (!msg)
+	{
+		qWarning() << __FUNCTION__ << "uuid:" << UUID << "not exists!";
+		return;
+	}
+	msg->appendText(text);
 }

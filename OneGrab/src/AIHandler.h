@@ -73,7 +73,7 @@ public:
 
 signals:
 	// 非流式：一次性返回完整答案
-	void replyReady(const QString& reply);
+	void replyReady(const QString& reply, const QString& msgUuid);
 
 	// 流式：每来一小段就发一次
 	void streamChunk(const QString& chunk, const QString& msgUuid);

@@ -160,8 +160,8 @@ void AITalkWidget::updateHeightToTalks(bool keepLatestVisible /*= false*/)
 {
 	// 除滚动区之外的固定高度（输入框 + 按钮行 + 边距间距）用实测：窗口高度 - 滚动区高度
 	const int chromeHeight = height() - ui.scrollArea->height();
-	if (chromeHeight <= 0)
-		return;   // 布局还没跑过，等下一帧再说
+	if (ui.scrollArea->height() <= 0 || chromeHeight <= 0)
+		return;   // 布局还没摆布过滚动区，量出来的值没意义，等下一帧再说
 
 	// 内容需要多高，只能靠布局算：
 	//   ① 不能用 widget_talks->height()：它是 scrollArea 的 content widget，
@@ -212,6 +212,10 @@ bool AITalkWidget::event(QEvent* event)
 {
 	// 自己的布局需要重算（消息增减）时跟着重算窗口高度
 	if (event->type() == QEvent::LayoutRequest)
+		requestHeightUpdate();
+	// 这个窗口是"要用的时候才 show"的：构造函数里那次定高跑在 show 之前，布局还没摆布过，
+	// 量出来的固定高度是错的（会量成整个窗口高度）。所以 show 之后再定一次
+	else if (event->type() == QEvent::Show)
 		requestHeightUpdate();
 
 	return QWidget::event(event);

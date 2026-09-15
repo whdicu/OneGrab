@@ -16,7 +16,7 @@ TalkMsgLeft::TalkMsgLeft(const QString& text, QWidget* parent)
 	setLayout(layout);
 
 	setStyleSheet("QLabel { \
-		background-color: #EEEEF0; \
+		background-color: rgba(238, 238, 240, 0.9); \
 		border: none; \
 		border-top-left-radius: 10px; \
 		border-top-right-radius: 10px; \

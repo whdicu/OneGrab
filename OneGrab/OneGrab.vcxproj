@@ -20,6 +20,7 @@
     <ClCompile Include="src\hook.cpp" />
     <ClCompile Include="src\DGrabView.cpp" />
     <ClCompile Include="src\ImageHandler.cpp" />
+    <ClCompile Include="src\GlassBlurBackground.cpp" />
     <ClCompile Include="src\ImageThread.cpp" />
     <ClCompile Include="src\LabelIsland2.cpp" />
     <ClCompile Include="src\LabelIsland3.cpp" />
@@ -38,6 +39,7 @@
     <ClCompile Include="src\TalkMsgLeft.cpp" />
     <ClCompile Include="src\TalkMsgRight.cpp" />
     <ClCompile Include="src\WinHandler.cpp" />
+    <ClCompile Include="src\WindowsGlassEffect.cpp" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="src\OneGrab.h" />
@@ -75,6 +77,7 @@
     <ClInclude Include="resource.h" />
     <QtMoc Include="src\AIHandler.h" />
     <QtMoc Include="src\AITalkWidget.h" />
+    <QtMoc Include="src\GlassBlurBackground.h" />
     <ClInclude Include="src\AutoWrapLabel.h" />
     <ClInclude Include="src\MarkdownHelper.h" />
     <ClInclude Include="src\DGraphicsItem.h" />
@@ -85,6 +88,7 @@
     <QtMoc Include="src\TalkMsgBase.h" />
     <ClInclude Include="src\version.h" />
     <ClInclude Include="src\WinHandler.h" />
+    <ClInclude Include="src\WindowsGlassEffect.h" />
     <QtMoc Include="src\LabelIsland2.h" />
     <QtMoc Include="src\LabelIsland3.h" />
     <QtMoc Include="src\LabelIsland4.h" />

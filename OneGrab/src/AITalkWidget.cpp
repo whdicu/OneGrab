@@ -1,5 +1,11 @@
 ﻿#include "AITalkWidget.h"
 #include "LabelIsland1.h"
+#include <QDebug>
+#include <QEvent>
+#include <QLayout>
+#include <QPainter>
+#include <QScrollBar>
+#include <QTimer>
 #include <QUuid>
 #include "TalkMsgLeft.h"
 #include "TalkMsgRight.h"
@@ -7,7 +13,18 @@
 // test
 const static QString API_KEY = "sk-778ef85c1ff444b2a718b8b7cc032a02";
 const static QString SYSTEM_STR = "你是一名助手，需要回答主人关于这张图片的提问。";
-
+// 毛玻璃调参：改下面这几行就够了
+const static QColor GLASS_TINT = QColor(255, 255, 255, 60);   // 颜色 + 深浅（alpha 越小越透、模糊越明显）
+const static WindowsGlassEffect::BlurLevel GLASS_BLUR_LEVEL = WindowsGlassEffect::BlurLight;  // 模糊档位
+const static bool GLASS_DARK_TITLE_BAR = false;                // 浅色玻璃要设 false，否则系统 backdrop 底色发黑
+// 窗口圆角半径：按系统分开取值（0 = 直角）
+// Win10：accent 模糊按窗口矩形铺、不认窗口区域（已实测），圆角只会让四角漏出一块模糊，
+//        半径越大越明显（20 明显 / 8 基本看不出 / 0 最干净）→ 所以取 0
+// Win11：有官方圆角，材质和圆角天生对齐，不会漏 → 取 20
+const static int GLASS_CORNER_RADIUS_WIN10 = 0;
+const static int GLASS_CORNER_RADIUS_WIN11 = 20;
+// 窗口高度按消息内容自动匹配，上限 900；没内容时高度就落在 scrollArea 自己的最小高度上（.ui 里设的 1）
+const static int TALK_MAX_HEIGHT = 900;
 
 AITalkWidget::AITalkWidget(LabelIsland* island, QWidget *parent)
 	: QWidget(parent)
@@ -16,15 +33,39 @@ AITalkWidget::AITalkWidget(LabelIsland* island, QWidget *parent)
 
 {
 	ui.setupUi(this);
+	// 这几个 flag 本来就要求是「无边框 + 独立顶层窗口」，正好满足窗口级毛玻璃的前提，不用改
 	setWindowFlags(Qt::FramelessWindowHint | Qt::Tool | Qt::WindowStaysOnTopHint);
 	setAttribute(Qt::WA_TranslucentBackground);
 
+	// 毛玻璃：Win11 走官方 DWM System Backdrop，Win10 按档位走 Acrylic 或更跟手的 BlurBehind，
+	// 都不支持时只剩 tint 底色。调参看文件开头的 GLASS_* 常量
+	WindowsGlassEffect::Params glassParams;
+	glassParams.blurLevel = GLASS_BLUR_LEVEL;
+	glassParams.tint = GLASS_TINT;
+	glassParams.darkTitleBar = GLASS_DARK_TITLE_BAR;
+	glassParams.cornerRadius = WindowsGlassEffect::isDwmCornersSupported()
+		? GLASS_CORNER_RADIUS_WIN11
+		: GLASS_CORNER_RADIUS_WIN10;
+	// Win11 默认走官方圆角（抗锯齿最好、跟系统素材一致，但半径是系统的约 8px）；
+	// 想让上面那个 20 精确生效就打开这行，代价是改回自己裁区域
+	//glassParams.preferDwmCorners = false;
+
+	// 运行时想试手感可以用：WindowsGlassEffect::setTint(this, QColor(255, 255, 255, 70));
+	//                     WindowsGlassEffect::setBlurLevel(this, WindowsGlassEffect::BlurLight);
+	WindowsGlassEffect::Result glassResult = WindowsGlassEffect::enable(this, glassParams);
+	glassMode_ = WindowsGlassEffect::mode(this);
+	qDebug() << __FUNCTION__ << "glass result =" << (int)glassResult << "mode =" << (int)glassMode_;
+
 	// island 移动或缩放时，talkWidget 跟随
-	connect(island, &LabelIsland::sigGeometryChanged, this, [island, this]()
+	// （窗口高度会随消息条数变化，所以位置统一交给 moveToIsland 算）
+	connect(island, &LabelIsland::sigGeometryChanged, this, &AITalkWidget::moveToIsland);
+
+	// 等布局跑完一帧再按内容定高，这时候量出来的尺寸才准
+	QTimer::singleShot(0, this, [this]()
 	{
-		move(island->x() + island->width() + 10
-			, island->y() + island->height() - this->height());
+		updateHeightToTalks();
 	});
+
 	connect(island, &LabelIsland::sigHide, this, &QWidget::hide);
 	connect(island, &LabelIsland::sigShow, this, &QWidget::show);
 	connect(island, &LabelIsland::sigNeedShowAITalk, this, &QWidget::show);
@@ -60,6 +101,100 @@ AITalkWidget::AITalkWidget(LabelIsland* island, QWidget *parent)
 
 AITalkWidget::~AITalkWidget()
 {
+}
+
+void AITalkWidget::paintEvent(QPaintEvent* event)
+{
+	QWidget::paintEvent(event);
+
+	// 颜色和深浅都从参数里取，避免同一个魔法色值散在代码里两处
+	// 注意取实时状态：窗口重新 show 之后系统效果可能才贴上去
+	const WindowsGlassEffect::Params params = WindowsGlassEffect::params(this);
+	const WindowsGlassEffect::Mode mode = WindowsGlassEffect::mode(this);
+
+	// ModeDwmBackdrop 模式下系统层不给着色，自绘层就用 tint 原本的 alpha
+	QColor tint = params.tint;
+	if (mode == WindowsGlassEffect::ModeNone)
+		tint.setAlpha(215);   // 没有任何原生效果，只能压深一点保证文字能读
+	else if (mode == WindowsGlassEffect::ModeAcrylic || mode == WindowsGlassEffect::ModeBlurBehind)
+		tint.setAlpha(qRound(tint.alpha() * params.appTintRatio));   // 系统已经着了色，别叠太暗
+
+	QPainter painter(this);
+	painter.setRenderHint(QPainter::Antialiasing);
+	painter.setPen(Qt::NoPen);
+	painter.setBrush(tint);
+	// 窗口本身已经裁过圆角了，这里再画一层抗锯齿圆角，把 SetWindowRgn 那 1bit 区域的锯齿边糊软一点；
+	// 但 Win11 官方圆角是 DWM 自己裁的、半径由系统定，这时必须铺满整块，
+	// 否则两边半径不一致会在角上留一条没着色的缝
+	const QRectF full(0, 0, width(), height());
+	const int cornerRadius = WindowsGlassEffect::isDwmCornersActive(this) ? 0 : params.cornerRadius;
+	if (cornerRadius > 0)
+		painter.drawRoundedRect(full, cornerRadius, cornerRadius);
+	else
+		painter.drawRect(full);
+}
+
+void AITalkWidget::updateHeightToTalks(bool keepLatestVisible /*= false*/)
+{
+	// 除滚动区之外的固定高度（输入框 + 按钮行 + 边距间距）用实测：窗口高度 - 滚动区高度
+	const int chromeHeight = height() - ui.scrollArea->height();
+	if (chromeHeight <= 0)
+		return;   // 布局还没跑过，等下一帧再说
+
+	// 内容需要多高，只能靠布局算：
+	//   ① 不能用 widget_talks->height()：它是 scrollArea 的 content widget，
+	//      widgetResizable 会把它撑满视口，量出来永远等于视口高度 → 窗口就再也不动了；
+	//   ② 也不能只信 sizeHint()：气泡是换行的，AutoWrapLabel 的 sizeHint 按"理想宽度"折行，
+	//      宽度不够时会少算行数。
+	// 所以用 heightForWidth 按实际宽度算 —— 和 QScrollArea 内部给内容 widget 定高用的是同一个办法；
+	// 它不支持时返回 -1，这时退回 sizeHint。
+	int contentHeight = ui.widget_talks->heightForWidth(ui.widget_talks->width());
+	if (ui.widget_talks->layout())
+		contentHeight = qMax(contentHeight, ui.widget_talks->layout()->sizeHint().height());
+	if (contentHeight < 0)
+		contentHeight = 0;
+
+	// 没内容时 contentHeight = 0，窗口高度落在 chrome + scrollArea 的最小高度（.ui 里那个 1）上，
+	// 也就是"没内容时聊天区高度就是 1"；上限由 TALK_MAX_HEIGHT 和 .ui 里的 maximumSize 兜着
+	const int targetHeight = qMin(contentHeight + chromeHeight, TALK_MAX_HEIGHT);
+	if (targetHeight != height())
+		resize(width(), targetHeight);
+
+	// 高度变了，贴着 island 的位置要跟着重算
+	moveToIsland();
+
+	if (keepLatestVisible)
+	{
+		// 内容顶到上限之后，保证最新一条还在视野里
+		QScrollBar* bar = ui.scrollArea->verticalScrollBar();
+		bar->setValue(bar->maximum());
+	}
+}
+
+void AITalkWidget::moveToIsland()
+{
+	if (!island_)
+		return;
+
+	move(island_->x() + island_->width() + 10
+		, island_->y() + island_->height() - height());
+}
+
+bool AITalkWidget::event(QEvent* event)
+{
+	// 布局需要重算（消息增减、气泡换行高度变化）时跟着重算窗口高度，
+	// 同一批请求用标志位合并成一次，免得连着 resize 好几次
+	if (event->type() == QEvent::LayoutRequest && !heightUpdatePending_)
+	{
+		heightUpdatePending_ = true;
+		QTimer::singleShot(0, this, [this]()
+		{
+			heightUpdatePending_ = false;
+			updateHeightToTalks();
+		});
+	}
+
+	return QWidget::event(event);
 }
 
 void AITalkWidget::on_btn_close_clicked()
@@ -110,5 +245,12 @@ QString AITalkWidget::addTalkMsg(bool isLeft, const QString& text)
 
 	const QString msgUuid = QUuid::createUuid().toString();
 	mapTalkMsgs_.insert(msgUuid, talkMsg);
+
+	// 等布局跑完一帧再量高度（换行气泡要等布局算完才知道自己多高），并让最新一条可见
+	QTimer::singleShot(0, this, [this]()
+	{
+		updateHeightToTalks(true);
+	});
+
 	return msgUuid;
 }

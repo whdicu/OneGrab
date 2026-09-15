@@ -81,6 +81,12 @@
     <ClCompile Include="src\WinHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\WindowsGlassEffect.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GlassBlurBackground.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
     <ClCompile Include="src\ImageThread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -170,6 +176,9 @@
     <QtMoc Include="src\AITalkWidget.h">
       <Filter>AI</Filter>
     </QtMoc>
+    <QtMoc Include="src\GlassBlurBackground.h">
+      <Filter>Widgets</Filter>
+    </QtMoc>
     <QtMoc Include="src\TalkMsgLeft.h">
       <Filter>AI</Filter>
     </QtMoc>
@@ -213,6 +222,9 @@
       <Filter>Widgets</Filter>
     </ClInclude>
     <ClInclude Include="src\WinHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\WindowsGlassEffect.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\version.h">

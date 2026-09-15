@@ -266,7 +266,7 @@ void AIHandler::onReplyReadyRead()
 
 		if (!chunk.isEmpty())
 		{
-			emit streamChunk(chunk, ctx->msgUuid);
+			emit streamChunk(ctx->msgUuid, chunk);
 		}
 		else
 		{

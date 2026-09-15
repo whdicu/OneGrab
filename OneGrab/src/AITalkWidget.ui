@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>263</height>
+    <height>301</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -53,6 +53,11 @@ QPushButton
 	border-radius: 10px;
 	padding: 5px;
 	background-color: rgba(255, 255, 255, 0.9);
+}
+
+#label_tips
+{
+	color: #5c5c66;
 }</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -71,6 +76,22 @@ QPushButton
    <property name="bottomMargin">
     <number>10</number>
    </property>
+   <item>
+    <widget class="QLabel" name="label_tips">
+     <property name="font">
+      <font>
+       <family>Microsoft YaHei UI</family>
+       <pointsize>16</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>今天想聊些什么？</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
    <item>
     <widget class="QScrollArea" name="scrollArea">
      <property name="sizePolicy">

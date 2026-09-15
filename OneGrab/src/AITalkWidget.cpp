@@ -37,6 +37,8 @@ AITalkWidget::AITalkWidget(LabelIsland* island, QWidget *parent)
 	setWindowFlags(Qt::FramelessWindowHint | Qt::Tool | Qt::WindowStaysOnTopHint);
 	setAttribute(Qt::WA_TranslucentBackground);
 
+	ui.scrollArea->hide();
+
 	// 毛玻璃：Win11 走官方 DWM System Backdrop，Win10 按档位走 Acrylic 或更跟手的 BlurBehind，
 	// 都不支持时只剩 tint 底色。调参看文件开头的 GLASS_* 常量
 	WindowsGlassEffect::Params glassParams;
@@ -158,10 +160,17 @@ void AITalkWidget::paintEvent(QPaintEvent* event)
 
 void AITalkWidget::updateHeightToTalks(bool keepLatestVisible /*= false*/)
 {
-	// 除滚动区之外的固定高度（输入框 + 按钮行 + 边距间距）用实测：窗口高度 - 滚动区高度
-	const int chromeHeight = height() - ui.scrollArea->height();
-	if (ui.scrollArea->height() <= 0 || chromeHeight <= 0)
-		return;   // 布局还没摆布过滚动区，量出来的值没意义，等下一帧再说
+	// 固定部分（输入框 + 按钮行 + 边距间距）的高度用**纯约束**算：布局最小高度 − 滚动区最小高度。
+	// 为什么不能用"窗口高度 − 滚动区高度"实测：窗口还没被布局摆布过时滚动区的高度是垃圾值
+	// （实测刚 setupUi 完是 30，会算出偏高 40px 的高度），而这个窗口又是"要用才 show"的，
+	// 各种时序都能撞上"未摆布"状态。约束计算跟当前几何完全无关，什么时候算都对。
+	// 滚动区最小高度按 qSmartMinSize 的口径取：显式 minimumSize 优先，没设才回落 minimumSizeHint
+	const int scrollMinHeight = ui.scrollArea->minimumSize().height() > 0
+		? ui.scrollArea->minimumSize().height()
+		: ui.scrollArea->minimumSizeHint().height();
+	const int chromeHeight = layout() ? layout()->minimumSize().height() - scrollMinHeight : 0;
+	if (chromeHeight <= 0)
+		return;   // 参数还没配好，等下一次请求再来
 
 	// 内容需要多高，只能靠布局算：
 	//   ① 不能用 widget_talks->height()：它是 scrollArea 的 content widget，
@@ -170,7 +179,9 @@ void AITalkWidget::updateHeightToTalks(bool keepLatestVisible /*= false*/)
 	//      宽度不够时会少算行数。
 	// 所以用 heightForWidth 按实际宽度算 —— 和 QScrollArea 内部给内容 widget 定高用的是同一个办法；
 	// 它不支持时返回 -1，这时退回 sizeHint。
-	int contentHeight = ui.widget_talks->heightForWidth(ui.widget_talks->width());
+	// 宽度还没摆布出来（比如窗口还没 show）就别拿 0 去问 heightForWidth，退给 sizeHint
+	const int talksWidth = ui.widget_talks->width();
+	int contentHeight = talksWidth > 0 ? ui.widget_talks->heightForWidth(talksWidth) : -1;
 	if (ui.widget_talks->layout())
 		contentHeight = qMax(contentHeight, ui.widget_talks->layout()->sizeHint().height());
 	if (contentHeight < 0)
@@ -256,6 +267,9 @@ void AITalkWidget::on_btn_close_clicked()
 
 void AITalkWidget::on_btn_send_clicked()
 {
+	ui.label_tips->hide();
+	ui.scrollArea->show();
+
 	QString str = ui.edit_send->toPlainText();
 	ui.edit_send->clear();
 

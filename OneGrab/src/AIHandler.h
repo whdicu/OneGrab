@@ -76,7 +76,7 @@ signals:
 	void replyReady(const QString& reply, const QString& msgUuid);
 
 	// 流式：每来一小段就发一次
-	void streamChunk(const QString& chunk, const QString& msgUuid);
+	void streamChunk(const QString& msgUuid, const QString& chunk);
 
 	// 流式结束
 	void streamComplete(const QString& msgUuid);

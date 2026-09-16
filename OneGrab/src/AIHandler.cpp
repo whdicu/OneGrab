@@ -84,6 +84,33 @@ QString AIHandler::imageFileToDataUrl(const QString& filePath)
 	return QString("data:%1;base64,%2").arg(mime, QString::fromUtf8(data.toBase64()));
 }
 
+void AIHandler::callBalance(const QString& baseUrl)
+{
+	if (m_apiKey.isEmpty())
+	{
+		emit errorOccured(tr("API Key 为空"), "");
+		return;
+	}
+
+	// 余额接口挂在根地址下、不在 /v1 里（Java 版也是单独用 createBase 拼根地址）：
+	// chat 是 https://api.deepseek.com/v1，余额是 https://api.deepseek.com/user/balance，
+	// 所以这里把 chat 地址结尾的版本段（v1 / v2 ...）去掉再拼。baseUrl 为空时取和 chat 一样的默认地址。
+	QString base = baseUrl.isEmpty() ? Params().baseUrl : baseUrl;
+	while (base.endsWith('/'))
+		base.chop(1);
+
+	const QString tail = base.section('/', -1);
+	if (tail.startsWith('v') && tail.mid(1).toInt() > 0)
+		base.chop(tail.length() + 1);
+
+	QNetworkRequest request(QUrl(base + "/user/balance"));
+	request.setRawHeader("Authorization", QByteArray("Bearer ") + m_apiKey.toUtf8());
+
+	// 余额请求不进 m_contexts（它不是聊天请求，也没有 msgUuid），自己一个槽收尾
+	QNetworkReply* reply = m_manager->get(request);
+	connect(reply, &QNetworkReply::finished, this, &AIHandler::onBalanceReplyFinished);
+}
+
 void AIHandler::callDeepSeek(const Params& params)
 {
 	if (m_apiKey.isEmpty())
@@ -342,7 +369,61 @@ void AIHandler::onReplyFinished()
 		// 流式模式下，如果 [DONE] 没提前来，这里补一个完成通知
 		if (!ctx->completed)
 			emit streamComplete(ctx->msgUuid);
-	}
+		}
 
 	delete ctx;
+}
+
+void AIHandler::onBalanceReplyFinished()
+{
+	auto* reply = qobject_cast<QNetworkReply*>(sender());
+	if (!reply)
+		return;
+
+	const QByteArray raw = reply->readAll();
+	const QVariant status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
+	reply->deleteLater();
+
+	// 非 2xx 时 QNetworkReply 也会带错误码，这里优先报 HTTP 状态码
+	// （对齐 Java 版 onError("API错误: " + response.code())）
+	if (status.isValid() && status.toInt() != 200)
+	{
+		emit errorOccured(tr("API 错误: %1").arg(status.toInt()), "");
+		return;
+	}
+
+	// 压根没拿到状态码，那就是连不上了
+	if (!status.isValid() && reply->error() != QNetworkReply::NoError)
+	{
+		emit errorOccured(tr("网络错误: %1").arg(reply->errorString()), "");
+		return;
+	}
+
+	QJsonParseError err;
+	const QJsonDocument doc = QJsonDocument::fromJson(raw, &err);
+	if (err.error != QJsonParseError::NoError || !doc.isObject())
+	{
+		emit errorOccured(tr("JSON 解析失败: %1").arg(err.errorString()), "");
+		return;
+	}
+
+	const QJsonObject obj = doc.object();
+
+	Balance balance;
+	balance.isAvailable = obj.value("is_available").toBool();
+
+	const QJsonArray infos = obj.value("balance_infos").toArray();
+	for (const QJsonValue& value : infos)
+	{
+		const QJsonObject one = value.toObject();
+
+		BalanceInfo info;
+		info.currency = one.value("currency").toString();
+		info.totalBalance = one.value("total_balance").toString();
+		info.grantedBalance = one.value("granted_balance").toString();
+		info.toppedUpBalance = one.value("topped_up_balance").toString();
+		balance.infos.append(info);
+	}
+
+	emit balanceReady(balance);
 }

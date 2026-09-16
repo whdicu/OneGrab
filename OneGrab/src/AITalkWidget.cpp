@@ -1,4 +1,5 @@
 ﻿#include "AITalkWidget.h"
+#include "HDQt/include/DToast.h"
 #include "LabelIsland1.h"
 #include <QDebug>
 #include <QEvent>
@@ -7,11 +8,12 @@
 #include <QScrollBar>
 #include <QTimer>
 #include <QUuid>
+#include "SettingDialog.h"
+#include "SettingHandler.h"
 #include "TalkMsgLeft.h"
 #include "TalkMsgRight.h"
 
 // test
-const static QString API_KEY = "sk-778ef85c1ff444b2a718b8b7cc032a02";
 const static QString SYSTEM_STR = "你是一名助手，需要回答主人关于这张图片的提问。";
 // 毛玻璃调参：改下面这几行就够了
 const static QColor GLASS_TINT = QColor(255, 255, 255, 30);   // 颜色 + 深浅（alpha 越小越透、模糊越明显）
@@ -29,13 +31,19 @@ const static int TALK_MAX_HEIGHT = 900;
 AITalkWidget::AITalkWidget(LabelIsland* island, QWidget *parent)
 	: QWidget(parent)
 	, island_(island)
-	, aiHandler_(new AIHandler(API_KEY))
-
+	, aiHandler_(nullptr)
 {
 	ui.setupUi(this);
 	// 这几个 flag 本来就要求是「无边框 + 独立顶层窗口」，正好满足窗口级毛玻璃的前提，不用改
 	setWindowFlags(Qt::FramelessWindowHint | Qt::Tool | Qt::WindowStaysOnTopHint);
 	setAttribute(Qt::WA_TranslucentBackground);
+
+	QString apiKey = SETTING_HANDLER->getAIApiKey();
+	aiHandler_ = new AIHandler(apiKey);
+	if (apiKey.isEmpty())
+		ui.btn_goto_set_apikey->show();
+	else
+		ui.btn_goto_set_apikey->hide();
 
 	ui.scrollArea->hide();
 
@@ -86,6 +94,15 @@ AITalkWidget::AITalkWidget(LabelIsland* island, QWidget *parent)
 	connect(island, &LabelIsland::sigHide, this, &QWidget::hide);
 	connect(island, &LabelIsland::sigShow, this, &QWidget::show);
 	connect(island, &LabelIsland::sigNeedShowAITalk, this, &QWidget::show);
+
+	connect(SettingDialog::getInstance(), &SettingDialog::sigRefreshAIApiKey, this, [this](const QString& apiKey)
+	{
+		aiHandler_->setApiKey(apiKey);
+		if (apiKey.isEmpty())
+			ui.btn_goto_set_apikey->show();
+		else
+			ui.btn_goto_set_apikey->hide();
+	});
 
 	// 创建聊天msg
 	aiParams_.model = "deepseek-flash";
@@ -258,8 +275,20 @@ void AITalkWidget::on_btn_close_clicked()
 	hide();
 }
 
+void AITalkWidget::on_btn_goto_set_apikey_clicked()
+{
+	SettingDialog::getInstance()->show();
+	SettingDialog::getInstance()->gotoSetApiKey();
+}
+
 void AITalkWidget::on_btn_send_clicked()
 {
+	if (SETTING_HANDLER->getAIApiKey().isEmpty())
+	{
+		DToast::toast(tr("未设置Api Key"), DToast::FromMouse, DToast::Slow);
+		return;
+	}
+
 	ui.label_tips->hide();
 	ui.scrollArea->show();
 

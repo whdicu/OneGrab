@@ -9,7 +9,7 @@ const static int MARGIN_TO_MOUSE = 15;
 
 // 毛玻璃调参：改下面这几行就够了（和 AITalkWidget 同一套）
 // GLASS_TINT 按当前模式调好深浅之后由 paintEvent 铺满整块窗口（放大图盖在上面不受影响）
-const static QColor GLASS_TINT = QColor(255, 255, 255, 120);   // 颜色 + 深浅（alpha 越小越透、模糊越明显）
+const static QColor GLASS_TINT = QColor(255, 255, 255, 90);   // 颜色 + 深浅（alpha 越小越透、模糊越明显）
 // 模糊档位：这个窗口在取色拖动时每帧都在移动，Win10 上只有 BlurLight 跟得上手
 // （BlurStrong 是 Acrylic，窗口一动 DWM 就要重算模糊，会明显拖不动）
 const static WindowsGlassEffect::BlurLevel GLASS_BLUR_LEVEL = WindowsGlassEffect::BlurLight;

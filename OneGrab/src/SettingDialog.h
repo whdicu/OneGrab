@@ -3,6 +3,10 @@
 #include <QWidget>
 #include "ui_SettingDialog.h"
 
+
+class AIHandler;
+
+
 class SettingDialog : public QWidget
 {
 	Q_OBJECT
@@ -10,9 +14,11 @@ class SettingDialog : public QWidget
 public:
 	static SettingDialog* getInstance();
 	void show();
+	void gotoSetApiKey();
 
 signals:
 	void sigRefreshSetting();
+	void sigRefreshAIApiKey(const QString& apiKey);
 	void sigCheckUpdate();
 
 private slots:
@@ -32,6 +38,7 @@ private slots:
 	void on_sb_fsy_33_round_valueChanged(int value);
 	void on_btn_base_clicked();
 	void on_btn_advanced_clicked();
+	void on_btn_ai_clicked();
 	void on_btn_about_clicked();
 	void on_btn_color_clicked();
 	void on_btn_check_update_clicked();
@@ -51,4 +58,5 @@ private:
 	Ui::SettingDialog ui;
 	QPoint pressPos_;
 	bool isMoveWindow_;
+	AIHandler* aiHandler_;  // 查询余额用
 };

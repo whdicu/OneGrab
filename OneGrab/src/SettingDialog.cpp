@@ -1,4 +1,5 @@
 ﻿#include "SettingDialog.h"
+#include "AIHandler.h"
 #include <mutex>
 #include <QColorDialog>
 #include <QDebug>
@@ -28,11 +29,27 @@ SettingDialog* SettingDialog::getInstance()
 void SettingDialog::show()
 {
 	refreshByStruct();
+
+	aiHandler_->callBalance();
+
 	QWidget::show();
+}
+
+void SettingDialog::gotoSetApiKey()
+{
+	on_btn_ai_clicked();
+	ui.edit_apikey->setFocus();
 }
 
 void SettingDialog::on_btn_close_clicked()
 {
+	QString apiKey = ui.edit_apikey->text();
+	QString oldAipKey = SETTING_HANDLER->getAIApiKey();
+	if (oldAipKey != apiKey)
+	{
+		SETTING_HANDLER->setAIApiKey(apiKey);
+		emit sigRefreshAIApiKey(apiKey);
+	}
 	hide();
 	emit sigRefreshSetting();
 	SETTING_HANDLER->syncToFile();
@@ -129,9 +146,14 @@ void SettingDialog::on_btn_advanced_clicked()
 	ui.stackedWidget->setCurrentIndex(1);
 }
 
-void SettingDialog::on_btn_about_clicked()
+void SettingDialog::on_btn_ai_clicked()
 {
 	ui.stackedWidget->setCurrentIndex(2);
+}
+
+void SettingDialog::on_btn_about_clicked()
+{
+	ui.stackedWidget->setCurrentIndex(3);
 }
 
 void SettingDialog::on_btn_color_clicked()
@@ -174,9 +196,13 @@ SettingDialog::SettingDialog(QWidget *parent)
 	: QWidget(parent, Qt::FramelessWindowHint)
 	, pressPos_(0, 0)
 	, isMoveWindow_(false)
+	, aiHandler_(nullptr)
 {
 	ui.setupUi(this);
 	setAttribute(Qt::WA_TranslucentBackground);
+
+	QString apiKey = SETTING_HANDLER->getAIApiKey();
+	aiHandler_ = new AIHandler(apiKey);
 
 	ui.label_gitee->setText(tr("gitee主页：") + GITEE_URL);
 
@@ -201,6 +227,23 @@ SettingDialog::SettingDialog(QWidget *parent)
 		selectedPath.replace(QRegExp("\\"), "/");
 		ui.edit_default_save_path->setText(selectedPath);
 		SETTING_HANDLER->setDefaultSavePath(selectedPath);
+	});
+
+	// 查询AI余额完成
+	connect(aiHandler_, &AIHandler::balanceReady, this, [this](const AIHandler::Balance& balance)
+	{
+		if (!balance.isAvailable)
+		{
+			ui.label_yue->setText(tr("账户余额不可用！"));
+			return;
+		}
+
+		double ret = 0.0;
+		for (const AIHandler::BalanceInfo& info : balance.infos)
+		{
+			ret += info.totalBalance.toDouble();
+		}
+		ui.label_yue->setText(tr("余额：%1￥").arg(ret));
 	});
 }
 
@@ -259,6 +302,7 @@ void SettingDialog::refreshByStruct()
 	ui.sb_scale_num->setValue(stru.MouseScaleNum);
 	ui.sb_island_num->setValue(stru.IslandNum);
 	ui.cb_check_update_on_start->setChecked(stru.CheckUpdateOnStart);
+	ui.edit_apikey->setText(stru.AIApiKey);
 	ui.cb_fsy_random->setChecked(stru.FSYRandomEnable);
 	ui.sb_fsy_random_max->setEnabled(stru.FSYRandomEnable);
 	ui.sb_fsy_random_max->setValue(stru.FSYRandomMaxNum);

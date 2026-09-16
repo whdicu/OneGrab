@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <QObject>
 #include <QString>
@@ -52,6 +52,22 @@ public:
 		QString reasoningEffort = "high";
 	};
 
+	// 余额查询（GET /user/balance）返回的单个币种余额。
+	// 金额服务端给的就是字符串（如 "110.00"），这里原样保留，不做数值转换。
+	struct BalanceInfo
+	{
+		QString currency;         // CNY / USD
+		QString totalBalance;     // 总余额（赠金 + 充值）
+		QString grantedBalance;   // 赠金余额
+		QString toppedUpBalance;  // 充值余额
+	};
+
+	struct Balance
+	{
+		bool isAvailable = false;  // 账户是否可用
+		QList<BalanceInfo> infos;  // 各币种余额（通常只有一条）
+	};
+
 public:
 	explicit AIHandler(const QString& apiKey);
 	~AIHandler();
@@ -67,9 +83,14 @@ public:
 	void callDeepSeek(const Params& params);
 
 	// 把本地图片文件读成 base64 data URL（按扩展名推断 mime，未知默认 image/jpeg）。
-	// 读取失败返回空字符串。结果可直接填入 ChatMessage::images。
+	// 读取失败返回空字符串。结果可直接填入 ChatMsessage::images。
 	static QString imageFileToDataUrl(const QPixmap& pixmap);
 	static QString imageFileToDataUrl(const QString& filePath);
+
+	// 查询账户余额（DeepSeek: GET /user/balance，对应 Java 版 DeepSeekApi::callBalance）。
+	// baseUrl 为空时用 Params::baseUrl 的默认值；成功走 balanceReady，失败走 errorOccured。
+	// 与聊天消息无关，所以这两个信号都不带 msgUuid（errorOccured 的 msgUuid 为空）。
+	void callBalance(const QString& baseUrl=QString());
 
 signals:
 	// 非流式：一次性返回完整答案
@@ -90,9 +111,13 @@ signals:
 	// 出错
 	void errorOccured(const QString& errorMessage, const QString& msgUuid);
 
+	// 余额查询成功（余额不属于任何一条聊天消息，所以不带 msgUuid；失败走 errorOccured，其 msgUuid 为空）
+	void balanceReady(const AIHandler::Balance& balance);
+
 private slots:
 	void onReplyReadyRead();
 	void onReplyFinished();
+	void onBalanceReplyFinished();
 
 private:
 	struct RequestContext

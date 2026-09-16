@@ -29,6 +29,7 @@ protected:
 
 private slots:
 	void on_btn_close_clicked();
+	void on_btn_goto_set_apikey_clicked();
 	void on_btn_send_clicked();
 
 private:

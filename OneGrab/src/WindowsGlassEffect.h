@@ -55,8 +55,10 @@ public:
 		// 玻璃着色：RGB = 颜色，alpha = 深浅（越小越透、模糊越明显）
 		// Win11 系统 backdrop 不给自定义 tint，这层由窗口自己画；Win10 则由系统着色
 		QColor tint = QColor(24, 26, 32, 130);
-		// 系统已经着了色的模式（Win10 Acrylic / BlurBehind）里，窗口自绘那层只取这个比例，
-		// 免得两层叠加之后几乎不透明、把模糊糊没了；想完全交给系统着色就设 0
+		// 系统已经着了色的模式（**只有 Win10 Acrylic**）里，窗口自绘那层只取这个比例，
+		// 免得两层叠加之后几乎不透明、把模糊糊没了；想完全交给系统着色就设 0。
+		// 实测（贴纯不透明红做对照）：BLURBEHIND 完全无视 GradientColor，Acrylic 才吃 —— 所以
+		// BlurBehind 模式下自绘层不打折，否则这个窗口的"颜色深浅"就没任何地方受控了
 		qreal appTintRatio = 0.3;
 		// DWM backdrop 需要把客户区并入边框区域才能铺满整个窗口
 		bool extendFrameIntoClientArea = true;
@@ -94,6 +96,9 @@ public:
 
 	// 当前生效的参数（窗口自己画 tint 时要用它取颜色）；没启用过就返回默认参数
 	static Params params(const QWidget* widget);
+	// 窗口 paintEvent 里铺底色应该用的颜色：已按当前模式把深浅调好，直接用就行。
+	// 深色/浅色、透明度全都由 Params::tint 决定，各窗口的调参常量最终都汇到这里
+	static QColor appTint(const QWidget* widget);
 	// 运行时热改，方便一边看一边调
 	static bool setTint(QWidget* widget, const QColor& tint);
 	static bool setBlurLevel(QWidget* widget, BlurLevel level);

@@ -37,7 +37,7 @@
 }
 
 #MouseWindow {
-	background-color: white;
+	background-color: transparent;
 }
 
 #widget_color {

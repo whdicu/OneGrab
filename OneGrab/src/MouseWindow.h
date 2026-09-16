@@ -21,6 +21,10 @@ signals:
 	void sigMouseMove(QMouseEvent* event);
 	void sigMouseRelease(QMouseEvent* event);
 
+protected:
+	// 画毛玻璃的 tint 层：既是系统毛玻璃的着色，也是系统不支持时的兜底底色
+	void paintEvent(QPaintEvent* event) override;
+
 private:
 	virtual void mousePressEvent(QMouseEvent* event) override;
 	virtual void mouseMoveEvent(QMouseEvent* event) override;

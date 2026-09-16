@@ -14,7 +14,7 @@
 const static QString API_KEY = "sk-778ef85c1ff444b2a718b8b7cc032a02";
 const static QString SYSTEM_STR = "你是一名助手，需要回答主人关于这张图片的提问。";
 // 毛玻璃调参：改下面这几行就够了
-const static QColor GLASS_TINT = QColor(255, 255, 255, 60);   // 颜色 + 深浅（alpha 越小越透、模糊越明显）
+const static QColor GLASS_TINT = QColor(255, 255, 255, 30);   // 颜色 + 深浅（alpha 越小越透、模糊越明显）
 const static WindowsGlassEffect::BlurLevel GLASS_BLUR_LEVEL = WindowsGlassEffect::BlurLight;  // 模糊档位
 const static bool GLASS_DARK_TITLE_BAR = false;                // 浅色玻璃要设 false，否则系统 backdrop 底色发黑
 // 窗口圆角半径：按系统分开取值（0 = 直角）
@@ -131,17 +131,10 @@ void AITalkWidget::paintEvent(QPaintEvent* event)
 {
 	QWidget::paintEvent(event);
 
-	// 颜色和深浅都从参数里取，避免同一个魔法色值散在代码里两处
+	// 颜色和深浅统一由 appTint 算（按当前模式把 alpha 调好），各窗口的 GLASS_TINT 最终都汇到那里
 	// 注意取实时状态：窗口重新 show 之后系统效果可能才贴上去
 	const WindowsGlassEffect::Params params = WindowsGlassEffect::params(this);
-	const WindowsGlassEffect::Mode mode = WindowsGlassEffect::mode(this);
-
-	// ModeDwmBackdrop 模式下系统层不给着色，自绘层就用 tint 原本的 alpha
-	QColor tint = params.tint;
-	if (mode == WindowsGlassEffect::ModeNone)
-		tint.setAlpha(215);   // 没有任何原生效果，只能压深一点保证文字能读
-	else if (mode == WindowsGlassEffect::ModeAcrylic || mode == WindowsGlassEffect::ModeBlurBehind)
-		tint.setAlpha(qRound(tint.alpha() * params.appTintRatio));   // 系统已经着了色，别叠太暗
+	const QColor tint = WindowsGlassEffect::appTint(this);
 
 	QPainter painter(this);
 	painter.setRenderHint(QPainter::Antialiasing);

@@ -531,6 +531,27 @@ WindowsGlassEffect::Params WindowsGlassEffect::params(const QWidget* widget)
 	return filter ? filter->params() : Params();
 }
 
+QColor WindowsGlassEffect::appTint(const QWidget* widget)
+{
+	const Params p = params(widget);
+	const Mode m = mode(widget);
+
+	QColor tint = p.tint;
+	if (m == ModeNone)
+	{
+		// 系统一点原生效果都没有，只能自己压深一点保证文字能读
+		tint.setAlpha(215);
+	}
+	else if (m == ModeAcrylic)
+	{
+		// 实测 Acrylic 会吃 GradientColor（系统已经着了色），自绘层打个折别叠太暗
+		tint.setAlpha(qRound(tint.alpha() * p.appTintRatio));
+	}
+	// ModeDwmBackdrop：系统层不给着色，用 tint 原本的 alpha
+	// ModeBlurBehind：实测系统完全不吃 GradientColor（贴纯不透明红都没反应），也必须用原本的 alpha
+	return tint;
+}
+
 
 bool WindowsGlassEffect::setTint(QWidget* widget, const QColor& tint)
 {
@@ -654,6 +675,16 @@ WindowsGlassEffect::Params WindowsGlassEffect::params(const QWidget* widget)
 {
 	Q_UNUSED(widget)
 	return Params();
+}
+
+QColor WindowsGlassEffect::appTint(const QWidget* widget)
+{
+	Q_UNUSED(widget)
+
+	// 非 Windows 平台永远没有原生效果，等价于 ModeNone
+	QColor tint = Params().tint;
+	tint.setAlpha(215);
+	return tint;
 }
 
 bool WindowsGlassEffect::setTint(QWidget* widget, const QColor& tint)

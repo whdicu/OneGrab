@@ -1,9 +1,21 @@
 #include "MouseWindow.h"
 #include <QDebug>
 #include <QMouseEvent>
+#include <QPainter>
+#include "WindowsGlassEffect.h"
 
 
 const static int MARGIN_TO_MOUSE = 15;
+
+// 毛玻璃调参：改下面这几行就够了（和 AITalkWidget 同一套）
+// GLASS_TINT 按当前模式调好深浅之后由 paintEvent 铺满整块窗口（放大图盖在上面不受影响）
+const static QColor GLASS_TINT = QColor(255, 255, 255, 120);   // 颜色 + 深浅（alpha 越小越透、模糊越明显）
+// 模糊档位：这个窗口在取色拖动时每帧都在移动，Win10 上只有 BlurLight 跟得上手
+// （BlurStrong 是 Acrylic，窗口一动 DWM 就要重算模糊，会明显拖不动）
+const static WindowsGlassEffect::BlurLevel GLASS_BLUR_LEVEL = WindowsGlassEffect::BlurLight;
+const static bool GLASS_DARK_TITLE_BAR = false;                // 浅色玻璃要设 false，否则系统 backdrop 底色发黑
+// 窗口形状圆角：0 = 直角，跟 .ui 的设计一致（放大图铺满整块，不该被切角）
+const static int GLASS_CORNER_RADIUS = 0;
 
 
 MouseWindow::MouseWindow(QWidget* parent)
@@ -12,6 +24,17 @@ MouseWindow::MouseWindow(QWidget* parent)
 	, isNumColor_(false)
 {
 	ui.setupUi(this);
+	// 毛玻璃：放大图那块要保持锐利，只有底部信息条是磨砂的（底色由 paintEvent 用 GLASS_TINT 铺）
+	setAttribute(Qt::WA_TranslucentBackground);
+	WindowsGlassEffect::Params glassParams;
+	glassParams.blurLevel = GLASS_BLUR_LEVEL;
+	glassParams.tint = GLASS_TINT;
+	glassParams.darkTitleBar = GLASS_DARK_TITLE_BAR;
+	glassParams.cornerRadius = GLASS_CORNER_RADIUS;
+	const WindowsGlassEffect::Result glassResult = WindowsGlassEffect::enable(this, glassParams);
+	qDebug() << __FUNCTION__ << "glass result =" << (int)glassResult
+		<< "mode =" << (int)WindowsGlassEffect::mode(this);
+
 	setAttribute(Qt::WA_TransparentForMouseEvents, true);
 	setMouseTracking(true);
 	ui.label_img->setMouseTracking(true);
@@ -147,6 +170,20 @@ void MouseWindow::switchColorStrMode()
 {
 	isNumColor_ = !isNumColor_;
 	ui.label_color->setText(getCurrentColorStr());
+}
+
+void MouseWindow::paintEvent(QPaintEvent* event)
+{
+	QWidget::paintEvent(event);
+
+	// 窗口底色：深浅由 appTint 按当前玻璃模式算好（没有原生效果时它会自动压深保证可读）。
+	// 放大图是 label_img 盖在上面画的，所以这里铺满整块不会影响它的清晰度
+	const QColor tint = WindowsGlassEffect::appTint(this);
+
+	QPainter painter(this);
+	painter.setPen(Qt::NoPen);
+	painter.setBrush(tint);
+	painter.drawRect(rect());
 }
 
 void MouseWindow::mousePressEvent(QMouseEvent* event)

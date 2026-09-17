@@ -396,6 +396,9 @@ QComboBox:drop-down
              <pointsize>9</pointsize>
             </font>
            </property>
+           <property name="cursor">
+            <cursorShape>PointingHandCursor</cursorShape>
+           </property>
            <property name="text">
             <string>AI设置</string>
            </property>

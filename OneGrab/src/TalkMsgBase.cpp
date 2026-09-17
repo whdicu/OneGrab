@@ -1,10 +1,8 @@
-#include "TalkMsgBase.h"
+﻿#include "TalkMsgBase.h"
 #include "AutoWrapLabel.h"
 #include <QHBoxLayout>
 
-
-const static QFont FONT = QFont("Microsoft YaHei UI", 10);
-const static int LABEL_WIDTH = 350;
+const QFont TalkMsgBase::FONT = QFont("Microsoft YaHei UI", 10);
 
 
 TalkMsgBase::TalkMsgBase(const QString& text, QWidget* parent)

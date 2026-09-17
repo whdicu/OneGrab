@@ -30,11 +30,13 @@ protected:
 private slots:
 	void on_btn_close_clicked();
 	void on_btn_goto_set_apikey_clicked();
+	void on_btn_think_clicked();
 	void on_btn_send_clicked();
 
 private:
 	void addTalkMsg(const QString& UUID, bool isLeft, const QString& text);
 	void appendTalkMsg(const QString& UUID, const QString& text);
+	void appendThinkMsg(const QString& UUID, const QString& text);
 	// 窗口高度按消息内容自动匹配（上限 TALK_MAX_HEIGHT；没内容时只剩滚动区自己的最小高度）
 	void updateHeightToTalks(bool keepLatestVisible = false);
 	// 把"重算高度"的请求合并成每帧一次（keepLatestVisible 会累加，只要有一次要滚就滚）
@@ -43,6 +45,8 @@ private:
 	void scrollToBottom();
 	// 贴着 island 右下角待着（窗口高度变了得重新贴一次）
 	void moveToIsland();
+	// 思考按钮的外观完全由 EnableAIThink 决定（主色被改掉时也要重刷）
+	void refreshThinkBtn();
 
 	Ui::AITalkWidget ui;
 	LabelIsland* island_;

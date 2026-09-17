@@ -300,7 +300,7 @@ void AIHandler::onReplyReadyRead()
 			// 思考阶段：delta 里只有 reasoning_content
 			QString thinking = delta.value("reasoning_content").toString();
 			if (!thinking.isEmpty())
-				emit thinkingChunk(thinking, ctx->msgUuid);
+				emit thinkingChunk(ctx->msgUuid, thinking);
 		}
 	}
 }

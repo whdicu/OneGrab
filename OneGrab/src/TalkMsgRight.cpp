@@ -1,4 +1,4 @@
-#include "TalkMsgRight.h"
+﻿#include "TalkMsgRight.h"
 #include "AutoWrapLabel.h"
 #include <QHBoxLayout>
 
@@ -16,7 +16,7 @@ TalkMsgRight::TalkMsgRight(const QString& text, QWidget* parent)
 	setLayout(layout);
 
 	setStyleSheet("QLabel { \
-		background-color: rgba(157, 242, 159, 0.9); \
+		background-color: rgba(157, 242, 159, 1); \
 		border: none; \
 		border-top-left-radius: 10px; \
 		border-top-right-radius: 10px; \

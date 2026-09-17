@@ -109,10 +109,12 @@ AITalkWidget::AITalkWidget(LabelIsland* island, QWidget *parent)
 	aiParams_.stream = true;
 	aiParams_.baseUrl = "https://api.deepseek.com/v1";
 
-	// 思考模式开关：默认关闭
-	const bool thinkOn = false;
-	aiParams_.thinking = thinkOn;
+	// 思考模式开关：持久化在设置里，靠按钮切换（颜色/文字也在里面刷）
 	aiParams_.reasoningEffort = "max";
+	refreshThinkBtn();
+
+	// 主色可能被设置界面改掉，改完按钮要跟着重刷一遍
+	connect(SettingDialog::getInstance(), &SettingDialog::sigRefreshSetting, this, &AITalkWidget::refreshThinkBtn);
 
 	AIHandler::ChatMessage m1;
 	m1.role = AIHandler::System;
@@ -134,7 +136,7 @@ AITalkWidget::AITalkWidget(LabelIsland* island, QWidget *parent)
 	connect(aiHandler_, &AIHandler::streamChunk, this, &AITalkWidget::appendTalkMsg);
 
 	// 流式回复思考文字
-	//connect(aiHandler_, &AIHandler::thinkingChunk, this, &AITalkWidget::);
+	connect(aiHandler_, &AIHandler::thinkingChunk, this, &AITalkWidget::appendThinkMsg);
 
 	// test
 	//addTalkMsg(true, "asdasda阿三大苏打的是大大撒撒大大是大大萨达萨达撒啊时代的阿三大苏打的是大大撒撒大大是大大萨达萨达撒啊时代的");
@@ -281,6 +283,30 @@ void AITalkWidget::on_btn_goto_set_apikey_clicked()
 	SettingDialog::getInstance()->gotoSetApiKey();
 }
 
+void AITalkWidget::on_btn_think_clicked()
+{
+	// set 内部会写文件，不用再手动 syncToFile
+	SETTING_HANDLER->setEnableAIThink(!SETTING_HANDLER->getEnableAIThink());
+	refreshThinkBtn();
+}
+
+void AITalkWidget::refreshThinkBtn()
+{
+	// 开：主色底 + "思考"；关：白底 + "不思考"
+	const bool enableThink = SETTING_HANDLER->getEnableAIThink();
+	const QColor bgColor = enableThink ? SETTING_HANDLER->getMainColor() : QColor(255, 255, 255, 223);
+	const QString color = enableThink ? "white" : "black";
+
+	// 只覆盖 background-color：控件自己的样式表优先于 .ui 里那条 QPushButton 规则，
+	// 圆角 / padding 这些还是沿用原来那份
+	ui.btn_think->setStyleSheet(QString("background-color: rgb(%1, %2, %3, %4); color: %5;")
+		.arg(bgColor.red()).arg(bgColor.green()).arg(bgColor.blue()).arg(bgColor.alpha()).arg(color));
+	ui.btn_think->setText(enableThink ? tr("思考") : tr("不思考"));
+
+	// 请求参数跟着按钮走，免得按钮显示的和真正发出去的模式不一致
+	aiParams_.thinking = enableThink;
+}
+
 void AITalkWidget::on_btn_send_clicked()
 {
 	if (SETTING_HANDLER->getAIApiKey().isEmpty())
@@ -363,4 +389,21 @@ void AITalkWidget::appendTalkMsg(const QString& UUID, const QString& text)
 		return;
 	}
 	msg->appendText(text);
+}
+
+void AITalkWidget::appendThinkMsg(const QString& UUID, const QString& text)
+{
+	// 这条消息收到的第一段文本
+	if (!mapTalkMsgs_.contains(UUID))
+	{
+		addTalkMsg(UUID, true, "");
+	}
+
+	TalkMsgLeft* msg = static_cast<TalkMsgLeft*>(mapTalkMsgs_.value(UUID, nullptr));
+	if (!msg)
+	{
+		qWarning() << __FUNCTION__ << "uuid:" << UUID << "not exists or not left msg!";
+		return;
+	}
+	msg->appendAboveText(text);
 }

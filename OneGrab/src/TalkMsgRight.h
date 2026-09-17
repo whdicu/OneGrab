@@ -1,8 +1,5 @@
-#pragma once
+﻿#pragma once
 #include "TalkMsgBase.h"
-
-
-class QLabel;
 
 
 class TalkMsgRight : public TalkMsgBase

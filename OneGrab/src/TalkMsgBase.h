@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <QWidget>
 
 
@@ -20,4 +20,7 @@ signals:
 
 protected:
 	AutoWrapLabel* label;
+
+	const static QFont FONT;
+	const static int LABEL_WIDTH = 350;
 };

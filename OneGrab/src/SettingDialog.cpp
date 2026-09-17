@@ -48,6 +48,7 @@ void SettingDialog::on_btn_close_clicked()
 	if (oldAipKey != apiKey)
 	{
 		SETTING_HANDLER->setAIApiKey(apiKey);
+		aiHandler_->setApiKey(apiKey);
 		emit sigRefreshAIApiKey(apiKey);
 	}
 	hide();

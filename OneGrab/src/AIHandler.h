@@ -106,7 +106,7 @@ signals:
 	void thinkingReady(const QString& thinking);
 
 	// 思考内容（流式：逐段到达）
-	void thinkingChunk(const QString& chunk, const QString& msgUuid);
+	void thinkingChunk(const QString& msgUuid, const QString& chunk);
 
 	// 出错
 	void errorOccured(const QString& errorMessage, const QString& msgUuid);

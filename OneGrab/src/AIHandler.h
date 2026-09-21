@@ -42,7 +42,7 @@ public:
 		QList<ChatMessage> msgs;
 		QString response_format_type = "text";
 		bool stream = false;
-		int maxTokens = 1024;
+		int maxTokens = 65536;
 		double temperature = 1.0;
 		QString baseUrl = "https://api.deepseek.com/v1";
 

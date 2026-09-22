@@ -131,7 +131,7 @@ QJsonObject AIHandler::buildRequestJson(const Params& params) const
 {
 	QJsonObject root;
 	root["model"] = params.model;
-	root["max_tokens"] = params.maxTokens;
+	//root["max_tokens"] = params.maxTokens;
 	root["temperature"] = params.temperature;
 	root["stream"] = params.stream;
 

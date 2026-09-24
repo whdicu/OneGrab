@@ -5,6 +5,7 @@
 #include "HDCore/DSys.hpp"
 #include "DMessageBox.h"
 #include "DProgressBox.h"
+#include "DScreenCapture.h"
 #include "DUpdateHandler.h"
 #include "ImageHandler.h"
 #include "ImageThread.h"
@@ -759,7 +760,8 @@ DSharedPointer<QPixmap> OneGrab::getFullPixmap(QRect& screenRect)
 	QPainter painter(combinedPixmap.getPtr());
 	for (QScreen* screen : screens)
 	{
-		QPixmap pixmap = screen->grabWindow(0);
+		// 走 HDR 抓屏（Windows Graphics Capture + FP16），内部不成功会回退 screen->grabWindow(0)
+		QPixmap pixmap = DScreenCapture::grabScreen(screen);
 		painter.drawPixmap(screen->geometry().topLeft() - screenRect.topLeft(), pixmap);
 	}
 	painter.end();

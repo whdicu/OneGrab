@@ -19,6 +19,7 @@
     <ClCompile Include="src\DSystemTrayMenu.cpp" />
     <ClCompile Include="src\hook.cpp" />
     <ClCompile Include="src\DGrabView.cpp" />
+    <ClCompile Include="src\DScreenCapture.cpp" />
     <ClCompile Include="src\ImageHandler.cpp" />
     <ClCompile Include="src\GlassBlurBackground.cpp" />
     <ClCompile Include="src\ImageThread.cpp" />
@@ -81,6 +82,7 @@
     <ClInclude Include="src\AutoWrapLabel.h" />
     <ClInclude Include="src\MarkdownHelper.h" />
     <ClInclude Include="src\DGraphicsItem.h" />
+    <ClInclude Include="src\DScreenCapture.h" />
     <QtMoc Include="src\ImageThread.h" />
     <QtMoc Include="src\ImageHandler.h" />
     <QtMoc Include="src\TalkMsgLeft.h" />
@@ -108,7 +110,7 @@
     <ProjectGuid>{618C4362-2A52-4252-B244-0DF499344BE1}</ProjectGuid>
     <Keyword>QtVS_v303</Keyword>
     <QtMsBuild Condition="'$(QtMsBuild)'=='' OR !Exists('$(QtMsBuild)\qt.targets')">$(MSBuildProjectDirectory)\QtMsBuild</QtMsBuild>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="Configuration">
@@ -147,7 +149,7 @@
     <Link>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
       <AdditionalLibraryDirectories>../../OneDer/bin/HDQt;..\OpenCV\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>OneDerQt.lib;opencv_world480.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>OneDerQt.lib;opencv_world480.lib;d3d11.lib;dxgi.lib;d3dcompiler.lib;windowsapp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

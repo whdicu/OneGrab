@@ -652,7 +652,7 @@ void OneGrab::DownloadImage(const QString& url)
 	QNetworkAccessManager* manager = new QNetworkAccessManager(this);
 	QNetworkReply* reply = manager->get(QNetworkRequest(QUrl(url)));
 
-	connect(reply, &QNetworkReply::finished, this, [this, reply, manager]()
+	connect(reply, &QNetworkReply::finished, this, [this, reply, manager, url]()
 	{
 		reply->deleteLater();
 		manager->deleteLater();
@@ -662,7 +662,18 @@ void OneGrab::DownloadImage(const QString& url)
 			QPixmap pixmap;
 			pixmap.loadFromData(reply->readAll());
 			if (!pixmap.isNull())
+			{
 				emit sigFixedImageDownloadFinished(pixmap);
+				return;
+			}
+		}
+
+		// 失败了，还是按照文本来解析
+		QPixmap pixmap = QPixmap::fromImage(textToImage(url));
+		if (!pixmap.isNull())
+		{
+			slotFixedImageDownloadFinished(pixmap);
+			return;
 		}
 	});
 }

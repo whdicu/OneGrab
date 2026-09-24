@@ -28,6 +28,7 @@
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QPainter>
+#include <QPalette>
 #include <QProcess>
 #include <QRegularExpression>
 #include <QScreen>
@@ -112,13 +113,26 @@ namespace
 		// Qt 富文本引擎不会把外层 div 的 background-color 继承到内部子块，
 		// 导致只有外层 div 前导空白行有背景、其余行透明，这里取出来铺满整图
 		QBrush bgBrush;
+		QColor listTextColor;
 		for (QTextBlock block = document.begin(); block.isValid(); block = block.next())
 		{
-			if (block.blockFormat().background().style() != Qt::NoBrush)
-			{
+			if (Qt::NoBrush == bgBrush.style() && Qt::NoBrush != block.blockFormat().background().style())
 				bgBrush = block.blockFormat().background();
-				break;
-			}
+
+			if (!listTextColor.isValid() && block.textList())
+				listTextColor = block.charFormat().foreground().color();
+		}
+
+		// Qt 的列表 marker 颜色取自 QPalette::Text，与 CSS 和字符格式都无关，
+		// 深色背景下会被画成黑色，这里临时把 palette 文本色调成列表文字颜色
+		QPalette oldPalette = QApplication::palette();
+		bool paletteChanged = false;
+		if (listTextColor.isValid() && listTextColor != oldPalette.color(QPalette::Text))
+		{
+			QPalette palette = oldPalette;
+			palette.setColor(QPalette::Text, listTextColor);
+			QApplication::setPalette(palette);
+			paletteChanged = true;
 		}
 
 		//document.adjustSize();
@@ -130,6 +144,9 @@ namespace
 
 		QPainter painter(&image);
 		document.drawContents(&painter);
+
+		if (paletteChanged)
+			QApplication::setPalette(oldPalette);
 
 		return image;
 	}

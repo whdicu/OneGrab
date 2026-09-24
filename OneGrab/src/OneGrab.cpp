@@ -76,16 +76,25 @@ namespace
 	}
 
 	// Qt 渲染剪贴板 HTML 时空行会异常变高：块级元素后的 <br> 会渲染成 2 行高的空块，
-	// 标签之间的源码缩进会渲染成 1 行高的空白块。这里先把 HTML 规范化。
+	// 块级标签之间的源码缩进会渲染成 1 行高的空白块。这里先把 HTML 规范化。
 	QString normalizeHtml(const QString& html)
 	{
-		static const QRegularExpression blankBetweenTags(">\\s+<");
-		static const QRegularExpression blockBr("(</(?:div|p|li|tr|h[1-6]|blockquote|table|ul|ol)>)<br\\s*/?>");
+		// 注意只处理块级标签周边：行内标签（span 等）之间的空白是正文内容
+		// （如 "except<span> </span>Exception"），删了会把单词粘在一起
+		static const QRegularExpression blankAfterBlock(
+			"(</(?:html|body|div|p|li|tr|h[1-6]|blockquote|table|ul|ol)>"
+			"|<(?:html|body|div|p|li|tr|h[1-6]|blockquote|table|ul|ol)\\b[^>]*>"
+			"|<br\\s*/?>)\\s+(?=<)");
+		static const QRegularExpression blankBeforeBlockEnd(
+			"\\s+(?=</(?:html|body|div|p|li|tr|h[1-6]|blockquote|table|ul|ol)>)");
+		static const QRegularExpression blockBr(
+			"(</(?:html|body|div|p|li|tr|h[1-6]|blockquote|table|ul|ol)>)<br\\s*/?>");
 
 		QString result = html;
 
-		// 标签之间的纯空白文本节点（源码换行/缩进）不会显示，去掉避免多余空白块
-		result.replace(blankBetweenTags, "><");
+		// 块级标签之间的纯空白文本节点（源码换行/缩进）不会显示，去掉避免多余空白块
+		result.replace(blankAfterBlock, "\\1");
+		result.replace(blankBeforeBlockEnd, "");
 
 		// 块级元素后的 <br> 在 Qt 里算 2 行，换成 1 行高的空 div
 		result.replace(blockBr, "\\1<div>&nbsp;</div>");

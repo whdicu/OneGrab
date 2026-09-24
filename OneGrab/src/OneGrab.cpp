@@ -29,7 +29,10 @@
 #include <QNetworkRequest>
 #include <QPainter>
 #include <QProcess>
+#include <QRegularExpression>
 #include <QScreen>
+#include <QTextBlock>
+#include <QTextDocument>
 #include <vector>
 #include "SettingDialog.h"
 #include "SettingHandler.h"
@@ -70,6 +73,76 @@ namespace
 			planes[c] = blurred;
 		}
 		cv::merge(planes, mat);
+	}
+
+	// Qt 渲染剪贴板 HTML 时空行会异常变高：块级元素后的 <br> 会渲染成 2 行高的空块，
+	// 标签之间的源码缩进会渲染成 1 行高的空白块。这里先把 HTML 规范化。
+	QString normalizeHtml(const QString& html)
+	{
+		static const QRegularExpression blankBetweenTags(">\\s+<");
+		static const QRegularExpression blockBr("(</(?:div|p|li|tr|h[1-6]|blockquote|table|ul|ol)>)<br\\s*/?>");
+
+		QString result = html;
+
+		// 标签之间的纯空白文本节点（源码换行/缩进）不会显示，去掉避免多余空白块
+		result.replace(blankBetweenTags, "><");
+
+		// 块级元素后的 <br> 在 Qt 里算 2 行，换成 1 行高的空 div
+		result.replace(blockBr, "\\1<div>&nbsp;</div>");
+
+		return result;
+	}
+
+	QImage htmlToImage(const QString& html)
+	{
+		QTextDocument document;
+		document.setHtml(normalizeHtml(html));
+		document.setDocumentMargin(0);
+
+		// Qt 富文本引擎不会把外层 div 的 background-color 继承到内部子块，
+		// 导致只有外层 div 前导空白行有背景、其余行透明，这里取出来铺满整图
+		QBrush bgBrush;
+		for (QTextBlock block = document.begin(); block.isValid(); block = block.next())
+		{
+			if (block.blockFormat().background().style() != Qt::NoBrush)
+			{
+				bgBrush = block.blockFormat().background();
+				break;
+			}
+		}
+
+		document.adjustSize();
+
+		QSize size = document.size().toSize();
+
+		QImage image(size, QImage::Format_ARGB32);
+		image.fill(bgBrush.style() != Qt::NoBrush ? bgBrush.color() : Qt::transparent);
+
+		QPainter painter(&image);
+		document.drawContents(&painter);
+
+		return image;
+	}
+
+	QImage textToImage(const QString& text)
+	{
+		QTextDocument document;
+		QFont font("Consolas", 20);
+		font.setWeight(QFont::Medium);  // 笔画稍微加粗
+		document.setDefaultFont(font);
+		document.setPlainText(text);
+		document.setDocumentMargin(0);
+		document.setTextWidth(document.idealWidth());
+
+		QSize size = document.size().toSize();
+
+		QImage image(size, QImage::Format_ARGB32);
+		image.fill(Qt::white);
+
+		QPainter painter(&image);
+		document.drawContents(&painter);
+
+		return image;
 	}
 }
 
@@ -461,26 +534,38 @@ void OneGrab::slotFixedCopyOne()
 {
 	QClipboard* clipboard = QApplication::clipboard();
 
-	// 从剪贴板提取 URL 字符串（本地路径或远程链接）
-	auto extractUrl = [clipboard]() -> QString
+	// 从剪贴板提取字符串，和类型。-1 有问题  0 是本地文件  1 是HTML文本  2 是url链接  3 是普通文本
+	auto extractUrl = [clipboard]() -> QPair<QString, int>
 	{
 		const QMimeData* mimeData = clipboard->mimeData();
 		if (mimeData && mimeData->hasUrls())
 		{
-			QList<QUrl> urls = mimeData->urls();
-			if (!urls.isEmpty())
+			if (mimeData->hasUrls())
 			{
-				QString filePath = urls.first().toLocalFile();
-				if (!filePath.isEmpty())
-					return filePath;
-				return urls.first().toString();
+				QList<QUrl> urls = mimeData->urls();
+				if (!urls.isEmpty())
+				{
+					QString filePath = urls.first().toLocalFile();
+					if (!filePath.isEmpty())
+						return qMakePair(filePath, 0);
+					return qMakePair(urls.first().toString(), 0);
+				}
 			}
 		}
 
-		if (mimeData && mimeData->hasText())
-			return mimeData->text();
+		if (mimeData && mimeData->hasHtml())
+			return qMakePair(mimeData->html(), 1);  // 是HTML文本
 
-		return QString();
+		if (mimeData && mimeData->hasText())
+		{
+			QString str = mimeData->text();
+			if (str.startsWith(tr("http://")) || str.startsWith(tr("https://")))
+				return qMakePair(str, 2);  // 是url
+			else
+				return qMakePair(str, 3);  // 就是普通文本
+		}
+
+		return qMakePair(QString(), -1);
 	};
 
 	// 尝试直接转成图像
@@ -491,21 +576,48 @@ void OneGrab::slotFixedCopyOne()
 		return;
 	}
 	
-	QString urlStr = extractUrl();
-	if (urlStr.isEmpty())
+	QPair<QString, int> pair = extractUrl();
+	if (-1 == pair.second || pair.first.isEmpty())
 		return;
 
-	// 尝试从本地文件读取
-	pixmap = QPixmap(urlStr);
-	if (!pixmap.isNull())
+	switch (pair.second)
 	{
-		slotFixedImageDownloadFinished(pixmap);
-		return;
+	case 0:  // 本地文件
+	{
+		pixmap = QPixmap(pair.first);
+		if (!pixmap.isNull())
+		{
+			slotFixedImageDownloadFinished(pixmap);
+			return;
+		}
+		break;
 	}
-
-	// 尝试从url链接下载图片
-	if (urlStr.startsWith(tr("http://")) || urlStr.startsWith(tr("https://")))
-		DownloadImage(urlStr);
+	case 1:  // HTML文本
+	{
+		pixmap = QPixmap::fromImage(htmlToImage(pair.first));
+		if (!pixmap.isNull())
+		{
+			slotFixedImageDownloadFinished(pixmap);
+			return;
+		}
+		break;
+	}
+	case 2:  // url链接
+	{
+		DownloadImage(pair.first);
+		break;
+	}
+	default:  // 普通文本
+	{
+		pixmap = QPixmap::fromImage(textToImage(pair.first));
+		if (!pixmap.isNull())
+		{
+			slotFixedImageDownloadFinished(pixmap);
+			return;
+		}
+		break;
+	}
+	}
 }
 
 void OneGrab::DownloadImage(const QString& url)

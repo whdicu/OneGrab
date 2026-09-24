@@ -1,4 +1,5 @@
 ﻿#include "DSystemTrayMenu.h"
+#include "DLogHandler.h"
 #include "HDBase/DList.hpp"
 #include "hook.h"
 #include "ImageThread.h"
@@ -11,9 +12,14 @@
 #include "SettingHandler.h"
 #include "WinHandler.h"
 
-
 int main(int argc, char *argv[])
 {
+	QApplication a(argc, argv);
+
+	// 日志系统
+	QString strLogDir = QCoreApplication::applicationDirPath() + "/logs";
+	DLogHandler logHandler(strLogDir);
+
 	QFileInfo fileInfo(argv[0]);
 	QString processName = fileInfo.fileName();
 	bool isRunning = WinHandler::isProcessRunning(processName);
@@ -22,8 +28,6 @@ int main(int argc, char *argv[])
 		qWarning() << processName << "is running!";
 		return 1;
 	}
-
-    QApplication a(argc, argv);
     OneGrab w;
 
 	QObject::connect(&a, &QApplication::aboutToQuit, SETTING_HANDLER, &SettingHandler::syncToFile);

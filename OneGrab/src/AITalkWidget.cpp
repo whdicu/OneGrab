@@ -92,7 +92,7 @@ AITalkWidget::AITalkWidget(LabelIsland* island, QWidget *parent)
 	requestHeightUpdate();
 
 	connect(island, &LabelIsland::sigHide, this, &QWidget::hide);
-	connect(island, &LabelIsland::sigShow, this, &QWidget::show);
+	//connect(island, &LabelIsland::sigShow, this, &QWidget::show);
 	connect(island, &LabelIsland::sigNeedShowAITalk, this, &QWidget::show);
 
 	connect(SettingDialog::getInstance(), &SettingDialog::sigRefreshAIApiKey, this, [this](const QString& apiKey)

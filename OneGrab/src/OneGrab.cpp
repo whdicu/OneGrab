@@ -107,6 +107,7 @@ namespace
 		QTextDocument document;
 		document.setHtml(normalizeHtml(html));
 		document.setDocumentMargin(0);
+		document.setTextWidth(document.idealWidth());
 
 		// Qt 富文本引擎不会把外层 div 的 background-color 继承到内部子块，
 		// 导致只有外层 div 前导空白行有背景、其余行透明，这里取出来铺满整图
@@ -120,7 +121,7 @@ namespace
 			}
 		}
 
-		document.adjustSize();
+		//document.adjustSize();
 
 		QSize size = document.size().toSize();
 

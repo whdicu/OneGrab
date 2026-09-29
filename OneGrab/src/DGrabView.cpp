@@ -178,6 +178,9 @@ void DGrabView::mousePressEvent(QMouseEvent *event)
 			{
 				clickOnWindowRect_ = true;
 				choosedBorder_ = 0;
+
+				// 按下就把按钮栏摆到当前选区（悬停预览的那个矩形）下面，不用等拖动
+				emit sigSelectionChanged(maskItem_->getSelectionRect());
 				break;
 			}
 

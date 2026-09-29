@@ -397,12 +397,6 @@ void OneGrab::doGrab()
 	mouseWindow_->moveAndRefresh(pixPoint, geometry());
 	mouseWindow_->show();
 
-	// 按钮栏不再依赖按下鼠标时的兜底显示，截屏一开始就摆到右下角
-	btnBar_->adjustSize();
-	btnBar_->setSizeLabelText(QSize(0, 0));
-	btnBar_->move(x() + width() - btnBar_->width() - MARGIN, y() + height() - btnBar_->height() - MARGIN);
-	btnBar_->show();
-
 	ui.view->setFocus();
 
 	slotRefreshPixelInfo(pixPoint);

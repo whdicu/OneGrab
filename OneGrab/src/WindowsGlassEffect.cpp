@@ -418,7 +418,7 @@ WindowsGlassEffect::Result WindowsGlassEffect::enable(QWidget* widget, const Par
 				}
 
 				widget->setProperty("WindowsGlassEffect.mode", (int)ModeDwmBackdrop);
-				qDebug() << __FUNCTION__ << "ok, mode = dwm backdrop, type =" << backdrop << "build =" << build;
+				//qDebug() << __FUNCTION__ << "ok, mode = dwm backdrop, type =" << backdrop << "build =" << build;
 				return ResultOk;
 			}
 
@@ -435,7 +435,7 @@ WindowsGlassEffect::Result WindowsGlassEffect::enable(QWidget* widget, const Par
 		{
 			const Mode mode = (state == AccentEnableBlurBehind) ? ModeBlurBehind : ModeAcrylic;
 			widget->setProperty("WindowsGlassEffect.mode", (int)mode);
-			qDebug() << __FUNCTION__ << "ok, mode =" << (int)mode << "accent =" << (int)state << "build =" << build;
+			//qDebug() << __FUNCTION__ << "ok, mode =" << (int)mode << "accent =" << (int)state << "build =" << build;
 			return ResultOk;
 		}
 
@@ -448,7 +448,7 @@ WindowsGlassEffect::Result WindowsGlassEffect::enable(QWidget* widget, const Par
 		if (applyAccentPolicy(hwnd, AccentEnableBlurBehind, params.accentFlags, params.tint))
 		{
 			widget->setProperty("WindowsGlassEffect.mode", (int)ModeBlurBehind);
-			qDebug() << __FUNCTION__ << "ok, mode = blur behind, build =" << build;
+			//qDebug() << __FUNCTION__ << "ok, mode = blur behind, build =" << build;
 			return ResultOk;
 		}
 

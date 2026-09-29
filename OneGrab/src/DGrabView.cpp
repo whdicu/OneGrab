@@ -142,6 +142,10 @@ void DGrabView::mousePressEvent(QMouseEvent *event)
 	}
 	
 	selectionStart_ = event->pos();
+
+	// 每次左键按下都通知一次：画图模式下也要把按钮栏/放大窗重新顶到最前
+	emit sigMousePressed();
+
 	if (hoverItem_)  // 移动已经画好的item
 	{
 		mouseState_ = MoveItem;
@@ -190,7 +194,6 @@ void DGrabView::mousePressEvent(QMouseEvent *event)
 				}
 				else  // 选择截图区域
 				{
-					emit sigMousePressed();
 					mouseState_ = SelectState;
 
 					// 更新btnBar位置

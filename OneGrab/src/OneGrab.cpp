@@ -44,6 +44,25 @@ const static int MARGIN = 5;
 const static int COPY_TEMP_SIZE = 64;  // 复制图片到文件的最大图片保存数量
 
 
+// 不改变可见性地把窗口顶到最前。
+// 原来靠 hide()+show() 顶 Z 序：hide 会让窗口真的消失，show 之前一直不显示；
+// 而全屏截图窗成为前台窗后能把 topmost 的工具窗压下去，只能靠"再 show 一次"兜回来，
+// 一旦漏掉一次（比如画图时的那次按下）就会看到按钮栏和放大窗消失。
+static void bringWindowToFront(QWidget* widget)
+{
+	if (nullptr == widget)
+		return;
+
+	if (!widget->isVisible())
+		widget->show();
+
+	::SetWindowPos(reinterpret_cast<HWND>(widget->winId()), HWND_TOPMOST, 0, 0, 0, 0,
+		SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOOWNERZORDER);
+	// 被盖住再顶上来后重贴一遍内容，避免留下空白窗口
+	widget->update();
+}
+
+
 namespace
 {
 	inline QString generateImageId()
@@ -220,17 +239,14 @@ OneGrab::OneGrab(QWidget *parent)
 	connect(mouseWindow_, &MouseWindow::sigMouseRelease, this, &OneGrab::slotMouseEventInWindow);
 	connect(ui.view, &DGrabView::sigMousePressed, this, [this]()
 	{
-		mouseWindow_->hide();
-		mouseWindow_->show();
-		btnBar_->hide();
-		btnBar_->show();
+		// 按下时重新顶一次：截图窗是全屏窗，抢回前台时会把两个工具窗压到下面
+		bringWindowToFront(mouseWindow_);
+		bringWindowToFront(btnBar_);
 	});
 	connect(ui.view, &DGrabView::sigMouseReleased, this, [this]()
 	{
-		mouseWindow_->hide();
-		mouseWindow_->show();
-		btnBar_->hide();
-		btnBar_->show();
+		bringWindowToFront(mouseWindow_);
+		bringWindowToFront(btnBar_);
 	});
 	connect(ui.view, &DGrabView::sigPosChanged, this, &OneGrab::slotPosChanged);
 	connect(ui.view, &DGrabView::sigSelectionChanged, this, &OneGrab::slotSelectionChanged);
@@ -380,6 +396,12 @@ void OneGrab::doGrab()
 	QPoint pixPoint = QCursor::pos() - pos();
 	mouseWindow_->moveAndRefresh(pixPoint, geometry());
 	mouseWindow_->show();
+
+	// 按钮栏不再依赖按下鼠标时的兜底显示，截屏一开始就摆到右下角
+	btnBar_->adjustSize();
+	btnBar_->setSizeLabelText(QSize(0, 0));
+	btnBar_->move(x() + width() - btnBar_->width() - MARGIN, y() + height() - btnBar_->height() - MARGIN);
+	btnBar_->show();
 
 	ui.view->setFocus();
 

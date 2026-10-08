@@ -105,6 +105,7 @@ void DGrabView::deleteHoverItem()
 		if (itemList_.isEmpty())
 			return;
 		scene()->removeItem(hoverItem_);
+		delete hoverItem_;
 		hoverItem_ = nullptr;
 		update();
 	}

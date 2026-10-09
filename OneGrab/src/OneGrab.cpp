@@ -893,7 +893,7 @@ void OneGrab::slotNewVersionAvailable(const QString& version, const QString& url
 		return;
 	}
 
-	int ret = DMessageBox::information(this, tr("好消息"), tr("检测到新版本，是否立即更新？"), ALL_BTN);
+	int ret = DMessageBox::information(this, tr("好消息"), tr("检测到新版本\n%1\n是否立即更新？").arg(version), ALL_BTN);
 
 	if (ret == QDialog::Accepted)
 	{

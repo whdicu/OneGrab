@@ -725,6 +725,11 @@ void OneGrab::slotFixedImageDownloadFinished(QPixmap pixmap)
 	islandBuffer_.enqueue(island);
 	while (islandBuffer_.size() > SETTING_HANDLER->getIslandNum())
 		islandBuffer_.dequeue()->deleteLater();
+
+	// AI聊天Widget
+	AITalkWidget* talkWidget = new AITalkWidget(island);
+	talkWidget->move(island->x() + island->width() + 10
+		, island->y() + island->height() - talkWidget->height());
 }
 
 void OneGrab::slotSave()

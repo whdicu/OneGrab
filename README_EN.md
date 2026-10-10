@@ -70,11 +70,20 @@ Three independently switchable, stackable techniques that work by disrupting wat
 
 > ⚠️ **Compliance notice**: this feature targets **frequency-domain / robust watermarks hidden in the pixels**, and the official description is that it "can be removed to some extent" — it is **not** forensic-grade watermark removal, and the result is limited. Do not use it to infringe others' copyright or to evade copyright tracking.
 
+### 🔗 QR Code Detection
+
+Once you finish a selection, any QR code inside it is **detected automatically** — no extra keystroke required. It is on by default and can be turned off under 设置 › 基础设置（Settings › Basic Settings）. Detection is built on **the OpenCV 4.8 already bundled in the repository** (`cv::QRCodeDetector`), **introducing no new third-party dependency**.
+
+- **Multiple QR codes can be decoded at once** (via `detectAndDecodeMulti`)
+- The results appear in a floating bar above the selection, aligned to its right edge, one row per QR code
+- Each row offers two actions: **open the link** (open the decoded URL in the browser) and **copy the text** (to the clipboard); clicking either action ends the current capture
+- If no QR code is found inside the selection, no floating bar is shown
+
 ### 📤 Post-Capture Actions & ⚙️ Settings
 
 Copy to clipboard, save to file (format and default path configurable), copy to a chosen path, and color-picker copy (switchable between RGB / HEX); image processing runs on a background thread so the UI never blocks; the `temp` cache is cleared on every launch.
 
-The settings window has four pages: **基础设置（Basic Settings）** / **高级设置（Advanced Settings）** / **AI设置（AI Settings）** / **关于OneGrab（About OneGrab）**. It covers launch-on-startup (implemented as a separate small utility to avoid permission issues), theme color, magnification, hotkey hook exclusive mode, image island count limit, the three hidden-watermark strengths, API Key and balance, version check and auto-update, and the tray right-click menu.
+The settings window has four pages: **基础设置（Basic Settings）** / **高级设置（Advanced Settings）** / **AI设置（AI Settings）** / **关于OneGrab（About OneGrab）**. It covers launch-on-startup (implemented as a separate small utility to avoid permission issues), theme color, magnification, hotkey hook exclusive mode, image island count limit, automatic QR code detection, the three hidden-watermark strengths, API Key and balance, version check and auto-update, and the tray right-click menu.
 
 **Not included**: scrolling long screenshots, screen recording / GIF, standalone OCR, screenshot history management, cloud upload / share links.
 
@@ -244,16 +253,17 @@ OneGrab/
 │
 ├── OneGrab/                      # main project
 │   ├── OneGrab.vcxproj
-│   └── res/                      # resources: 15 SVG icons + res.qrc
+│   └── res/                      # resources: 16 SVG icons + res.qrc
 │       └── src/                  # all application source code
 │           ├── main.cpp              # entry: single instance → tray → hook → wiring
-│           ├── OneGrab.{h,cpp}       # controller: capture orchestration, hidden-watermark removal, save/copy, ask AI
+│           ├── OneGrab.{h,cpp}       # controller: capture orchestration, hidden-watermark removal, QR detection, save/copy, ask AI
 │           ├── DScreenCapture.{h,cpp}# HDR capture: WGC + D3D11 FP16 + GPU tone map
 │           ├── DGrabView.{h,cpp}     # selection state machine, window snapping, draw dispatch
 │           ├── MaskItem.{h,cpp}      # mask + selection border painting
 │           ├── DGraphicsItem.h       # 6 annotation shapes (rect/line/arrow/polyline/ellipse/text)
 │           ├── BtnBar.{h,cpp}        # bottom toolbar
 │           ├── MouseWindow.{h,cpp}   # cursor magnifier
+│           ├── QRCodeBar.{h,cpp}     # floating bar showing decoded QR results
 │           ├── LabelIsland1.{h,cpp}    # image island (the only one in use)
 │           ├── LabelIsland2~5.{h,cpp}  # legacy approach, not wired up
 │           ├── AIHandler.{h,cpp}     # DeepSeek client: HTTP + SSE + balance query
@@ -346,4 +356,4 @@ This project is released under the [GNU General Public License v3](LICENSE): you
 
 ---
 
-*This document is based on `develop` HEAD `7895dc0` (version `1.4.26.1008`). Feature descriptions are grounded in the source code and commit history; if the documentation and the code disagree, the code wins — please open an issue to help fix it.*
+*This document is based on `develop` HEAD `03a1641` (version `1.4.26.1008`). Feature descriptions are grounded in the source code and commit history; if the documentation and the code disagree, the code wins — please open an issue to help fix it.*

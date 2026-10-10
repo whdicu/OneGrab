@@ -98,6 +98,11 @@ QPixmap DGrabView::getSelectionPixmap(QRect& rect)
 	return fullPixmap.copy(rect);
 }
 
+QRect DGrabView::getSelectionRect()
+{
+	return maskItem_->getSelectionRect();
+}
+
 void DGrabView::deleteHoverItem()
 {
 	if (hoverItem_)
@@ -445,6 +450,8 @@ void DGrabView::mouseReleaseEvent(QMouseEvent *event)
 
 	if (event->button() == Qt::LeftButton)
 	{
+		MouseState state = (MouseState)mouseState_;
+
 		// 窗口矩形点击确认：未拖拽即释放 → 直接选定该矩形
 		if (SETTING_HANDLER->getAutoGrabWindow() && clickOnWindowRect_)
 		{
@@ -453,7 +460,7 @@ void DGrabView::mouseReleaseEvent(QMouseEvent *event)
 			selectionConfirmed_ = true;
 			emit sigSelectionChanged(maskItem_->getSelectionRect());
 			editingItem_ = nullptr;
-			emit sigMouseReleased();
+			emit sigMouseReleased(state);
 			return;
 		}
 
@@ -479,7 +486,7 @@ void DGrabView::mouseReleaseEvent(QMouseEvent *event)
 		}
 		
 		editingItem_ = nullptr;
-		emit sigMouseReleased();
+		emit sigMouseReleased(state);
 	}
 }
 

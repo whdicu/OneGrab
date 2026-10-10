@@ -8,6 +8,7 @@
 #include <windows.h>
 
 class BtnBar;
+class QRCodeBar;
 class DProgressBox;
 class DUpdateHandler;
 class LabelIsland1;
@@ -60,6 +61,12 @@ private:
 	// 对图像做防隐水印处理
 	void doFSY(cv::Mat& mat);
 
+	// 执行自动二维码识别
+	void doAutoQRCode();
+
+	// 根据选区矩形(已转换为本窗口坐标)摆放二维码条
+	void updateQRCodeBarPos(const QRect& selectionRect);
+
 	QColor getPixelColor(const QPoint& pos);
 	void finishGrab();
 
@@ -79,6 +86,7 @@ private:
 
     Ui::OneGrabClass ui;
 	BtnBar* btnBar_;
+	QRCodeBar* qrCodeBar_;
 	MouseWindow* mouseWindow_;
 	DSharedPointer<QPixmap> fullPixmap_;
 	bool ignoreKeyPress_;  // 忽略键盘按键

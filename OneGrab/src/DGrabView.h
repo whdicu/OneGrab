@@ -40,6 +40,7 @@ public:
 	void zItem(bool shift = false);
 	void setDrawingState(int isDrawing);
 	QPixmap getSelectionPixmap(QRect& rect);
+	QRect getSelectionRect();
 	void deleteHoverItem();
 	void removeBorderBright();
 	void setWindowRects(const DList<QRect>& rects);
@@ -58,7 +59,7 @@ public slots:
 signals:
 	void sigMousePressed();
 	void sigPosChanged(const QPoint& pos);
-	void sigMouseReleased();
+	void sigMouseReleased(MouseState state);
 	void sigSelectionChanged(const QRect& rect);
 	void sigResetDrawingState();
 

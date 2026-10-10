@@ -86,6 +86,7 @@ void SettingHandler::writeAll()
 	wholeObject.insert("ImgSaveType", settingStruct.ImgSaveType);
 	wholeObject.insert("AutoGrabWindow", settingStruct.AutoGrabWindow);
 	wholeObject.insert("BrightBorder", settingStruct.BrightBorder);
+	wholeObject.insert("AutoQRCode", settingStruct.AutoQRCode);
 	wholeObject.insert("Copy2File", settingStruct.Copy2File);
 	wholeObject.insert("MouseScaleNum", settingStruct.MouseScaleNum);
 	wholeObject.insert("IslandNum", settingStruct.IslandNum);
@@ -126,6 +127,7 @@ void SettingHandler::readAll()
 	settingStruct.ImgSaveType = (ImgType)obj["ImgSaveType"].toInt(0);
 	settingStruct.AutoGrabWindow = obj["AutoGrabWindow"].toBool(true);
 	settingStruct.BrightBorder = obj["BrightBorder"].toBool(true);
+	settingStruct.AutoQRCode = obj["AutoQRCode"].toBool(true);
 	settingStruct.Copy2File = obj["Copy2File"].toBool(false);
 	settingStruct.MouseScaleNum = obj["MouseScaleNum"].toInt(8);
 	settingStruct.IslandNum = obj["IslandNum"].toInt(64);

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>QRCodeBar</class>
+ <widget class="QWidget" name="QRCodeBar">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>397</width>
+    <height>16</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>QRCodeBar</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">* {
+	color: #5c5c66;
+}
+
+#QRCodeBar
+{
+background-color: red;
+}
+#QRCodeBar&gt;QWidget&gt;QWidget
+{
+	border-radius: 5px;
+	background-color: white;
+}
+
+QPushButton
+{
+	background-color: transparent;
+	border-radius: 3px;
+}
+
+QPushButton:hover
+{
+	background-color: rgba(0, 0, 0, .2);
+}
+</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="spacing">
+    <number>5</number>
+   </property>
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+  </layout>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources>
+  <include location="../res/res.qrc"/>
+ </resources>
+ <connections/>
+</ui>

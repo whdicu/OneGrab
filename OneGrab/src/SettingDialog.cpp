@@ -95,6 +95,11 @@ void SettingDialog::on_cb_bright_border_stateChanged(int state)
 	SETTING_HANDLER->setBrightBorder(state);
 }
 
+void SettingDialog::on_cb_auto_qrcode_stateChanged(int state)
+{
+	SETTING_HANDLER->setAutoQRCode(state);
+}
+
 void SettingDialog::on_cb_copy2file_stateChanged(int state)
 {
 	SETTING_HANDLER->setCopy2File(state);
@@ -299,6 +304,7 @@ void SettingDialog::refreshByStruct()
 		ui.cmb_img_type->setCurrentIndex(index);
 	ui.cb_auto_grab_window->setChecked(stru.AutoGrabWindow);
 	ui.cb_bright_border->setChecked(stru.BrightBorder);
+	ui.cb_auto_qrcode->setChecked(stru.AutoQRCode);
 	ui.cb_copy2file->setChecked(stru.Copy2File);
 	ui.sb_scale_num->setValue(stru.MouseScaleNum);
 	ui.sb_island_num->setValue(stru.IslandNum);

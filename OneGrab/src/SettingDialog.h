@@ -28,6 +28,7 @@ private slots:
 	void on_cb_use_default_save_path_stateChanged(int state);
 	void on_cb_auto_grab_window_stateChanged(int state);
 	void on_cb_bright_border_stateChanged(int state);
+	void on_cb_auto_qrcode_stateChanged(int state);
 	void on_cb_copy2file_stateChanged(int state);
 	void on_cb_fsy_random_stateChanged(int state);
 	void on_cb_fys_33_stateChanged(int state);

@@ -53,7 +53,7 @@ void BtnBar::dMove(int dX, int dY)
 
 void BtnBar::setSizeLabelText(const QSize& sz)
 {
-	ui.label_size->setText(QString("  W: %1 H: %2").arg(sz.width()).arg(sz.height()));
+	ui.label_size->setText(QString("W: %1 H: %2").arg(sz.width()).arg(sz.height()));
 }
 
 void BtnBar::onFinishGrab()

@@ -34,6 +34,7 @@
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\MouseWindow.cpp" />
     <ClCompile Include="src\OneGrab.cpp" />
+    <ClCompile Include="src\QRCodeBar.cpp" />
     <ClCompile Include="src\SettingDialog.cpp" />
     <ClCompile Include="src\SettingHandler.cpp" />
     <ClCompile Include="src\TalkMsgBase.cpp" />
@@ -50,6 +51,7 @@
     <QtUic Include="src\BtnBar.ui" />
     <QtUic Include="src\MouseWindow.ui" />
     <QtUic Include="src\OneGrab.ui" />
+    <QtUic Include="src\QRCodeBar.ui" />
     <QtUic Include="src\SettingDialog.ui" />
   </ItemGroup>
   <ItemGroup>
@@ -88,6 +90,7 @@
     <QtMoc Include="src\TalkMsgLeft.h" />
     <QtMoc Include="src\TalkMsgRight.h" />
     <QtMoc Include="src\TalkMsgBase.h" />
+    <QtMoc Include="src\QRCodeBar.h" />
     <ClInclude Include="src\version.h" />
     <ClInclude Include="src\WinHandler.h" />
     <ClInclude Include="src\WindowsGlassEffect.h" />

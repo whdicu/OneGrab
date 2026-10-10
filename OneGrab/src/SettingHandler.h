@@ -67,6 +67,7 @@ struct SettingStruct
 	ImgType ImgSaveType;
 	bool AutoGrabWindow;
 	bool BrightBorder;
+	bool AutoQRCode;
 	bool Copy2File;
 	int MouseScaleNum;
 	int IslandNum;
@@ -114,6 +115,7 @@ public:
 	REG_GET_FUNC(ImgSaveType)
 	REG_GET_FUNC(AutoGrabWindow)
 	REG_GET_FUNC(BrightBorder)
+	REG_GET_FUNC(AutoQRCode)
 	REG_GET_FUNC(Copy2File)
 	REG_GET_FUNC(MouseScaleNum)
 	REG_GET_FUNC(IslandNum)

@@ -6,4 +6,6 @@ x64/Release/imageformats
 x64/Release/iconengines
 x64/Release/platforms
 x64/Release/update
+x64/Release/logs
 .codebuddy
+docs

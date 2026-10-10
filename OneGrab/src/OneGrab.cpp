@@ -16,6 +16,7 @@
 #include "LabelIsland4.h"
 #include "LabelIsland5.h"
 #include "MouseWindow.h"
+#include <opencv2/objdetect.hpp>
 #include <QClipboard>
 #include <QCoreApplication>
 #include <QDateTime>
@@ -30,6 +31,7 @@
 #include <QPainter>
 #include <QPalette>
 #include <QProcess>
+#include "QRCodeBar.h"
 #include <QRegularExpression>
 #include <QScreen>
 #include <QTextBlock>
@@ -194,8 +196,9 @@ namespace
 
 
 OneGrab::OneGrab(QWidget *parent)
-    : QWidget(parent, Qt::FramelessWindowHint | Qt::Tool/* | Qt::WindowStaysOnTopHint*/)
+    : QWidget(parent, Qt::FramelessWindowHint | Qt::Tool | Qt::WindowStaysOnTopHint)
 	, btnBar_(new BtnBar)
+	, qrCodeBar_(new QRCodeBar)
 	, mouseWindow_(new MouseWindow)
 	, ignoreKeyPress_(false)
 	, updateHelper_(new DUpdateHandler(this))
@@ -234,6 +237,13 @@ OneGrab::OneGrab(QWidget *parent)
 	{
 		ignoreKeyPress_ = ignore;
 	}, Qt::DirectConnection);
+	connect(qrCodeBar_, &QRCodeBar::sigNeedFinishGrab, this, &OneGrab::finishGrab);
+	connect(qrCodeBar_, &QRCodeBar::sigMouseEnter, ui.view, &DGrabView::removeBorderBright);
+	connect(qrCodeBar_, &QRCodeBar::sigMouseMoveGlobal, this, [this](const QPoint& screenPos)
+	{
+		QPoint localPos = screenPos - pos();
+		slotPosChanged(localPos);
+	});
 	connect(mouseWindow_, &MouseWindow::sigMousePress, this, &OneGrab::slotMouseEventInWindow);
 	connect(mouseWindow_, &MouseWindow::sigMouseMove, this, &OneGrab::slotMouseEventInWindow);
 	connect(mouseWindow_, &MouseWindow::sigMouseRelease, this, &OneGrab::slotMouseEventInWindow);
@@ -243,8 +253,12 @@ OneGrab::OneGrab(QWidget *parent)
 		bringWindowToFront(mouseWindow_);
 		bringWindowToFront(btnBar_);
 	});
-	connect(ui.view, &DGrabView::sigMouseReleased, this, [this]()
+	connect(ui.view, &DGrabView::sigMouseReleased, this, [this](MouseState state)
 	{
+		// 自动二维码识别
+		if (SETTING_HANDLER->getAutoQRCode())
+			doAutoQRCode();
+
 		bringWindowToFront(mouseWindow_);
 		bringWindowToFront(btnBar_);
 	});
@@ -787,21 +801,43 @@ void OneGrab::slotSelectionChanged(const QRectF& rectf)
 	QRect rect = rectf.toRect();
 	rect.moveLeft(rect.left() + x());
 	rect.moveTop(rect.top() + y());
-	int toX = rect.right() - btnBar_->width();
-	int toY = rect.bottom() + MARGIN;
+	int toXBtnBar = rect.right() - btnBar_->width();
+	int toYBtnBar = rect.bottom() + MARGIN;
 
-	if (toX < x() + MARGIN)
-		toX = x() + MARGIN;
-	else if (toX > x() + width() - btnBar_->width() - MARGIN)
-		toX = x() + width() - btnBar_->width() - MARGIN;
+	// 边界检查
+	if (toXBtnBar < x() + MARGIN)
+		toXBtnBar = x() + MARGIN;
+	else if (toXBtnBar > x() + width() - btnBar_->width() - MARGIN)
+		toXBtnBar = x() + width() - btnBar_->width() - MARGIN;
 
-	if (toY < y() + MARGIN)
-		toY = y() + MARGIN;
-	else if (toY > y() + height() - btnBar_->height() - MARGIN)
-		toY = y() + height() - btnBar_->height() - MARGIN;
+	if (toYBtnBar < y() + MARGIN)
+		toYBtnBar = y() + MARGIN;
+	else if (toYBtnBar > y() + height() - btnBar_->height() - MARGIN)
+		toYBtnBar = y() + height() - btnBar_->height() - MARGIN;
 
-	btnBar_->move(toX, toY);
+	btnBar_->move(toXBtnBar, toYBtnBar);
 	btnBar_->setSizeLabelText(rect.size());
+
+	updateQRCodeBarPos(rect);
+}
+
+void OneGrab::updateQRCodeBarPos(const QRect& selectionRect)
+{
+	// 注意:必须保证 qrCodeBar_ 的尺寸已经是最新的（内容变更后先 adjustSize），否则会按旧尺寸算出错误位置
+	int toXQRCodeBar = selectionRect.right() - qrCodeBar_->width();
+	int toYQRCodeBar = selectionRect.top() - MARGIN - qrCodeBar_->height();
+
+	if (toXQRCodeBar < x() + MARGIN)
+		toXQRCodeBar = x() + MARGIN;
+	else if (toXQRCodeBar > x() + width() - qrCodeBar_->width() - MARGIN)
+		toXQRCodeBar = x() + width() - qrCodeBar_->width() - MARGIN;
+
+	if (toYQRCodeBar < y() + MARGIN)
+		toYQRCodeBar = y() + MARGIN;
+	else if (toYQRCodeBar > y() + height() - qrCodeBar_->height() - MARGIN)
+		toYQRCodeBar = y() + height() - qrCodeBar_->height() - MARGIN;
+
+	qrCodeBar_->move(toXQRCodeBar, toYQRCodeBar);
 }
 
 void OneGrab::slotRefreshPixelInfo(const QPoint& mousePos)
@@ -1010,6 +1046,43 @@ void OneGrab::doFSY(cv::Mat& mat)
 	qDebug() << __FUNCTION__ << "total used time:" << (i10000 - i00);
 }
 
+void OneGrab::doAutoQRCode()
+{
+	QRect uselessRect;
+	QPixmap croppedPixmap = ui.view->getSelectionPixmap(uselessRect);
+	cv::Mat croppedMat = ImageHandler::QImageToCvMat(croppedPixmap.toImage());
+
+	cv::QRCodeDetector detector;
+	std::vector<std::string> decodedInfo;
+	cv::Mat points;
+
+	bool hasQRCode = detector.detectAndDecodeMulti(croppedMat, decodedInfo, points);
+	if (!hasQRCode)
+	{
+		qDebug() << __FUNCTION__ << "QR code not found.";
+		qrCodeBar_->clearQRCodeTexts();
+		return;
+	}
+	
+	qDebug() << __FUNCTION__ << "QR count:" << decodedInfo.size();
+
+	QStringList texts;
+	for (const std::string& text : decodedInfo)
+		texts.push_back(QString::fromStdString(text));
+	
+	qrCodeBar_->setQRCodeTexts(texts);
+	// 内容变化后先把尺寸算出来：二维码条是首次显示时才由布局决定真实尺寸的，
+	// 若沿用 .ui 里的旧尺寸定位，首次松手时会出现位置偏移（压住选区）
+	qrCodeBar_->adjustSize();
+
+	QRect selectionRect = ui.view->getSelectionRect();
+	selectionRect.moveLeft(selectionRect.left() + x());
+	selectionRect.moveTop(selectionRect.top() + y());
+	updateQRCodeBarPos(selectionRect);
+
+	bringWindowToFront(qrCodeBar_);
+}
+
 void OneGrab::finishGrab()
 {
 	qDebug() << __FUNCTION__;
@@ -1018,6 +1091,7 @@ void OneGrab::finishGrab()
 	ui.view->onFinishGrab();
 	mouseWindow_->hide();
 	btnBar_->onFinishGrab();
+	qrCodeBar_->onFinishGrab();
 	hide();
 }
 

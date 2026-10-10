@@ -15,5 +15,6 @@
         <file>svgs/setting.svg</file>
         <file>svgs/shutdown.svg</file>
         <file>svgs/folder.svg</file>
+        <file>svgs/url.svg</file>
     </qresource>
 </RCC>

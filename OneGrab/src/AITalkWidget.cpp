@@ -108,6 +108,8 @@ AITalkWidget::AITalkWidget(LabelIsland* island, QWidget *parent)
 	aiParams_.model = "deepseek-flash";
 	aiParams_.stream = true;
 	aiParams_.baseUrl = "https://api.deepseek.com/v1";
+	// 联网搜索交给模型自己判断：需要查实时信息时它自己发起工具调用，不用用户手动开
+	aiParams_.webSearch = true;
 
 	// 思考模式开关：持久化在设置里，靠按钮切换（颜色/文字也在里面刷）
 	aiParams_.reasoningEffort = "max";
@@ -124,12 +126,16 @@ AITalkWidget::AITalkWidget(LabelIsland* island, QWidget *parent)
 	// 非流式，一次性回复所有文字
 	connect(aiHandler_, &AIHandler::replyReady, this, [this](const QString& reply, const QString& UUID)
 	{
-		AIHandler::ChatMessage m1;
-		m1.role = AIHandler::Assistant;
-		m1.content = reply;
-		aiParams_.msgs.append(m1);
 		qDebug() << "[AI消息接收]" << reply;
 		addTalkMsg(UUID, true, reply);
+	});
+
+	// 本轮新增的消息（含思考内容、工具往返）存回历史：
+	// 开着 tools 时必须回传 reasoning_content，下一轮才不会 400，模型也能接上刚才的语境
+	connect(aiHandler_, &AIHandler::turnMessagesReady, this, [this](const QList<AIHandler::ChatMessage>& messages, const QString& UUID)
+	{
+		Q_UNUSED(UUID);
+		aiParams_.msgs.append(messages);
 	});
 
 	// 流式回复文字

@@ -34,8 +34,8 @@
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\MouseWindow.cpp" />
     <ClCompile Include="src\OneGrab.cpp" />
+    <ClCompile Include="src\BarcodeDecoder.cpp" />
     <ClCompile Include="src\QRCodeBar.cpp" />
-    <ClCompile Include="src\QRCodeDecoder.cpp" />
     <ClCompile Include="src\SettingDialog.cpp" />
     <ClCompile Include="src\SettingHandler.cpp" />
     <ClCompile Include="src\TalkMsgBase.cpp" />
@@ -100,7 +100,7 @@
     <QtMoc Include="src\LabelIsland4.h" />
     <QtMoc Include="src\LabelIsland5.h" />
     <ClInclude Include="src\MaskItem.h" />
-    <ClInclude Include="src\QRCodeDecoder.h" />
+    <ClInclude Include="src\BarcodeDecoder.h" />
     <QtMoc Include="src\DGrabView.h" />
     <QtMoc Include="src\SettingDialog.h" />
     <QtMoc Include="src\MouseWindow.h" />

@@ -123,7 +123,7 @@
     <ClCompile Include="src\QRCodeBar.cpp">
       <Filter>Widgets</Filter>
     </ClCompile>
-    <ClCompile Include="src\QRCodeDecoder.cpp">
+    <ClCompile Include="src\BarcodeDecoder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -200,7 +200,7 @@
     <QtMoc Include="src\QRCodeBar.h">
       <Filter>Widgets</Filter>
     </QtMoc>
-    <ClInclude Include="src\QRCodeDecoder.h">
+    <ClInclude Include="src\BarcodeDecoder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,4 +1,4 @@
-#include "QRCodeDecoder.h"
+#include "BarcodeDecoder.h"
 #include <QDebug>
 #include <QPoint>
 #include <QVector>
@@ -9,11 +9,11 @@
 
 namespace
 {
-	// 只认二维码：截图里不会有条码需求，限制格式能明显提速
+	// 只认二维码 + 一维码：截图里够用，格式越少误识别越少、也更快
 	ZXing::DecodeHints makeHints()
 	{
 		ZXing::DecodeHints hints;
-		hints.setFormats(ZXing::BarcodeFormat::QRCode);
+		hints.setFormats(ZXing::BarcodeFormat::QRCode | ZXing::BarcodeFormat::LinearCodes);
 		hints.setTryHarder(true);
 		hints.setTryRotate(true);
 		hints.setTryDownscale(true);
@@ -64,7 +64,7 @@ namespace
 		return mat;
 	}
 
-	struct FoundQRCode
+	struct FoundBarcode
 	{
 		QString text;
 		QPoint center;
@@ -81,7 +81,7 @@ namespace
 	}
 
 	// 扫描一次，把结果按位置合并进 found（同一个码在不同预处理图里位置会有几像素偏差，不能按文本去重）
-	void scanOnce(const cv::Mat& image, double scale, const ZXing::DecodeHints& hints, QVector<FoundQRCode>& found)
+	void scanOnce(const cv::Mat& image, double scale, const ZXing::DecodeHints& hints, QVector<FoundBarcode>& found)
 	{
 		ZXing::ImageFormat format;
 		if (!zxingFormatFromChannels(image.channels(), format))
@@ -103,7 +103,7 @@ namespace
 			const QPoint center(static_cast<int>(position.x / scale), static_cast<int>(position.y / scale));
 
 			bool merged = false;
-			for (const FoundQRCode& item : found)
+			for (const FoundBarcode& item : found)
 			{
 				if ((item.center - center).manhattanLength() <= 12)
 				{
@@ -119,7 +119,7 @@ namespace
 }
 
 
-QStringList QRCodeDecoder::decodeQRCodes(const cv::Mat& image)
+QStringList BarcodeDecoder::decodeBarcodes(const cv::Mat& image)
 {
 	QStringList texts;
 
@@ -130,29 +130,31 @@ QStringList QRCodeDecoder::decodeQRCodes(const cv::Mat& image)
 		return texts;
 	}
 
-	QVector<FoundQRCode> found;
+	QVector<FoundBarcode> found;
 	const ZXing::DecodeHints hints = makeHints();
 
 	scanOnce(mat, 1.0, hints, found);
 
-	// 原图扫不出来时才补扫，而且只对"本身就不大"的图做：缩小过的截图需要放大才有足够码点，
-	// 码点特别密（带中心 logo 的收款码）时还要配合 OTSU 二值化，实测这两种补扫能覆盖常见失败情况
-	if (found.isEmpty() && std::min(mat.cols, mat.rows) <= 720)
+	// 原图扫不出来时才补扫，而且只对明显偏小的图做：把短边放大到 ~1100px（缩小过的截图才有足够码点），
+	// 码点特别密（带中心 logo 的收款码）时再补一轮 OTSU 二值化，实测这两种补扫能覆盖常见失败情况
+	const int minSide = std::min(mat.cols, mat.rows);
+	if (found.isEmpty() && minSide <= 720)
 	{
+		const double scale = std::min(6.5, std::max(2.0, 1100.0 / minSide));
+
 		cv::Mat enlarged;
-		cv::resize(mat, enlarged, cv::Size(), 6.0, 6.0, cv::INTER_LANCZOS4);
-		scanOnce(enlarged, 6.0, hints, found);
+		cv::resize(mat, enlarged, cv::Size(), scale, scale, cv::INTER_LANCZOS4);
+		scanOnce(enlarged, scale, hints, found);
 
 		if (found.isEmpty())
 		{
-			cv::Mat bigger, binary;
-			cv::resize(mat, bigger, cv::Size(), 8.0, 8.0, cv::INTER_LANCZOS4);
-			cv::threshold(toGray(bigger), binary, 0, 255, cv::THRESH_BINARY | cv::THRESH_OTSU);
-			scanOnce(binary, 8.0, hints, found);
+			cv::Mat binary;
+			cv::threshold(toGray(enlarged), binary, 0, 255, cv::THRESH_BINARY | cv::THRESH_OTSU);
+			scanOnce(binary, scale, hints, found);
 		}
 	}
 
-	for (const FoundQRCode& item : found)
+	for (const FoundBarcode& item : found)
 		texts << item.text;
 
 	qDebug() << __FUNCTION__ << "image:" << mat.cols << "x" << mat.rows << "found:" << texts.size();

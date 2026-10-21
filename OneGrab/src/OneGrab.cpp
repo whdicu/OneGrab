@@ -30,8 +30,8 @@
 #include <QPainter>
 #include <QPalette>
 #include <QProcess>
+#include "BarcodeDecoder.h"
 #include "QRCodeBar.h"
-#include "QRCodeDecoder.h"
 #include <QRegularExpression>
 #include <QScreen>
 #include <QTextBlock>
@@ -1057,7 +1057,7 @@ void OneGrab::doAutoQRCode()
 	QPixmap croppedPixmap = ui.view->getSelectionPixmap(uselessRect);
 	cv::Mat croppedMat = ImageHandler::QImageToCvMat(croppedPixmap.toImage());
 
-	const QStringList texts = QRCodeDecoder::decodeQRCodes(croppedMat);
+	const QStringList texts = BarcodeDecoder::decodeBarcodes(croppedMat);
 	if (texts.isEmpty())
 	{
 		qDebug() << __FUNCTION__ << "QR code not found.";

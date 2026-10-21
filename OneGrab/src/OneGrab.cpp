@@ -16,7 +16,6 @@
 #include "LabelIsland4.h"
 #include "LabelIsland5.h"
 #include "MouseWindow.h"
-#include <opencv2/objdetect.hpp>
 #include <QClipboard>
 #include <QCoreApplication>
 #include <QDateTime>
@@ -32,6 +31,7 @@
 #include <QPalette>
 #include <QProcess>
 #include "QRCodeBar.h"
+#include "QRCodeDecoder.h"
 #include <QRegularExpression>
 #include <QScreen>
 #include <QTextBlock>
@@ -1057,23 +1057,13 @@ void OneGrab::doAutoQRCode()
 	QPixmap croppedPixmap = ui.view->getSelectionPixmap(uselessRect);
 	cv::Mat croppedMat = ImageHandler::QImageToCvMat(croppedPixmap.toImage());
 
-	cv::QRCodeDetector detector;
-	std::vector<std::string> decodedInfo;
-	cv::Mat points;
-
-	bool hasQRCode = detector.detectAndDecodeMulti(croppedMat, decodedInfo, points);
-	if (!hasQRCode)
+	const QStringList texts = QRCodeDecoder::decodeQRCodes(croppedMat);
+	if (texts.isEmpty())
 	{
 		qDebug() << __FUNCTION__ << "QR code not found.";
 		qrCodeBar_->clearQRCodeTexts();
 		return;
 	}
-	
-	qDebug() << __FUNCTION__ << "QR count:" << decodedInfo.size();
-
-	QStringList texts;
-	for (const std::string& text : decodedInfo)
-		texts.push_back(QString::fromStdString(text));
 	
 	qrCodeBar_->setQRCodeTexts(texts);
 	// 内容变化后先把尺寸算出来：二维码条是首次显示时才由布局决定真实尺寸的，

@@ -9,3 +9,4 @@ x64/Release/update
 x64/Release/logs
 .codebuddy
 docs
+ZXing/lib/cmake/

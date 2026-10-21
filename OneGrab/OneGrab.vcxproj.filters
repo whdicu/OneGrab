@@ -123,6 +123,9 @@
     <ClCompile Include="src\QRCodeBar.cpp">
       <Filter>Widgets</Filter>
     </ClCompile>
+    <ClCompile Include="src\QRCodeDecoder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="src\OneGrab.h">
@@ -197,6 +200,9 @@
     <QtMoc Include="src\QRCodeBar.h">
       <Filter>Widgets</Filter>
     </QtMoc>
+    <ClInclude Include="src\QRCodeDecoder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="src\OneGrab.ui">

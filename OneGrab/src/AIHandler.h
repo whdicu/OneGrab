@@ -68,8 +68,9 @@ public:
 		// 思考强度：low / high / max（仅在 thinking=true 时随请求发送）
 		QString reasoningEffort = "high";
 
-		// 联网搜索：true 时把 web_search 工具一起发给模型，搜不搜由模型自己判断，
-		// 需要时 AIHandler 会内部调用 /v1/tools/search 再带着结果继续对话（对外仍是一次 callDeepSeek）。
+		// 联网工具：true 时把 web_search / web_fetch 一起发给模型，搜不搜、抓不抓由模型自己判断，
+		// 需要时 AIHandler 会内部调用 /v1/tools/search、/v1/tools/fetch 再带着结果继续对话
+		// （对外仍是一次 callDeepSeek）。
 		bool webSearch = false;
 		// 一次提问内最多允许几轮工具调用，到上限后不再提供工具，逼模型用已有结果作答
 		int maxToolRounds = 3;
@@ -118,6 +119,13 @@ public:
 		int authority = -1;        // 权威性 0~4，-1 表示未知，>=3 为极权威
 	};
 
+	// 网页抓取结果（DeepSeek: POST /v1/tools/fetch，接口只收 url，正文固定返回 Markdown）。
+	struct FetchResult
+	{
+		QString title;    // 页面标题，缺失时为空字符串
+		QString content;  // Markdown 正文
+	};
+
 public:
 	explicit AIHandler(const QString& apiKey);
 	~AIHandler();
@@ -130,8 +138,8 @@ public:
 	QString apiKey() const;
 
 	// 这就是 Qt 版的“调用 AI”。
-	// params.webSearch=true 时进入「模型自主联网」模式：模型在对话中自己决定要不要搜，
-	// 需要搜索时 AIHandler 内部调 /v1/tools/search，把结果作为 tool 消息塞回上下文再请求，
+	// params.webSearch=true 时进入「模型自主联网」模式：模型在对话中自己决定要不要搜/抓，
+	// 需要时 AIHandler 内部调 /v1/tools/search 或 /v1/tools/fetch，把结果作为 tool 消息塞回上下文再请求，
 	// 直到模型给出最终答案。整个过程对外仍然只有一次调用、一个 msgUuid，调用方不用管中间过程。
 	// 注意：params.msgs 不会被修改，工具调用产生的消息只存在内部工作副本里。
 	void callDeepSeek(const Params& params);
@@ -148,8 +156,13 @@ public:
 
 	// 网页搜索（DeepSeek: POST /v1/tools/search），由 DeepSeek 自研搜索引擎提供结果。
 	// 成功走 searchReady，失败走 errorOccured；两者都带回本次搜索的 uuid，便于并发调用时区分。
-	// 注意：与聊天接口一样需要 API Key，且各自有 5 QPS 限制，429 时请稍后重试。
+	// 注意：与聊天接口一样需要 API Key，且有 QPS 限制，429 时请稍后重试。
 	void callSearch(const SearchParams& params);
+
+	// 网页抓取（DeepSeek: POST /v1/tools/fetch），抓单个 URL、返回 Markdown 正文。
+	// 成功走 fetchReady，失败走 errorOccured；都带回本次请求的 uuid。
+	// url 必须是含 host 的 http/https 地址，且不能带用户名密码；接口没有长度/超时参数，截断得自己来。
+	void callFetch(const QString& url, const QString& baseUrl=QString());
 
 signals:
 	// 非流式：一次性返回完整答案
@@ -185,12 +198,20 @@ signals:
 	// 搜索本身不会失败到中断对话：失败的搜索结果会作为 tool 消息回给模型。
 	void webSearchStarted(const QString& query, const QString& msgUuid);
 
+	// AI 决定抓取某个网页时发出（同样由 webSearch 开关控制）
+	void webFetchStarted(const QString& url, const QString& msgUuid);
+
+	// 网页抓取成功
+	void fetchReady(const AIHandler::FetchResult& result, const QString& fetchUuid);
+
 private slots:
 	void onReplyReadyRead();
 	void onReplyFinished();
 	void onBalanceReplyFinished();
 	void onSearchReplyFinished();
+	void onFetchReplyFinished();
 	void onToolSearchFinished();
+	void onToolFetchFinished();
 
 private:
 	// 一次 callDeepSeek 的完整生命周期，包含工具调用引发的多次子请求
@@ -211,8 +232,8 @@ private:
 		QList<ToolCall> pendingToolCalls;
 	};
 
-	// 正在执行的搜索：一次工具调用对应一个，搜索结果回来后拼成 tool 消息
-	struct PendingToolSearch
+	// 正在执行的工具请求（搜索/抓取）：一次工具调用对应一个，结果回来后拼成 tool 消息
+	struct PendingToolRequest
 	{
 		RequestContext* ctx = nullptr;
 		QString toolCallId;
@@ -221,6 +242,7 @@ private:
 	void dispatchRequest(RequestContext* ctx);
 	QJsonObject buildRequestJson(const Params& params, const QList<ChatMessage>& msgs, bool withTools) const;
 	static QJsonObject buildWebSearchTool();
+	static QJsonObject buildWebFetchTool();
 	static QList<ToolCall> parseToolCalls(const QJsonArray& array);
 	static void appendToolCallDeltas(QList<ToolCall>& calls, const QJsonArray& deltas);
 	static QString parseApiErrorMessage(const QByteArray& raw);
@@ -232,6 +254,7 @@ private:
 	void handleToolCalls(RequestContext* ctx);
 	void runNextToolCall(RequestContext* ctx);
 	void sendToolSearch(RequestContext* ctx, const ToolCall& call);
+	void sendToolFetch(RequestContext* ctx, const ToolCall& call);
 
 private:
 	QString m_apiKey;
@@ -239,6 +262,6 @@ private:
 
 	// 用 reply 指针找到它对应的上下文
 	QHash<QNetworkReply*, RequestContext*> m_contexts;
-	// 工具调用触发的搜索请求
-	QHash<QNetworkReply*, PendingToolSearch> m_toolSearches;
+	// 工具调用触发的搜索/抓取请求
+	QHash<QNetworkReply*, PendingToolRequest> m_pendingTools;
 };

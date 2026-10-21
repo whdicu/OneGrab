@@ -16,8 +16,15 @@
 // 把 reply 和本次搜索调用的 uuid 关联起来的动态属性名
 const static char* C_SEARCH_UUID_PROPERTY = "searchUuid";
 
-// 提供给模型的联网搜索工具名
+// 提供给模型的联网工具名
 const static char* C_WEB_SEARCH_TOOL = "web_search";
+const static char* C_WEB_FETCH_TOOL = "web_fetch";
+
+// 抓取请求的 uuid 动态属性名
+const static char* C_FETCH_UUID_PROPERTY = "fetchUuid";
+
+// 抓回来的正文塞给模型前先截断：接口本身不限制长度，但整页 Markdown 会吃掉大量上下文
+const static int C_WEB_FETCH_MAX_CHARS = 12000;
 
 const static QHash<AIHandler::MsgType, QString> CSHASH_MSGTYPE_STR = 
 {
@@ -40,10 +47,10 @@ AIHandler::~AIHandler()
 	qDeleteAll(m_contexts);
 	m_contexts.clear();
 
-	// 还在等搜索结果的上下文不在 m_contexts 里，这里单独回收
-	for (auto it = m_toolSearches.begin(); it != m_toolSearches.end(); ++it)
+	// 还在等搜索/抓取结果的上下文不在 m_contexts 里，这里单独回收
+	for (auto it = m_pendingTools.begin(); it != m_pendingTools.end(); ++it)
 		delete it.value().ctx;
-	m_toolSearches.clear();
+	m_pendingTools.clear();
 }
 
 void AIHandler::setApiKey(const QString& apiKey)
@@ -161,6 +168,41 @@ void AIHandler::callSearch(const SearchParams& params)
 	connect(reply, &QNetworkReply::finished, this, &AIHandler::onSearchReplyFinished);
 }
 
+void AIHandler::callFetch(const QString& url, const QString& baseUrl)
+{
+	if (m_apiKey.isEmpty())
+	{
+		emit errorOccured(tr("API Key 为空"), "");
+		return;
+	}
+
+	const QString target = url.trimmed();
+	const QUrl targetUrl(target);
+	if (target.isEmpty() || !targetUrl.isValid()
+		|| (targetUrl.scheme() != "http" && targetUrl.scheme() != "https")
+		|| targetUrl.host().isEmpty() || !targetUrl.userInfo().isEmpty())
+	{
+		emit errorOccured(tr("URL 必须是含主机名的 http/https 地址，且不能带用户名密码"), "");
+		return;
+	}
+
+	QString base = baseUrl.trimmed().isEmpty() ? Params().baseUrl : baseUrl.trimmed();
+	while (base.endsWith('/'))
+		base.chop(1);
+
+	QJsonObject root;
+	root["url"] = target;
+
+	QNetworkRequest request(QUrl(base + "/tools/fetch"));
+	request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+	request.setRawHeader("Authorization", QByteArray("Bearer ") + m_apiKey.toUtf8());
+
+	QNetworkReply* reply = m_manager->post(request, QJsonDocument(root).toJson(QJsonDocument::Compact));
+
+	reply->setProperty(C_FETCH_UUID_PROPERTY, QUuid::createUuid().toString());
+	connect(reply, &QNetworkReply::finished, this, &AIHandler::onFetchReplyFinished);
+}
+
 void AIHandler::callDeepSeek(const Params& params)
 {
 	if (m_apiKey.isEmpty())
@@ -198,11 +240,12 @@ QJsonObject AIHandler::buildRequestJson(const Params& params, const QList<ChatMe
 	if (params.thinking)
 		root["reasoning_effort"] = params.reasoningEffort;
 
-	// 联网搜索：只提供工具，搜不搜由模型自己决定
+	// 联网工具：只提供，搜不搜/抓不抓由模型自己决定
 	if (withTools)
 	{
 		QJsonArray tools;
 		tools.append(buildWebSearchTool());
+		tools.append(buildWebFetchTool());
 		root["tools"] = tools;
 	}
 
@@ -334,6 +377,35 @@ QJsonObject AIHandler::buildWebSearchTool()
 	function["name"] = C_WEB_SEARCH_TOOL;
 	function["description"] = tr("联网搜索实时网页信息。当问题涉及最新新闻、实时数据、近期事件、你不确定的事实，"
 		"或需要给出可引用的来源时调用；闲聊、已知常识和自己的推理不需要调用。");
+	function["parameters"] = schema;
+
+	QJsonObject tool;
+	tool["type"] = "function";
+	tool["function"] = function;
+	return tool;
+}
+
+QJsonObject AIHandler::buildWebFetchTool()
+{
+	QJsonObject urlProp;
+	urlProp["type"] = "string";
+	urlProp["description"] = tr("要读取的网页地址，必须是 http/https，一般直接取 web_search 结果里的 url");
+
+	QJsonObject properties;
+	properties["url"] = urlProp;
+
+	QJsonArray required;
+	required.append("url");
+
+	QJsonObject schema;
+	schema["type"] = "object";
+	schema["properties"] = properties;
+	schema["required"] = required;
+
+	QJsonObject function;
+	function["name"] = C_WEB_FETCH_TOOL;
+	function["description"] = tr("抓取指定网页的正文（Markdown）。当搜索结果只有摘要、需要原文细节或精确数据时，"
+		"用搜索结果里的 url 调用；先搜索再按需抓取，不要凭猜测编造 URL。");
 	function["parameters"] = schema;
 
 	QJsonObject tool;
@@ -602,18 +674,24 @@ void AIHandler::runNextToolCall(RequestContext* ctx)
 
 	const ToolCall call = ctx->pendingToolCalls.takeFirst();
 
-	if (call.name != C_WEB_SEARCH_TOOL)
+	if (call.name == C_WEB_SEARCH_TOOL)
 	{
-		ChatMessage toolMsg;
-		toolMsg.role = Tool;
-		toolMsg.toolCallId = call.id;
-		toolMsg.content = tr("未知工具: %1").arg(call.name);
-		ctx->msgs.append(toolMsg);
-		runNextToolCall(ctx);
+		sendToolSearch(ctx, call);
 		return;
 	}
 
-	sendToolSearch(ctx, call);
+	if (call.name == C_WEB_FETCH_TOOL)
+	{
+		sendToolFetch(ctx, call);
+		return;
+	}
+
+	ChatMessage toolMsg;
+	toolMsg.role = Tool;
+	toolMsg.toolCallId = call.id;
+	toolMsg.content = tr("未知工具: %1").arg(call.name);
+	ctx->msgs.append(toolMsg);
+	runNextToolCall(ctx);
 }
 
 void AIHandler::sendToolSearch(RequestContext* ctx, const ToolCall& call)
@@ -667,21 +745,69 @@ void AIHandler::sendToolSearch(RequestContext* ctx, const ToolCall& call)
 
 	QNetworkReply* reply = m_manager->post(request, QJsonDocument(root).toJson(QJsonDocument::Compact));
 
-	PendingToolSearch pending;
+	PendingToolRequest pending;
 	pending.ctx = ctx;
 	pending.toolCallId = call.id;
-	m_toolSearches.insert(reply, pending);
+	m_pendingTools.insert(reply, pending);
 
 	connect(reply, &QNetworkReply::finished, this, &AIHandler::onToolSearchFinished);
+}
+
+void AIHandler::sendToolFetch(RequestContext* ctx, const ToolCall& call)
+{
+	QJsonParseError argError;
+	const QJsonDocument argDoc = QJsonDocument::fromJson(call.arguments.toUtf8(), &argError);
+	const QJsonObject args = (argError.error == QJsonParseError::NoError && argDoc.isObject())
+		? argDoc.object()
+		: QJsonObject();
+
+	const QString target = args.value("url").toString().trimmed();
+	const QUrl targetUrl(target);
+
+	// 和公开接口同一套校验：http/https、有 host、不带凭据
+	if (target.isEmpty() || !targetUrl.isValid()
+		|| (targetUrl.scheme() != "http" && targetUrl.scheme() != "https")
+		|| targetUrl.host().isEmpty() || !targetUrl.userInfo().isEmpty())
+	{
+		ChatMessage toolMsg;
+		toolMsg.role = Tool;
+		toolMsg.toolCallId = call.id;
+		toolMsg.content = tr("url 不合法，需要含主机名的 http/https 地址，且不能带用户名密码");
+		ctx->msgs.append(toolMsg);
+		runNextToolCall(ctx);
+		return;
+	}
+
+	emit webFetchStarted(target, ctx->msgUuid);
+
+	QString base = ctx->params.baseUrl.trimmed().isEmpty() ? Params().baseUrl : ctx->params.baseUrl.trimmed();
+	while (base.endsWith('/'))
+		base.chop(1);
+
+	QJsonObject root;
+	root["url"] = target;
+
+	QNetworkRequest request(QUrl(base + "/tools/fetch"));
+	request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+	request.setRawHeader("Authorization", QByteArray("Bearer ") + m_apiKey.toUtf8());
+
+	QNetworkReply* reply = m_manager->post(request, QJsonDocument(root).toJson(QJsonDocument::Compact));
+
+	PendingToolRequest pending;
+	pending.ctx = ctx;
+	pending.toolCallId = call.id;
+	m_pendingTools.insert(reply, pending);
+
+	connect(reply, &QNetworkReply::finished, this, &AIHandler::onToolFetchFinished);
 }
 
 void AIHandler::onToolSearchFinished()
 {
 	auto* reply = qobject_cast<QNetworkReply*>(sender());
-	if (!reply || !m_toolSearches.contains(reply))
+	if (!reply || !m_pendingTools.contains(reply))
 		return;
 
-	const PendingToolSearch pending = m_toolSearches.take(reply);
+	const PendingToolRequest pending = m_pendingTools.take(reply);
 
 	const QByteArray raw = reply->readAll();
 	const QVariant status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
@@ -731,6 +857,65 @@ void AIHandler::onToolSearchFinished()
 	}
 
 	// 不管成功失败都把结果当 tool 消息回给模型，让它自己决定怎么答（搜索挂了也能继续对话）
+	ChatMessage toolMsg;
+	toolMsg.role = Tool;
+	toolMsg.toolCallId = pending.toolCallId;
+	toolMsg.content = content;
+	pending.ctx->msgs.append(toolMsg);
+
+	runNextToolCall(pending.ctx);
+}
+
+void AIHandler::onToolFetchFinished()
+{
+	auto* reply = qobject_cast<QNetworkReply*>(sender());
+	if (!reply || !m_pendingTools.contains(reply))
+		return;
+
+	const PendingToolRequest pending = m_pendingTools.take(reply);
+
+	const QByteArray raw = reply->readAll();
+	const QVariant status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
+	const QString errorString = reply->errorString();
+	reply->deleteLater();
+
+	QString content;
+	if (!status.isValid())
+	{
+		content = tr("抓取失败：网络错误 %1").arg(errorString);
+	}
+	else if (status.toInt() != 200)
+	{
+		QString message = parseApiErrorMessage(raw);
+		if (message.isEmpty())
+			message = errorString;
+		content = tr("抓取失败(%1)：%2").arg(status.toInt()).arg(message);
+	}
+	else
+	{
+		const QJsonObject page = QJsonDocument::fromJson(raw).object();
+		const QString title = page.value("title").toString();
+		QString body = page.value("content").toString();
+
+		if (body.isEmpty())
+		{
+			content = tr("没有抓取到可用的正文");
+		}
+		else
+		{
+			// 接口不限返回长度，整页 Markdown 可能几万字，先截断再喂给模型
+			if (body.size() > C_WEB_FETCH_MAX_CHARS)
+				body = body.left(C_WEB_FETCH_MAX_CHARS) + tr("\n\n...[正文过长，已截断]");
+
+			QJsonObject result;
+			if (!title.isEmpty())
+				result["title"] = title;
+			result["content"] = body;
+			content = QString::fromUtf8(QJsonDocument(result).toJson(QJsonDocument::Compact));
+		}
+	}
+
+	// 同搜索：失败也作为 tool 消息回给模型，让它换个来源或直接用已有信息回答
 	ChatMessage toolMsg;
 	toolMsg.role = Tool;
 	toolMsg.toolCallId = pending.toolCallId;
@@ -876,4 +1061,48 @@ void AIHandler::onSearchReplyFinished()
 	}
 
 	emit searchReady(results, searchUuid);
+}
+
+void AIHandler::onFetchReplyFinished()
+{
+	auto* reply = qobject_cast<QNetworkReply*>(sender());
+	if (!reply)
+		return;
+
+	const QString fetchUuid = reply->property(C_FETCH_UUID_PROPERTY).toString();
+	const QByteArray raw = reply->readAll();
+	const QVariant status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
+	const QString errorString = reply->errorString();
+	reply->deleteLater();
+
+	if (!status.isValid())
+	{
+		emit errorOccured(tr("网络错误: %1").arg(errorString), fetchUuid);
+		return;
+	}
+
+	const int statusCode = status.toInt();
+	if (statusCode != 200)
+	{
+		// 403 被安全策略拒、404 抓不到正文，这两种重试也没用
+		QString message = parseApiErrorMessage(raw);
+		if (message.isEmpty())
+			message = errorString;
+		emit errorOccured(tr("抓取失败(%1): %2").arg(statusCode).arg(message), fetchUuid);
+		return;
+	}
+
+	const QJsonDocument doc = QJsonDocument::fromJson(raw);
+	if (!doc.isObject())
+	{
+		emit errorOccured(tr("抓取失败: JSON 解析失败"), fetchUuid);
+		return;
+	}
+
+	const QJsonObject obj = doc.object();
+
+	FetchResult result;
+	result.title = obj.value("title").toString();
+	result.content = obj.value("content").toString();
+	emit fetchReady(result, fetchUuid);
 }

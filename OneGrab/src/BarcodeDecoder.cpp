@@ -157,6 +157,6 @@ QStringList BarcodeDecoder::decodeBarcodes(const cv::Mat& image)
 	for (const FoundBarcode& item : found)
 		texts << item.text;
 
-	qDebug() << __FUNCTION__ << "image:" << mat.cols << "x" << mat.rows << "found:" << texts.size();
+	//qDebug() << __FUNCTION__ << "image:" << mat.cols << "x" << mat.rows << "found:" << texts.size();
 	return texts;
 }

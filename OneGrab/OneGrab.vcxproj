@@ -43,6 +43,7 @@
     <ClCompile Include="src\TalkMsgRight.cpp" />
     <ClCompile Include="src\WinHandler.cpp" />
     <ClCompile Include="src\WindowsGlassEffect.cpp" />
+    <ClCompile Include="src\WindowsOcr.cpp" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="src\OneGrab.h" />
@@ -81,6 +82,7 @@
     <ClInclude Include="resource.h" />
     <QtMoc Include="src\AIHandler.h" />
     <QtMoc Include="src\AITalkWidget.h" />
+    <QtMoc Include="src\WindowsOcr.h" />
     <QtMoc Include="src\GlassBlurBackground.h" />
     <ClInclude Include="src\AutoWrapLabel.h" />
     <ClInclude Include="src\MarkdownHelper.h" />

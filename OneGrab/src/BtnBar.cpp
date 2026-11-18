@@ -106,6 +106,11 @@ void BtnBar::on_btn_ask_ai_clicked()
 	emit sigAskAI();
 }
 
+void BtnBar::on_btn_translate_clicked()
+{
+	emit sigTranslate();
+}
+
 void BtnBar::on_btn_rect_clicked()
 {
 	drawBtnClicked(ui.btn_rect, DrawRectS);

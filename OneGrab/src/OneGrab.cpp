@@ -1,8 +1,10 @@
 ﻿#include "OneGrab.h"
+#include "AIHandler.h"
 #include "AITalkWidget.h"
 #include "BtnBar.h"
 #include "HDCore/DBoolSetter.hpp"
 #include "HDCore/DSys.hpp"
+#include "HDQt/include/DToast.h"
 #include "DMessageBox.h"
 #include "DProgressBox.h"
 #include "DScreenCapture.h"
@@ -22,8 +24,12 @@
 #include <QDebug>
 #include <QEventLoop>
 #include <QFileDialog>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QKeyEvent>
 #include <QMimeData>
+#include <QStringList>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
@@ -34,16 +40,74 @@
 #include "QRCodeBar.h"
 #include <QRegularExpression>
 #include <QScreen>
+#include <QSharedPointer>
 #include <QTextBlock>
 #include <QTextDocument>
 #include <vector>
 #include "SettingDialog.h"
 #include "SettingHandler.h"
 #include "version.h"
+#include "WindowsOcr.h"
 
 
 const static int MARGIN = 5;
 const static int COPY_TEMP_SIZE = 64;  // 复制图片到文件的最大图片保存数量
+// 翻译用的系统提示词：直接把图片交给模型做 OCR + 翻译 + 排版，输出严格 JSON
+const static QString SYSTEM_STR =
+	"你是一名 OCR + 翻译 + 排版助手。用户会给你一张截图和图片的像素尺寸。\n"
+	"任务：自己找出图中所有需要翻译的文字块，翻译成简体中文，并给出重新绘制所需的信息。\n"
+	"规则：\n"
+	"1. 已经是中文的文字不要返回；纯数字、纯符号、代码、URL、邮箱、版本号、文件路径也不要返回；\n"
+	"2. 同一句话在视觉上被拆成多段（同一行相邻，或换行连续）要合并成一个文字块，一个块只给一条译文；\n"
+	"   不要把不同控件、不同句子、不同列的内容合在一起；\n"
+	"3. 每个文字块输出：\n"
+	"   text：识别出的原文，按原样输出，不要翻译；\n"
+	"   rect：[x, y, w, h]，该块所有文字在图片中的像素矩形；\n"
+	"   bg_color：[r, g, b]，该块的背景色（0~255）；\n"
+	"   text_color：[r, g, b]，该块的文字颜色（0~255）；\n"
+	"   draw_rect：[x, y, w, h]，译文最终绘制的区域，默认等于 rect；译文比原文短时不要缩小，\n"
+	"     需要更多空间时可以向右、向下扩展，但不能压到其他文字块，也不能超出图片；\n"
+	"   translation：中文译文。\n"
+	"4. 排版约束（重要）：\n"
+	"   - 译文字数要接近原区域能放下的字数（中文字宽≈字高）：明显超出会溢出，明显偏少说明过度压缩；\n"
+	"   - 空间不够用更简洁的表达（意译、省略语气助词、必要时用通行缩写），空间富余不要注水；\n"
+	"   - 同一句话只补一次标点，不要每段都加句号或大写开头；\n"
+	"   - 专有名词、品牌名、缩写保留原文或使用通行译名。\n"
+	"5. 只返回真正翻译成中文的块：保留原文、译文与原文相同（忽略大小写和标点）、\n"
+	"   只是优化排版格式、或只是把标点换成中文标点的，都不要返回；没有可翻译内容返回 []。\n"
+	"6. 坐标以图片左上角为原点、单位像素，必须是整数；颜色必须是图中真实取到的颜色，不要臆造。\n"
+	"7. 只输出 JSON 数组，不要 markdown 代码块、不要解释或多余文字。\n"
+	"格式示例：\n"
+	"{\"text\":\"Hello world\",\"rect\":[10,20,142,30],\"bg_color\":[255,255,255],"
+	"\"text_color\":[30,30,30],\"draw_rect\":[10,20,142,30],\"translation\":\"你好，世界\"}\n"
+	"多个块就是这样的对象组成的数组。";
+
+// Windows OCR 路径：本地先识别文字和矩形，模型只负责翻译和排版
+const static QString SYSTEM_STR_WINOCR =
+	"你是一名专业翻译兼排版助手。译文之后会被重新绘制回原图，所以既要准确，也要考虑版面。\n"
+	"输入是一个 JSON 对象：\n"
+	"- image：原图的 {width, height}（像素）\n"
+	"- lines：数组，每项 {id, text, rect:[x,y,w,h], max_chars}\n"
+	"  rect 以原图左上角为原点、单位像素；max_chars 是该矩形大致能放下的中文字符数。\n"
+	"规则：\n"
+	"1. 已经是中文的条目不要输出；纯数字、纯符号、代码、URL、邮箱、版本号、文件路径不翻译也不输出；\n"
+	"2. OCR 可能把一句话、一个词组或一个单词拆成多个相邻条目（rect 在同一行或紧挨着），id 按阅读顺序排列。\n"
+	"   先把确实相邻且语义连续的碎片合并成一组，不要把不同控件、不同句子、不同列的内容硬凑在一起。\n"
+	"3. 每组只输出一条：{\"ids\":[该组所有 id，按阅读顺序], \"rect\":[x,y,w,h], \"translation\":\"整组译文\"}。\n"
+	"   没有需要翻译的内容就输出 []。\n"
+	"4. rect 是这条译文最终绘制的区域：\n"
+	"   - 默认取该组所有输入 rect 的并集；\n"
+	"   - 译文比原文短时仍保留原区域，不要缩到只剩文字大小；\n"
+	"   - 译文需要更多空间时可以适当向右、向下扩展，但不能压到其他条目的 rect，也不能超出 image 范围；\n"
+	"   - 宽高必须是正数。\n"
+	"5. 排版约束（重要）：\n"
+	"   - 译文字数要接近该组 max_chars 之和：明显超出会溢出原区域，明显偏少说明过度压缩；\n"
+	"   - 空间不够用更简洁的表达（意译、省略语气助词、必要时用通行缩写），空间富余不要注水；\n"
+	"   - 同一句话合并后只补一次标点，不要每段都加句号或大写开头；\n"
+	"   - 专有名词、品牌名、缩写保留原文或使用通行译名。\n"
+	"6. 只返回真正翻译成中文的组：保留原文、译文与原文相同（忽略大小写和标点）、\n"
+	"   只是优化排版格式、或只是把标点换成中文标点的，都不要返回。\n"
+	"7. 只输出 JSON 数组，不要 markdown 代码块、不要解释或多余文字。";
 
 
 // 不改变可见性地把窗口顶到最前。
@@ -70,6 +134,26 @@ namespace
 	inline QString generateImageId()
 	{
 		return QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss");
+	}
+
+	// 已经是中文、或者压根没有字母（纯数字/符号）的行不需要翻译
+	bool needsTranslation(const QString& text)
+	{
+		bool hasLetter = false;
+		for (const QChar ch : text)
+		{
+			const ushort code = ch.unicode();
+			// CJK 统一表意文字、扩展 A、兼容表意文字
+			if ((code >= 0x3400 && code <= 0x4DBF)
+				|| (code >= 0x4E00 && code <= 0x9FFF)
+				|| (code >= 0xF900 && code <= 0xFAFF))
+				return false;
+
+			if (ch.isLetter())
+				hasLetter = true;
+		}
+
+		return hasLetter;
 	}
 
 	// 对每个像素的前 3 个颜色通道做 3×3 均值滤波：取周围 8 个像素（不含自身）该通道的平均值。
@@ -214,6 +298,7 @@ OneGrab::OneGrab(QWidget *parent)
 	{
 		slotFixed(true);
 	});
+	connect(btnBar_, &BtnBar::sigTranslate, this, &OneGrab::slotTranslate);
 	connect(btnBar_, &BtnBar::sigDrawing, this, [this](int isDrawing)
 	{
 		ignoreKeyPress_ = isDrawing == DrawWordS;  // 只有绘制文字时屏蔽按键
@@ -338,6 +423,35 @@ OneGrab::OneGrab(QWidget *parent)
 		}
 	}
 
+}
+
+OneGrab::~OneGrab()
+{
+	if (nullptr != btnBar_)
+	{
+		btnBar_->deleteLater();
+		btnBar_ = nullptr;
+	}
+	if (nullptr != qrCodeBar_)
+	{
+		qrCodeBar_->deleteLater();
+		qrCodeBar_ = nullptr;
+	}
+	if (nullptr != mouseWindow_)
+	{
+		mouseWindow_->deleteLater();
+		mouseWindow_ = nullptr;
+	}
+	if (nullptr != updateHelper_)
+	{
+		updateHelper_->deleteLater();
+		updateHelper_ = nullptr;
+	}
+	if (nullptr != progressBox_)
+	{
+		progressBox_->deleteLater();
+		progressBox_ = nullptr;
+	}
 }
 
 void OneGrab::doGrab()
@@ -545,30 +659,439 @@ void OneGrab::slotKeyPressed(const KeyInfo& info)
 	Hook::getInstance()->blockOnce();
 }
 
+void OneGrab::slotTranslate()
+{
+	QString apiKey = SETTING_HANDLER->getAIApiKey();
+	if (apiKey.isEmpty())
+	{
+		DToast::toast(tr("请先设置Api Key"), DToast::FromMouse, DToast::Slow);
+		SettingDialog::getInstance()->show();
+		SettingDialog::getInstance()->gotoSetApiKey();
+		finishGrab();
+		return;
+	}
+
+	QRect croppedRect;
+	QPixmap croppedPixmap = ui.view->getSelectionPixmap(croppedRect);
+	if (croppedPixmap.isNull())
+		return;
+
+	// AIOCR 打开：直接把图片交给多模态模型；关闭：先跑本地 Windows OCR，再让模型只做翻译和排版
+	if (SETTING_HANDLER->getAIOCR())
+		translateByAI(croppedPixmap, croppedRect);
+	else
+		translateByWindowsOcr(croppedPixmap, croppedRect);
+}
+
+void OneGrab::translateByAI(const QPixmap& croppedPixmap, const QRect& croppedRect)
+{
+	const QString apiKey = SETTING_HANDLER->getAIApiKey();
+	const int imageWidth = croppedPixmap.width();
+	const int imageHeight = croppedPixmap.height();
+
+	// 翻译成功、失败、没结果都要收尾，而且只能收一次
+	auto finalized = QSharedPointer<bool>::create(false);
+	auto finishGrabOnce = [this, finalized]()
+	{
+		if (*finalized)
+			return;
+
+		*finalized = true;
+
+		// 翻译期间用户可能已经退出了截图（Esc/其它快捷键），这时场景里的 mask 已经没了
+		if (!isVisible())
+		{
+			qWarning() << "[translate] grab already finished, skip slotFixed";
+			return;
+		}
+
+		slotFixed(false);
+	};
+
+	// 直接把截图交给多模态模型：让它自己找文字、定矩形、取背景色/文字色、翻译并做排版
+	const QString imageDataUrl = AIHandler::imageFileToDataUrl(croppedPixmap);
+	if (imageDataUrl.isEmpty())
+	{
+		qWarning() << "[translate] convert image to data url failed";
+		finishGrabOnce();
+		return;
+	}
+
+	AIHandler::Params aiParams;
+	aiParams.model = "deepseek-flash";
+	aiParams.stream = false;      // 要一次性拿到完整 JSON，流式没法直接解析
+	aiParams.baseUrl = "https://api.deepseek.com/v1";
+	aiParams.webSearch = false;
+	aiParams.temperature = 0.3;   // 结构化输出，温度低一点更稳
+
+	AIHandler::ChatMessage systemMsg;
+	systemMsg.role = AIHandler::System;
+	systemMsg.content = SYSTEM_STR;
+	aiParams.msgs.append(systemMsg);
+
+	AIHandler::ChatMessage userMsg;
+	userMsg.role = AIHandler::User;
+	userMsg.content = QString("图片尺寸：%1x%2。请按系统要求只返回 JSON 数组。")
+		.arg(imageWidth).arg(imageHeight);
+	userMsg.images.append(imageDataUrl);
+	aiParams.msgs.append(userMsg);
+
+	// 每次翻译用独立的 handler，回复/报错后自己回收
+	auto* translator = new AIHandler(apiKey);
+	translator->setParent(this);
+
+	connect(translator, &AIHandler::replyReady, this
+		, [translator, croppedRect, imageWidth, imageHeight, finishGrabOnce, this](const QString& reply, const QString&)
+	{
+		translator->deleteLater();
+
+		// 等待期间用户可能已经退出截图，结果直接丢掉
+		if (!isVisible())
+		{
+			qWarning() << "[translate] grab already finished, drop result";
+			return;
+		}
+
+		// 模型有时候会拿 ```json 包一层，这里截出第一个 [ 到最后一个 ]
+		const int begin = reply.indexOf('[');
+		const int end = reply.lastIndexOf(']');
+		if (begin < 0 || end <= begin)
+		{
+			qWarning() << "[translate] parse failed, raw reply:" << reply;
+			finishGrabOnce();
+			return;
+		}
+
+		QJsonParseError err;
+		const QJsonDocument doc = QJsonDocument::fromJson(reply.mid(begin, end - begin + 1).toUtf8(), &err);
+		if (err.error != QJsonParseError::NoError || !doc.isArray())
+		{
+			qWarning() << "[translate] invalid json:" << err.errorString() << "raw:" << reply;
+			finishGrabOnce();
+			return;
+		}
+
+		auto parseRect = [imageWidth, imageHeight](const QJsonValue& value) -> QRectF
+		{
+			const QJsonArray array = value.toArray();
+			if (array.size() != 4)
+				return QRectF();
+
+			const QRectF rect(array.at(0).toDouble(), array.at(1).toDouble()
+				, array.at(2).toDouble(), array.at(3).toDouble());
+			return rect.intersected(QRectF(0, 0, imageWidth, imageHeight));
+		};
+
+		auto parseColor = [](const QJsonValue& value) -> QColor
+		{
+			const QJsonArray array = value.toArray();
+			if (array.size() < 3)
+				return QColor();
+
+			return QColor(qBound(0, array.at(0).toInt(), 255)
+				, qBound(0, array.at(1).toInt(), 255)
+				, qBound(0, array.at(2).toInt(), 255));
+		};
+
+		const QJsonArray blocks = doc.array();
+		for (const QJsonValue& value : blocks)
+		{
+			const QJsonObject one = value.toObject();
+			const QString translation = one.value("translation").toString().trimmed();
+			if (translation.isEmpty())
+				continue;
+
+			const QString sourceText = one.value("text").toString().trimmed();
+			if (!sourceText.isEmpty())
+			{
+				// 模型偶尔会把中文/数字也带回来，再挡一道
+				if (!needsTranslation(sourceText))
+					continue;
+
+				if (translation.compare(sourceText, Qt::CaseInsensitive) == 0)
+					continue;
+			}
+
+			QRectF rect = parseRect(one.value("rect"));
+			QRectF drawRect = parseRect(one.value("draw_rect"));
+
+			if (drawRect.width() <= 0 || drawRect.height() <= 0)
+				drawRect = rect;
+			if (rect.width() <= 0 || rect.height() <= 0)
+				rect = drawRect;
+			if (rect.width() <= 0 || rect.height() <= 0)
+				continue;
+
+			// 绘制区域至少要把原文盖住
+			drawRect = drawRect.united(rect);
+
+			QColor bgColor = parseColor(one.value("bg_color"));
+			QColor textColor = parseColor(one.value("text_color"));
+			if (!bgColor.isValid())
+				bgColor = Qt::white;
+			if (!textColor.isValid())
+				textColor = Qt::black;
+
+			// drawRect 是图片内坐标，换算成场景坐标
+			const QPoint viewTopLeft = croppedRect.topLeft() + drawRect.topLeft().toPoint();
+			const QRect sceneRect(ui.view->mapToScene(viewTopLeft).toPoint(), drawRect.size().toSize());
+
+			qDebug() << "[translate]" << rect << "draw:" << drawRect << sourceText << "->" << translation;
+			ui.view->coverText(sceneRect, translation, bgColor, textColor);
+		}
+
+		finishGrabOnce();
+	});
+
+	connect(translator, &AIHandler::errorOccured, this, [translator, finishGrabOnce](const QString& error, const QString&)
+	{
+		translator->deleteLater();
+		qWarning() << "[translate] request failed:" << error;
+		finishGrabOnce();
+	});
+
+	translator->callDeepSeek(aiParams);
+}
+
+void OneGrab::translateByWindowsOcr(const QPixmap& croppedPixmap, const QRect& croppedRect)
+{
+	const QString apiKey = SETTING_HANDLER->getAIApiKey();
+	const int imageWidth = croppedPixmap.width();
+	const int imageHeight = croppedPixmap.height();
+
+	// 颜色估算用原图
+	const cv::Mat baseMat = ImageHandler::QImageToCvMat(croppedPixmap.toImage());
+
+	auto finalized = QSharedPointer<bool>::create(false);
+	auto finishGrabOnce = [this, finalized]()
+	{
+		if (*finalized)
+			return;
+
+		*finalized = true;
+
+		if (!isVisible())
+		{
+			qWarning() << "[translate-ocr] grab already finished, skip slotFixed";
+			return;
+		}
+
+		slotFixed(false);
+	};
+
+	auto* ocr = new WindowsOcr(this);
+	connect(ocr, &WindowsOcr::finished, this
+		, [ocr, apiKey, croppedRect, imageWidth, imageHeight, baseMat, finishGrabOnce, this](const WindowsOcr::Result& r)
+	{
+		ocr->deleteLater();
+
+		// 等待期间用户可能已经退出截图，没必要再发翻译请求
+		if (!isVisible())
+			return;
+
+		QJsonArray linesJson;
+		QList<QRectF> rects;
+		QStringList texts;
+		for (const WindowsOcr::Line& line : r.lines)
+		{
+			const QString text = line.text.trimmed();
+			if (text.isEmpty() || !needsTranslation(text))
+				continue;
+
+			QJsonObject item;
+			item["id"] = linesJson.size();
+			item["text"] = text;
+
+			QJsonArray rect;
+			rect.append(qRound(line.rect.x()));
+			rect.append(qRound(line.rect.y()));
+			rect.append(qRound(line.rect.width()));
+			rect.append(qRound(line.rect.height()));
+			item["rect"] = rect;
+
+			// 单行文字，中文字宽大约等于行高的 0.9
+			const double charWidth = qMax(1.0, line.rect.height() * 0.9);
+			item["max_chars"] = qMax(1, qRound(line.rect.width() / charWidth));
+
+			linesJson.append(item);
+			rects.append(line.rect);
+			texts.append(text);
+		}
+
+		if (linesJson.isEmpty())
+		{
+			qDebug() << "[translate-ocr] nothing to translate";
+			finishGrabOnce();
+			return;
+		}
+
+		AIHandler::Params aiParams;
+		aiParams.model = "deepseek-flash";
+		aiParams.stream = false;      // 要一次性拿到完整 JSON
+		aiParams.baseUrl = "https://api.deepseek.com/v1";
+		aiParams.webSearch = false;
+		aiParams.temperature = 1.3;   // 官方推荐翻译时使用1.3
+
+		AIHandler::ChatMessage systemMsg;
+		systemMsg.role = AIHandler::System;
+		systemMsg.content = SYSTEM_STR_WINOCR;
+		aiParams.msgs.append(systemMsg);
+
+		QJsonObject imageInfo;
+		imageInfo["width"] = imageWidth;
+		imageInfo["height"] = imageHeight;
+
+		QJsonObject payload;
+		payload["image"] = imageInfo;
+		payload["lines"] = linesJson;
+
+		AIHandler::ChatMessage userMsg;
+		userMsg.role = AIHandler::User;
+		userMsg.content = QString::fromUtf8(QJsonDocument(payload).toJson(QJsonDocument::Compact));
+		aiParams.msgs.append(userMsg);
+
+		auto* translator = new AIHandler(apiKey);
+		translator->setParent(this);
+
+		connect(translator, &AIHandler::replyReady, this
+			, [translator, rects, texts, imageWidth, imageHeight, baseMat, croppedRect, finishGrabOnce, this](const QString& reply, const QString&)
+		{
+			translator->deleteLater();
+
+			// 等待期间用户可能已经退出截图，结果直接丢掉
+			if (!isVisible())
+			{
+				qWarning() << "[translate-ocr] grab already finished, drop result";
+				return;
+			}
+
+			const int begin = reply.indexOf('[');
+			const int end = reply.lastIndexOf(']');
+			if (begin < 0 || end <= begin)
+			{
+				qWarning() << "[translate-ocr] parse failed, raw reply:" << reply;
+				finishGrabOnce();
+				return;
+			}
+
+			QJsonParseError err;
+			const QJsonDocument doc = QJsonDocument::fromJson(reply.mid(begin, end - begin + 1).toUtf8(), &err);
+			if (err.error != QJsonParseError::NoError || !doc.isArray())
+			{
+				qWarning() << "[translate-ocr] invalid json:" << err.errorString() << "raw:" << reply;
+				finishGrabOnce();
+				return;
+			}
+
+			const QJsonArray translations = doc.array();
+			for (const QJsonValue& value : translations)
+			{
+				const QJsonObject one = value.toObject();
+				const QString translation = one.value("translation").toString().trimmed();
+				if (translation.isEmpty())
+					continue;
+
+				// 优先用 ids（同一句被拆成多个 rect 的情况），兼容只返回 id 的老格式
+				QList<int> ids;
+				if (one.value("ids").isArray())
+				{
+					for (const QJsonValue& idValue : one.value("ids").toArray())
+					{
+						if (idValue.isDouble())
+							ids.append(idValue.toInt());
+					}
+				}
+				else if (one.value("id").isDouble())
+				{
+					ids.append(one.value("id").toInt());
+				}
+
+				QRectF unionRect;
+				bool hasRect = false;
+				QStringList sources;
+				for (int id : ids)
+				{
+					if (id < 0 || id >= rects.size())
+						continue;
+
+					unionRect = hasRect ? unionRect.united(rects.at(id)) : rects.at(id);
+					hasRect = true;
+					sources.append(texts.at(id));
+				}
+
+				if (!hasRect)
+					continue;
+
+				const QString sourceText = sources.join(' ');
+				if (translation.compare(sourceText, Qt::CaseInsensitive) == 0)
+					continue;
+
+				// 模型给的绘制区域先校验，越界/明显不合理就退回组内并集
+				QRectF drawRect = unionRect;
+				const QJsonArray rectArray = one.value("rect").toArray();
+				if (rectArray.size() == 4)
+				{
+					QRectF candidate(rectArray.at(0).toDouble(), rectArray.at(1).toDouble()
+						, rectArray.at(2).toDouble(), rectArray.at(3).toDouble());
+					candidate = candidate.intersected(QRectF(0, 0, imageWidth, imageHeight));
+
+					const QRectF overlap = candidate.intersected(unionRect);
+					const qreal unionArea = unionRect.width() * unionRect.height();
+					const qreal candidateArea = candidate.width() * candidate.height();
+					if (candidate.width() > 0 && candidate.height() > 0
+						&& overlap.width() * overlap.height() >= qMin(unionArea, candidateArea) * 0.5
+						&& candidateArea <= qMax(unionArea, qreal(1.0)) * 4)
+					{
+						drawRect = candidate;
+					}
+				}
+
+				QColor bgColor(255, 255, 255);
+				QColor textColor(0, 0, 0);
+				if (!baseMat.empty())
+				{
+					const QPair<cv::Scalar, cv::Scalar> colors
+						= ImageHandler::guessBgAndTextColor(baseMat, drawRect);
+					bgColor = QColor(int(colors.first[2]), int(colors.first[1]), int(colors.first[0]));
+					textColor = QColor(int(colors.second[2]), int(colors.second[1]), int(colors.second[0]));
+				}
+
+				const QPoint viewTopLeft = croppedRect.topLeft() + drawRect.topLeft().toPoint();
+				const QRect sceneRect(ui.view->mapToScene(viewTopLeft).toPoint(), drawRect.size().toSize());
+
+				qDebug() << "[translate-ocr]" << ids << "draw:" << drawRect << "src:" << unionRect
+					<< sourceText << "->" << translation;
+				ui.view->coverText(sceneRect, translation, bgColor, textColor);
+			}
+
+			finishGrabOnce();
+		});
+
+		connect(translator, &AIHandler::errorOccured, this, [translator, finishGrabOnce](const QString& error, const QString&)
+		{
+			translator->deleteLater();
+			qWarning() << "[translate-ocr] request failed:" << error;
+			finishGrabOnce();
+		});
+
+		translator->callDeepSeek(aiParams);
+	});
+
+	connect(ocr, &WindowsOcr::failed, this, [ocr, finishGrabOnce](const QString& error)
+	{
+		ocr->deleteLater();
+		qWarning() << "[translate-ocr] windows ocr failed:" << error;
+		finishGrabOnce();
+	});
+
+	ocr->recognize(croppedPixmap);
+}
+
 void OneGrab::slotFixed(bool showAI)
 {
 	QRect croppedRect;
 	QPixmap croppedPixmap = ui.view->getSelectionPixmap(croppedRect);
-
-	LabelIsland* island = new LabelIsland(croppedPixmap, croppedRect.topLeft() + pos());
-	connect(SettingDialog::getInstance(), &SettingDialog::sigRefreshSetting, island, &LabelIsland::onRefreshSetting);
-	connect(island, &LabelIsland::sigHide, this, [this, island]()
-	{
-		islandBuffer_.removeFirst(island);
-		islandBuffer_.enqueue(island);
-	});
-	island->show();
-	islandBuffer_.enqueue(island);
-	while (islandBuffer_.size() > SETTING_HANDLER->getIslandNum())
-		islandBuffer_.dequeue()->deleteLater();
-
-	// AI聊天Widget
-	AITalkWidget* talkWidget = new AITalkWidget(island);
-	talkWidget->move(island->x() + island->width() + 10
-		, island->y() + island->height() - talkWidget->height());
-	if (showAI)
-		talkWidget->show();
-
+	fixedLabelIsland(croppedPixmap, croppedRect, showAI);
 	finishGrab();
 }
 
@@ -1135,6 +1658,28 @@ DList<QRect> OneGrab::getLabelIslandRects(bool onlyShowing)
 			ret.pushBack(li->geometry());
 	}
 	return ret;
+}
+
+void OneGrab::fixedLabelIsland(const QPixmap& croppedPixmap, const QRect& croppedRect, bool showAI)
+{
+	LabelIsland* island = new LabelIsland(croppedPixmap, croppedRect.topLeft() + pos());
+	connect(SettingDialog::getInstance(), &SettingDialog::sigRefreshSetting, island, &LabelIsland::onRefreshSetting);
+	connect(island, &LabelIsland::sigHide, this, [this, island]()
+	{
+		islandBuffer_.removeFirst(island);
+		islandBuffer_.enqueue(island);
+	});
+	island->show();
+	islandBuffer_.enqueue(island);
+	while (islandBuffer_.size() > SETTING_HANDLER->getIslandNum())
+		islandBuffer_.dequeue()->deleteLater();
+
+	// AI聊天Widget
+	AITalkWidget* talkWidget = new AITalkWidget(island);
+	talkWidget->move(island->x() + island->width() + 10
+		, island->y() + island->height() - talkWidget->height());
+	if (showAI)
+		talkWidget->show();
 }
 
 void OneGrab::resizeEvent(QResizeEvent* event)

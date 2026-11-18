@@ -22,16 +22,16 @@ signals:
 
 namespace ImageHandler
 {
-	// ½«Í¼Æ¬±£³Ö±ÈÀıËõ·Åµ½Ö¸¶¨´óĞ¡£¬»áÈ¥³ı¶àÓà²¿·Ö
+	// å°†å›¾ç‰‡ä¿æŒæ¯”ä¾‹ç¼©æ”¾åˆ°æŒ‡å®šå¤§å°ï¼Œä¼šå»é™¤å¤šä½™éƒ¨åˆ†
 	cv::Mat fitImage(const cv::Mat& image, int width, int height);
 
-	// ¶ÔÍ¼Æ¬Ä£ºı´¦Àí
+	// å¯¹å›¾ç‰‡æ¨¡ç³Šå¤„ç†
 	cv::Mat blurImage(const cv::Mat& image, int blurRadius);
 
-	// µ÷ÕûÍ¼ÏñÁÁ¶È
+	// è°ƒæ•´å›¾åƒäº®åº¦
 	cv::Mat lightImage(const cv::Mat& image, double brightness);
 
-	// ²Ã¼ôÍ¼Æ¬
+	// è£å‰ªå›¾ç‰‡
 	cv::Mat cutImage(const cv::Mat& image, const QRect& rect);
 
 	QRgb getMainColor(const cv::Mat& image, const QRect& rect = QRect(0, 0, 0, 0), int step = 3);
@@ -47,10 +47,15 @@ namespace ImageHandler
 	cv::Mat roundCVMat(const cv::Mat& image, int radiusTL, int radiusTR
 		, int radiusBL, int radiusBR);
 
-	// Í¼Æ¬ÏÂÔØº¯Êı£¬×èÈûÖ´ĞĞ£¬Í¼Æ¬ÏÂÔØÍêÁËº¯Êı²Å»á·µ»Ø
+	// å›¾ç‰‡ä¸‹è½½å‡½æ•°ï¼Œé˜»å¡æ‰§è¡Œï¼Œå›¾ç‰‡ä¸‹è½½å®Œäº†å‡½æ•°æ‰ä¼šè¿”å›
 	SharedImage downloadImage(const QString& url);
 
-	// Í¼Æ¬ÏÂÔØº¯Êı£¬²»×èÈûÖ´ĞĞ£¬·¢ËÍÍêÏÂÔØÇëÇó¾Í»á·µ»Ø£¬Í¼Æ¬ÔÚÏÂÔØÍêÊ±Í¨¹ıĞÅºÅ·¢ËÍ
+	// å›¾ç‰‡ä¸‹è½½å‡½æ•°ï¼Œä¸é˜»å¡æ‰§è¡Œï¼Œå‘é€å®Œä¸‹è½½è¯·æ±‚å°±ä¼šè¿”å›ï¼Œå›¾ç‰‡åœ¨ä¸‹è½½å®Œæ—¶é€šè¿‡ä¿¡å·å‘é€
 	void downloadImage(const QString& url, ImageDownloadCallBack* callBack);
+
+	// æ ¹æ®å›¾ç‰‡éƒ¨åˆ†åŒºåŸŸé‡Œæ¯ç§é¢œè‰²å‡ºç°çš„æ¬¡æ•°ï¼Œä¼°ç®—å‡ºèƒŒæ™¯è‰²å’Œæ–‡å­—è‰²ã€‚
+	// è¿”å›çš„ Scalar æŒ‰ OpenCV ä¹ æƒ¯æ˜¯ (B, G, R)ï¼Œå¯ç›´æ¥å–‚ç»™ cv::putText / cv::rectangle ä¹‹ç±»ã€‚
+	// ç¬¬ä¸€ä¸ªæ˜¯èƒŒæ™¯è‰²ï¼Œç¬¬äºŒä¸ªæ˜¯æ–‡å­—è‰²ï¼›åŒºåŸŸä¸ºç©ºæˆ–åŸºæœ¬çº¯è‰²æ—¶ä¸¤è€…ç›¸åŒã€‚
+	QPair<cv::Scalar, cv::Scalar> guessBgAndTextColor(const cv::Mat& mat, const QRectF& rect);
 }
 

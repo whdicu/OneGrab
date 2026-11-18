@@ -79,6 +79,11 @@ void SettingDialog::on_cb_check_update_on_start_stateChanged(int state)
 	SETTING_HANDLER->setCheckUpdateOnStart(state);
 }
 
+void SettingDialog::on_cb_ai_ocr_stateChanged(int state)
+{
+	SETTING_HANDLER->setAIOCR(state != 0);
+}
+
 void SettingDialog::on_cb_use_default_save_path_stateChanged(int state)
 {
 	ui.edit_default_save_path->setEnabled(state);
@@ -310,6 +315,7 @@ void SettingDialog::refreshByStruct()
 	ui.sb_island_num->setValue(stru.IslandNum);
 	ui.cb_check_update_on_start->setChecked(stru.CheckUpdateOnStart);
 	ui.edit_apikey->setText(stru.AIApiKey);
+	ui.cb_ai_ocr->setChecked(stru.AIOCR);
 	ui.cb_fsy_random->setChecked(stru.FSYRandomEnable);
 	ui.sb_fsy_random_max->setEnabled(stru.FSYRandomEnable);
 	ui.sb_fsy_random_max->setValue(stru.FSYRandomMaxNum);

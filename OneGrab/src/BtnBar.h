@@ -20,6 +20,7 @@ public:
 
 signals:
 	void sigAskAI();
+	void sigTranslate();
 	void sigDrawing(int isDrawing);
 	void sigClose();
 	void sigFixed();
@@ -31,6 +32,7 @@ signals:
 
 private slots:
 	void on_btn_ask_ai_clicked();
+	void on_btn_translate_clicked();
 	void on_btn_rect_clicked();
 	void on_btn_line_clicked();
 	void on_btn_arrow_clicked();

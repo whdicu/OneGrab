@@ -7,6 +7,7 @@
 #include "ui_OneGrab.h"
 #include <windows.h>
 
+class AIHandler;
 class BtnBar;
 class QRCodeBar;
 class DProgressBox;
@@ -31,6 +32,7 @@ class OneGrab : public QWidget
 
 public:
     OneGrab(QWidget *parent = Q_NULLPTR);
+	~OneGrab();
 	void doGrab();
 	void checkUpdate(bool showDialogOnLatest = false);
 
@@ -41,6 +43,7 @@ public slots:
 	void slotKeyPressed(const KeyInfo& info);
 
 private slots:
+	void slotTranslate();
 	void slotFixed(bool showAI);
 	void slotFixedOldOne();
 	void slotFixedCopyOne();
@@ -78,6 +81,12 @@ private:
 
 	// 获取所有LabelIsland的rect，onlyShowing控制是否只返回正在显示的
 	DList<QRect> getLabelIslandRects(bool onlyShowing);
+
+	void fixedLabelIsland(const QPixmap& croppedPixmap, const QRect& croppedRect, bool showAI);
+
+	// 翻译：AIOCR 开关决定直接把图片发模型，还是先本地 OCR 再让模型翻译
+	void translateByAI(const QPixmap& croppedPixmap, const QRect& croppedRect);
+	void translateByWindowsOcr(const QPixmap& croppedPixmap, const QRect& croppedRect);
 
 	void resizeEvent(QResizeEvent* event) override;
 	//void mousePressEvent(QMouseEvent* event) override;

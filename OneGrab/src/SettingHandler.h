@@ -47,7 +47,7 @@ struct SettingStruct
 		, TextColor(QColor(255, 66, 66)), TextLineWidth(Line2)
 		, UseDefaultSavePath(false), DefaultSavePath(""), BrightBorder(true)
 		, Copy2File(false), MouseScaleNum(8), IslandNum(64), CheckUpdateOnStart(true)
-		, AIApiKey(""), EnableAIThink(false) {}
+		, AIApiKey(""), EnableAIThink(false), AIOCR(false) {}
 	~SettingStruct() = default;
 
 	QString LastSavePath;
@@ -74,6 +74,7 @@ struct SettingStruct
 	bool CheckUpdateOnStart;
 	QString AIApiKey;
 	bool EnableAIThink;
+	bool AIOCR;
 
 	// 防隐水印方法
 	bool FSYRandomEnable;
@@ -122,6 +123,7 @@ public:
 	REG_GET_FUNC(CheckUpdateOnStart)
 	REG_GET_FUNC(AIApiKey)
 	REG_GET_FUNC(EnableAIThink)
+	REG_GET_FUNC(AIOCR)
 
 	// 防隐水印方法
 	REG_GET_FUNC(FSYRandomEnable)

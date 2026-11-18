@@ -475,7 +475,7 @@ QScrollArea,
          </font>
         </property>
         <property name="currentIndex">
-         <number>0</number>
+         <number>2</number>
         </property>
         <widget class="QWidget" name="base_page">
          <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -504,7 +504,7 @@ QScrollArea,
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>413</width>
+               <width>234</width>
                <height>415</height>
               </rect>
              </property>
@@ -1400,6 +1400,21 @@ QScrollArea,
             </property>
             <property name="text">
              <string>余额：0.00￥</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="cb_ai_ocr">
+            <property name="font">
+             <font>
+              <family>Microsoft YaHei UI</family>
+             </font>
+            </property>
+            <property name="toolTip">
+             <string>开启后直接把图片交给AI进行文字识别</string>
+            </property>
+            <property name="text">
+             <string>AI文字OCR识别</string>
             </property>
            </widget>
           </item>

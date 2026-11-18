@@ -44,6 +44,7 @@ public:
 	void deleteHoverItem();
 	void removeBorderBright();
 	void setWindowRects(const DList<QRect>& rects);
+	void coverText(const QRect& rect, const QString& text, QColor bgColor, QColor textColor);
 
 	virtual void wheelEvent(QWheelEvent* event);
 	virtual void mousePressEvent(QMouseEvent* event);

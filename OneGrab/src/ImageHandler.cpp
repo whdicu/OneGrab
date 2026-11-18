@@ -5,31 +5,34 @@
 #include <QDebug>
 #include <QElapsedTimer>
 #include <QEventLoop>
+#include <QHash>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QPainter>
 #include <QPainterPath>
 
+#include <cmath>
+
 
 cv::Mat ImageHandler::fitImage(const cv::Mat& image, int width, int height)
 {
-	// ��mat�ü�
+	// 将mat裁剪
 	int widthByHeight = image.cols * height / width;
 	double scale = 1.0;
-	if (image.rows > widthByHeight)  // ��ֱ������
+	if (image.rows > widthByHeight)  // 竖直长条形
 	{
-		// ���ݿ�������ͼ��ָ����С
+		// 根据宽度缩放图像到指定大小
 		scale = static_cast<double>(width) / image.cols;
 	}
-	else  // ��������
+	else  // 横向长条形
 	{
-		// ���ݸ߶�����ͼ��ָ����С
+		// 根据高度缩放图像到指定大小
 		scale = static_cast<double>(height) / image.rows;
 	}
 	cv::Mat resizedImage;
 	cv::resize(image, resizedImage, cv::Size(), scale, scale, cv::INTER_AREA);
 
-	// �ü�����label��ͬ��С
+	// 裁剪到与label相同大小
 	QRect roi((resizedImage.cols - width) / 2, (resizedImage.rows - height) / 2, width, height);
 	return cutImage(resizedImage, roi);
 }
@@ -87,13 +90,13 @@ QRgb ImageHandler::getMainColor(const cv::Mat& image, const QRect& rect, int ste
 	unsigned long long cnt = 0;
 	for (int i = fromCol; i < toCol; i += step)
 	{
-		// ԭ��ֻ����ͼƬ�°벿��
+		// 原来只采样图片下半部分
 		//for (int j = image.height() / 2; j < image.height(); j += 4)
 		for (int j = fromRow; j < toRow; j += step)
 		{
 			cv::Vec3b pixel = image.at<cv::Vec3b>(j, i);
 
-			// �ֱ����RGBֵ
+			// 分别输出RGB值
 			b += pixel[0];
 			g += pixel[1];
 			r += pixel[2];
@@ -174,7 +177,7 @@ cv::Mat ImageHandler::QImageToCvMat(const QImage& inImage,
 		cv::Mat mat = cv::Mat(inImage.height(), inImage.width(),
 			CV_8UC3, const_cast<uchar*>(inImage.bits()),
 			inImage.bytesPerLine()).clone();
-		cv::cvtColor(mat, mat, cv::COLOR_RGB2BGR);  // ��
+		cv::cvtColor(mat, mat, cv::COLOR_RGB2BGR);  // 快
 		return mat;
 	}
 
@@ -216,7 +219,7 @@ QImage ImageHandler::cvMatToQImage(const cv::Mat& inMat)
 	// 8-bit, 3 channel
 	case CV_8UC3:
 	{
-		cv::cvtColor(inMat, inMat, cv::COLOR_BGR2RGB);  // ��
+		cv::cvtColor(inMat, inMat, cv::COLOR_BGR2RGB);  // 快
 
 		QImage image(inMat.data,
 			inMat.cols, inMat.rows,
@@ -287,7 +290,7 @@ QImage ImageHandler::roundImage(const QImage& image, int radius, bool onlyTop)
 
 	//path.addRect(0, radiusTL, image.width(), image.height() - radiusTL);
 
-	// �ĸ���
+	// 四个角
 	//path.addRoundedRect(0, 0, radiusTL * 2, radiusTL * 2, radiusTL, radiusTL);
 	//path.addRoundedRect(image.width() - 2 * radiusTR, 0, radiusTR * 2, radiusTR * 2, radiusTR, radiusTR);
 	//path.addRoundedRect(0, image.height() - 2 * radiusBL, radiusBL * 2, radiusBL * 2, radiusBL, radiusBL);
@@ -308,7 +311,7 @@ QImage ImageHandler::roundImage(const QImage& image, int radius, bool onlyTop)
 cv::Mat ImageHandler::roundCVMat(const cv::Mat& image, int radiusTL, int radiusTR
 	, int radiusBL, int radiusBR)
 {
-	// �������ֲ�
+	// 创建遮罩层
 	cv::Mat mask(image.size(), CV_8UC1, cv::Scalar(0));
 	cv::Rect rectTopLeft(0, 0, 2 * radiusTL, 2 * radiusTL);
 	cv::Rect rectTopRight(image.cols - 2 * radiusTR, 0, 2 * radiusTR, 2 * radiusTR);
@@ -320,7 +323,7 @@ cv::Mat ImageHandler::roundCVMat(const cv::Mat& image, int radiusTL, int radiusT
 	cv::circle(mask, rectBottomLeft.tl() + cv::Point(radiusBL, -radiusBL), radiusBL, cv::Scalar(255), -1, cv::LINE_AA);
 	cv::circle(mask, rectBottomRight.tl() + cv::Point(-radiusBR, -radiusBR), radiusBR, cv::Scalar(255), -1, cv::LINE_AA);
 
-	// Ӧ�����ֲ�
+	// 应用遮罩层
 	cv::Mat result;
 	image.copyTo(result, mask);
 	return result;
@@ -355,6 +358,127 @@ void ImageHandler::downloadImage(const QString& url, ImageDownloadCallBack* call
 		reply->deleteLater();
 		manager->deleteLater();
 	});
+}
+
+QPair<cv::Scalar, cv::Scalar> ImageHandler::guessBgAndTextColor(const cv::Mat& mat, const QRectF& rect)
+{
+	if (mat.empty() || mat.depth() != CV_8U)
+		return QPair<cv::Scalar, cv::Scalar>(cv::Scalar(), cv::Scalar());
+
+	const int channels = mat.channels();
+	if (channels != 1 && channels != 3 && channels != 4)
+	{
+		qWarning() << __FUNCTION__ << "unsupported channels:" << channels;
+		return QPair<cv::Scalar, cv::Scalar>(cv::Scalar(), cv::Scalar());
+	}
+
+	// QRectF 的 right()/bottom() 是开区间边界，按像素范围裁到图内
+	const int left = qMax(0, static_cast<int>(std::floor(rect.left())));
+	const int top = qMax(0, static_cast<int>(std::floor(rect.top())));
+	const int right = qMin(mat.cols, static_cast<int>(std::ceil(rect.right())));
+	const int bottom = qMin(mat.rows, static_cast<int>(std::ceil(rect.bottom())));
+	if (right <= left || bottom <= top)
+		return QPair<cv::Scalar, cv::Scalar>(cv::Scalar(), cv::Scalar());
+
+	const cv::Mat region = mat(cv::Rect(left, top, right - left, bottom - top));
+
+	// 统计每种 RGB 出现的次数（OpenCV 里 3/4 通道的字节序是 BGR/BGRA）
+	QHash<quint32, int> histogram;
+	histogram.reserve((right - left) * (bottom - top) / 2 + 16);
+
+	for (int y = 0; y < region.rows; ++y)
+	{
+		const uchar* row = region.ptr<uchar>(y);
+		for (int x = 0; x < region.cols; ++x)
+		{
+			const uchar* pixel = row + x * channels;
+
+			uchar b = 0, g = 0, r = 0, a = 255;
+			if (channels == 1)
+			{
+				b = g = r = pixel[0];
+			}
+			else
+			{
+				b = pixel[0];
+				g = pixel[1];
+				r = pixel[2];
+				if (channels == 4)
+					a = pixel[3];
+			}
+
+			// 全透明像素不参与统计
+			if (a < 16)
+				continue;
+
+			const quint32 key = (static_cast<quint32>(r) << 16) | (static_cast<quint32>(g) << 8) | b;
+			++histogram[key];
+		}
+	}
+
+	if (histogram.isEmpty())
+		return QPair<cv::Scalar, cv::Scalar>(cv::Scalar(), cv::Scalar());
+
+	auto colorOf = [](quint32 key)
+	{
+		// key 里存的是 RGB，Scalar 按 OpenCV 习惯给 BGR
+		return cv::Scalar(static_cast<double>(key & 0xFF)
+			, static_cast<double>((key >> 8) & 0xFF)
+			, static_cast<double>((key >> 16) & 0xFF)
+			, 255);
+	};
+
+	// 出现次数最多的颜色当背景（次数相同时取更暗的，保证结果稳定）
+	quint32 bgKey = 0;
+	int bgCount = -1;
+	for (auto it = histogram.constBegin(); it != histogram.constEnd(); ++it)
+	{
+		if (it.value() > bgCount || (it.value() == bgCount && it.key() < bgKey))
+		{
+			bgKey = it.key();
+			bgCount = it.value();
+		}
+	}
+
+	// RGB 曼哈顿距离，用来区分背景和文字
+	auto distanceToBg = [bgKey](quint32 key)
+	{
+		return qAbs(static_cast<int>((key >> 16) & 0xFF) - static_cast<int>((bgKey >> 16) & 0xFF))
+			+ qAbs(static_cast<int>((key >> 8) & 0xFF) - static_cast<int>((bgKey >> 8) & 0xFF))
+			+ qAbs(static_cast<int>(key & 0xFF) - static_cast<int>(bgKey & 0xFF));
+	};
+
+	int maxDistance = 0;
+	for (auto it = histogram.constBegin(); it != histogram.constEnd(); ++it)
+		maxDistance = qMax(maxDistance, distanceToBg(it.key()));
+
+	// 整块基本都是同一个颜色，没有文字可挑
+	if (maxDistance < 24)
+		return QPair<cv::Scalar, cv::Scalar>(colorOf(bgKey), colorOf(bgKey));
+
+	// 取离背景最远色差的 3/4 作为门槛：抗锯齿过渡色会被挡掉，
+	// 文字笔画即使没有纯核心色，也能落到最接近的那一档
+	const int minDistance = qMax(24, maxDistance * 3 / 4);
+
+	// 候选里出现次数最多的当文字色，次数相同取色差更大的
+	quint32 textKey = bgKey;
+	int textCount = 0;
+	int textDistance = -1;
+	for (auto it = histogram.constBegin(); it != histogram.constEnd(); ++it)
+	{
+		const int distance = distanceToBg(it.key());
+		if (distance < minDistance)
+			continue;
+
+		if (it.value() > textCount || (it.value() == textCount && distance > textDistance))
+		{
+			textKey = it.key();
+			textCount = it.value();
+			textDistance = distance;
+		}
+	}
+
+	return QPair<cv::Scalar, cv::Scalar>(colorOf(bgKey), colorOf(textKey));
 }
 
 SharedImage ImageHandler::downloadImage(const QString& url)

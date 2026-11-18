@@ -12,6 +12,7 @@
 #include <QJsonObject>
 
 class QPixmap;
+class QHttpMultiPart;
 
 class AIHandler : public QObject
 {
@@ -126,6 +127,41 @@ public:
 		QString content;  // Markdown 正文
 	};
 
+	// OCR 识别方式（对应接口的 purpose 字段）。
+	enum OcrPurpose
+	{
+		TextRecognition,        // text_recognition：纯文本 Word/PPT 直接抽文字，其他文件逐页识别
+		RichLayoutRecognition   // rich_layout_recognition：所有文件一律逐页识别
+	};
+
+	// OCR 单页结果。
+	struct OcrPage
+	{
+		int index = 0;
+		QString text;             // 模型原始输出，不做清理；逐页识别会带 <｜ref｜>/<｜box｜> 坐标标记
+		bool complete = true;     // false 表示达到输出上限（finish_reason=length），该页文本不完整
+	};
+
+	struct OcrResult
+	{
+		QString id;
+		QString purpose;
+		int pageCount = 0;
+		QList<OcrPage> pages;
+		int inputTokens = 0;      // 仅供参考，不用于计费
+		int outputTokens = 0;
+		int totalTokens = 0;
+
+		// 把各页文本按顺序拼起来，直接给用户/模型用
+		QString allText() const
+		{
+			QStringList texts;
+			for (const OcrPage& page : pages)
+				texts.append(page.text);
+			return texts.join("\n\n");
+		}
+	};
+
 public:
 	explicit AIHandler(const QString& apiKey);
 	~AIHandler();
@@ -163,6 +199,14 @@ public:
 	// 成功走 fetchReady，失败走 errorOccured；都带回本次请求的 uuid。
 	// url 必须是含 host 的 http/https 地址，且不能带用户名密码；接口没有长度/超时参数，截断得自己来。
 	void callFetch(const QString& url, const QString& baseUrl=QString());
+
+	// OCR 文字识别（DeepSeek: POST /v1/tools/ocr，multipart/form-data）。
+	// 支持 PDF / DOC / DOCX / PPT / PPTX 和 PNG / JPEG / WebP / GIF / BMP / TIFF（按文件内容判断，不看扩展名），
+	// 文件上限 100 MiB、1000 页，按成功页数计费。成功走 ocrReady，失败走 errorOccured，都带本次请求的 uuid。
+	// 注意：接口只认文件二进制，不支持 URL 或 base64 内联。
+	void callOcr(const QString& filePath, OcrPurpose purpose=TextRecognition, const QString& baseUrl=QString());
+	// QPixmap 版本：内存里转成 PNG 直接上传，不用自己落盘（OneGrab 抓屏结果可直接丢进来）
+	void callOcr(const QPixmap& pixmap, OcrPurpose purpose=TextRecognition, const QString& baseUrl=QString());
 
 signals:
 	// 非流式：一次性返回完整答案
@@ -204,12 +248,16 @@ signals:
 	// 网页抓取成功
 	void fetchReady(const AIHandler::FetchResult& result, const QString& fetchUuid);
 
+	// OCR 识别成功（pages 里可能有多页，用 allText() 一次拿完整文本）
+	void ocrReady(const AIHandler::OcrResult& result, const QString& ocrUuid);
+
 private slots:
 	void onReplyReadyRead();
 	void onReplyFinished();
 	void onBalanceReplyFinished();
 	void onSearchReplyFinished();
 	void onFetchReplyFinished();
+	void onOcrReplyFinished();
 	void onToolSearchFinished();
 	void onToolFetchFinished();
 
@@ -255,6 +303,9 @@ private:
 	void runNextToolCall(RequestContext* ctx);
 	void sendToolSearch(RequestContext* ctx, const ToolCall& call);
 	void sendToolFetch(RequestContext* ctx, const ToolCall& call);
+
+	QHttpMultiPart* buildOcrMultipart(OcrPurpose purpose) const;
+	void postOcr(QHttpMultiPart* multipart, const QString& baseUrl, const QString& ocrUuid);
 
 private:
 	QString m_apiKey;

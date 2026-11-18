@@ -93,6 +93,7 @@ void SettingHandler::writeAll()
 	wholeObject.insert("CheckUpdateOnStart", settingStruct.CheckUpdateOnStart);
 	wholeObject.insert("AIApiKey", settingStruct.AIApiKey);
 	wholeObject.insert("EnableAIThink", settingStruct.EnableAIThink);
+	wholeObject.insert("AIOCR", settingStruct.AIOCR);
 	wholeObject.insert("FSYRandomEnable", settingStruct.FSYRandomEnable);
 	wholeObject.insert("FSYRandomMaxNum", settingStruct.FSYRandomMaxNum);
 	wholeObject.insert("FSY33LBEnable", settingStruct.FSY33LBEnable);
@@ -134,6 +135,7 @@ void SettingHandler::readAll()
 	settingStruct.CheckUpdateOnStart = obj["CheckUpdateOnStart"].toBool(true);
 	settingStruct.AIApiKey = obj["AIApiKey"].toString("");
 	settingStruct.EnableAIThink = obj["EnableAIThink"].toBool(false);
+	settingStruct.AIOCR = obj["AIOCR"].toBool(false);
 	settingStruct.FSYRandomEnable = obj["FSYRandomEnable"].toBool(false);
 	settingStruct.FSYRandomMaxNum = obj["FSYRandomMaxNum"].toInt(3);
 	settingStruct.FSY33LBEnable = obj["FSY33LBEnable"].toBool(false);

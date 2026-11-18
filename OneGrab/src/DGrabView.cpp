@@ -2,9 +2,12 @@
 #include "DGraphicsItem.h"
 #include "HDCore/DGlobal.h"
 #include "MaskItem.h"
-#include <QWheelEvent>
-#include <QRectF>
 #include <QDebug>
+#include <QGraphicsRectItem>
+#include <QGraphicsTextItem>
+#include <QRectF>
+#include <QTextDocument>
+#include <QWheelEvent>
 #include "SettingHandler.h"
 
 
@@ -51,6 +54,66 @@ void DGrabView::setWindowRects(const DList<QRect>& rects)
 	clickOnWindowRect_ = false;
 	hadSelectionBeforeHover_ = false;
 	selectionConfirmed_ = false;
+}
+
+void DGrabView::coverText(const QRect& rect, const QString& text, QColor bgColor, QColor textColor)
+{
+	if (!scene() || rect.isEmpty() || text.isEmpty())
+		return;
+
+	// 背景块：盖住原文，不可移动/选中，也不拦鼠标
+	auto* bgItem = new QGraphicsRectItem(QRectF(rect));
+	bgItem->setPen(Qt::NoPen);
+	bgItem->setBrush(bgColor);
+	bgItem->setFlag(QGraphicsItem::ItemIsMovable, false);
+	bgItem->setFlag(QGraphicsItem::ItemIsSelectable, false);
+	bgItem->setAcceptedMouseButtons(Qt::NoButton);
+	bgItem->setZValue(1);
+	scene()->addItem(bgItem);
+
+	auto* textItem = new QGraphicsTextItem;
+	textItem->setPlainText(text);
+	textItem->setDefaultTextColor(textColor);
+	textItem->document()->setDocumentMargin(0);
+	textItem->setFlag(QGraphicsItem::ItemIsMovable, false);
+	textItem->setFlag(QGraphicsItem::ItemIsSelectable, false);
+	textItem->setAcceptedMouseButtons(Qt::NoButton);
+	textItem->setZValue(2);
+
+	const int padding = qMax(1, qRound(rect.height() * 0.1));
+	const int contentWidth = qMax(1, rect.width() - padding * 2);
+	const int contentHeight = qMax(1, rect.height() - padding * 2);
+	textItem->setTextWidth(contentWidth);
+
+	// 二分字号，保证整段文字能塞进 rect 高度里
+	QFont font = textItem->font();
+	int low = 6;
+	int high = qMax(low, contentHeight);
+	int best = low;
+	while (low <= high)
+	{
+		const int mid = (low + high) / 2;
+		font.setPixelSize(mid);
+		textItem->setFont(font);
+		if (textItem->boundingRect().height() <= contentHeight + 0.5)
+		{
+			best = mid;
+			low = mid + 1;
+		}
+		else
+		{
+			high = mid - 1;
+		}
+	}
+
+	font.setPixelSize(best);
+	textItem->setFont(font);
+
+	// 水平左对齐、垂直居中
+	const qreal textHeight = textItem->boundingRect().height();
+	textItem->setPos(rect.left() + padding, rect.top() + (rect.height() - textHeight) / 2.0);
+
+	scene()->addItem(textItem);
 }
 
 void DGrabView::onFinishGrab()

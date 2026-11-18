@@ -126,6 +126,9 @@
     <ClCompile Include="src\BarcodeDecoder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\WindowsOcr.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="src\OneGrab.h">
@@ -203,6 +206,9 @@
     <ClInclude Include="src\BarcodeDecoder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <QtMoc Include="src\WindowsOcr.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="src\OneGrab.ui">

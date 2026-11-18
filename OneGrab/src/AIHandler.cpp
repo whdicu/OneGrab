@@ -8,6 +8,7 @@
 #include <QJsonValue>
 #include <QFile>
 #include <QFileInfo>
+#include <QHttpMultiPart>
 #include <QNetworkRequest>
 #include <QUrl>
 #include <QUuid>
@@ -22,6 +23,18 @@ const static char* C_WEB_FETCH_TOOL = "web_fetch";
 
 // 抓取请求的 uuid 动态属性名
 const static char* C_FETCH_UUID_PROPERTY = "fetchUuid";
+
+// OCR 请求的 uuid 动态属性名
+const static char* C_OCR_UUID_PROPERTY = "ocrUuid";
+
+// OCR 接口单文件上限 100 MiB，本地先挡一道
+const static qint64 C_OCR_MAX_FILE_BYTES = 100LL * 1024 * 1024;
+
+const static QHash<AIHandler::OcrPurpose, QString> CSHASH_OCRPURPOSE_STR =
+{
+	{ AIHandler::TextRecognition, "text_recognition" },
+	{ AIHandler::RichLayoutRecognition, "rich_layout_recognition" }
+};
 
 // 抓回来的正文塞给模型前先截断：接口本身不限制长度，但整页 Markdown 会吃掉大量上下文
 const static int C_WEB_FETCH_MAX_CHARS = 12000;
@@ -201,6 +214,130 @@ void AIHandler::callFetch(const QString& url, const QString& baseUrl)
 
 	reply->setProperty(C_FETCH_UUID_PROPERTY, QUuid::createUuid().toString());
 	connect(reply, &QNetworkReply::finished, this, &AIHandler::onFetchReplyFinished);
+}
+
+void AIHandler::callOcr(const QString& filePath, OcrPurpose purpose, const QString& baseUrl)
+{
+	if (m_apiKey.isEmpty())
+	{
+		emit errorOccured(tr("API Key 为空"), "");
+		return;
+	}
+
+	const QFileInfo info(filePath);
+	if (!info.exists() || !info.isFile())
+	{
+		emit errorOccured(tr("文件不存在: %1").arg(filePath), "");
+		return;
+	}
+
+	if (info.size() <= 0)
+	{
+		emit errorOccured(tr("文件为空: %1").arg(filePath), "");
+		return;
+	}
+
+	if (info.size() > C_OCR_MAX_FILE_BYTES)
+	{
+		emit errorOccured(tr("文件超过 100 MiB，OCR 接口不收"), "");
+		return;
+	}
+
+	QHttpMultiPart* multipart = buildOcrMultipart(purpose);
+
+	// 文件名必须带，服务端按内容判断真实格式，这里只负责别让引号把 header 拆坏
+	QString fileName = info.fileName();
+	fileName.replace('"', '_');
+
+	QHttpPart filePart;
+	filePart.setHeader(QNetworkRequest::ContentDispositionHeader,
+		QVariant(QString("form-data; name=\"file\"; filename=\"%1\"").arg(fileName)));
+	filePart.setHeader(QNetworkRequest::ContentTypeHeader, "application/octet-stream");
+
+	// 用 QFile 直接作为 body device，大文件不用整个读进内存；生命周期交给 multipart
+	auto* file = new QFile(info.absoluteFilePath(), multipart);
+	if (!file->open(QIODevice::ReadOnly))
+	{
+		const QString openError = file->errorString();
+		delete multipart;
+		emit errorOccured(tr("无法打开文件: %1").arg(openError), "");
+		return;
+	}
+
+	filePart.setBodyDevice(file);
+	multipart->append(filePart);
+
+	postOcr(multipart, baseUrl, QUuid::createUuid().toString());
+}
+
+void AIHandler::callOcr(const QPixmap& pixmap, OcrPurpose purpose, const QString& baseUrl)
+{
+	if (m_apiKey.isEmpty())
+	{
+		emit errorOccured(tr("API Key 为空"), "");
+		return;
+	}
+
+	if (pixmap.isNull())
+	{
+		emit errorOccured(tr("图片为空"), "");
+		return;
+	}
+
+	QByteArray data;
+	QBuffer buffer(&data);
+	if (!buffer.open(QIODevice::WriteOnly))
+	{
+		emit errorOccured(tr("图片转 PNG 失败"), "");
+		return;
+	}
+
+	if (!pixmap.save(&buffer, "PNG"))
+	{
+		emit errorOccured(tr("图片转 PNG 失败"), "");
+		return;
+	}
+	buffer.close();
+
+	QHttpMultiPart* multipart = buildOcrMultipart(purpose);
+
+	QHttpPart filePart;
+	filePart.setHeader(QNetworkRequest::ContentDispositionHeader,
+		QVariant("form-data; name=\"file\"; filename=\"screenshot.png\""));
+	filePart.setHeader(QNetworkRequest::ContentTypeHeader, "image/png");
+	filePart.setBody(data);
+	multipart->append(filePart);
+
+	postOcr(multipart, baseUrl, QUuid::createUuid().toString());
+}
+
+QHttpMultiPart* AIHandler::buildOcrMultipart(OcrPurpose purpose) const
+{
+	auto* multipart = new QHttpMultiPart(QHttpMultiPart::FormDataType);
+
+	QHttpPart purposePart;
+	purposePart.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"purpose\""));
+	purposePart.setBody(CSHASH_OCRPURPOSE_STR.value(purpose, "text_recognition").toUtf8());
+	multipart->append(purposePart);
+
+	return multipart;
+}
+
+void AIHandler::postOcr(QHttpMultiPart* multipart, const QString& baseUrl, const QString& ocrUuid)
+{
+	QString base = baseUrl.trimmed().isEmpty() ? Params().baseUrl : baseUrl.trimmed();
+	while (base.endsWith('/'))
+		base.chop(1);
+
+	QNetworkRequest request(QUrl(base + "/tools/ocr"));
+	request.setRawHeader("Authorization", QByteArray("Bearer ") + m_apiKey.toUtf8());
+	// Content-Type 不要手写：QNetworkAccessManager 会按 multipart 自己补 boundary
+
+	QNetworkReply* reply = m_manager->post(request, multipart);
+	multipart->setParent(reply);   // 请求结束后由 reply 回收
+
+	reply->setProperty(C_OCR_UUID_PROPERTY, ocrUuid);
+	connect(reply, &QNetworkReply::finished, this, &AIHandler::onOcrReplyFinished);
 }
 
 void AIHandler::callDeepSeek(const Params& params)
@@ -1105,4 +1242,80 @@ void AIHandler::onFetchReplyFinished()
 	result.title = obj.value("title").toString();
 	result.content = obj.value("content").toString();
 	emit fetchReady(result, fetchUuid);
+}
+
+void AIHandler::onOcrReplyFinished()
+{
+	auto* reply = qobject_cast<QNetworkReply*>(sender());
+	if (!reply)
+		return;
+
+	const QString ocrUuid = reply->property(C_OCR_UUID_PROPERTY).toString();
+	// 识别期间服务端用换行保活，响应体前面可能挂着一串空白，先 trim 再解析
+	const QByteArray raw = reply->readAll().trimmed();
+	const QVariant status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
+	const QString errorString = reply->errorString();
+	reply->deleteLater();
+
+	if (!status.isValid())
+	{
+		emit errorOccured(tr("网络错误: %1").arg(errorString), ocrUuid);
+		return;
+	}
+
+	const int statusCode = status.toInt();
+	QJsonParseError err;
+	const QJsonDocument doc = QJsonDocument::fromJson(raw, &err);
+
+	if (statusCode != 200)
+	{
+		QString message = parseApiErrorMessage(raw);
+		if (message.isEmpty())
+			message = errorString;
+		emit errorOccured(tr("OCR 失败(%1): %2").arg(statusCode).arg(message), ocrUuid);
+		return;
+	}
+
+	if (err.error != QJsonParseError::NoError || !doc.isObject())
+	{
+		emit errorOccured(tr("OCR 失败: JSON 解析失败 %1").arg(err.errorString()), ocrUuid);
+		return;
+	}
+
+	const QJsonObject obj = doc.object();
+
+	// 识别开始之后就一直是 200，失败信息藏在 error 字段里，不检查会当成空结果
+	if (obj.contains("error"))
+	{
+		QString message = obj.value("error").toObject().value("message").toString();
+		if (message.isEmpty())
+			message = tr("未知错误");
+		emit errorOccured(tr("OCR 失败: %1").arg(message), ocrUuid);
+		return;
+	}
+
+	OcrResult result;
+	result.id = obj.value("id").toString();
+	result.purpose = obj.value("purpose").toString();
+	result.pageCount = obj.value("page_count").toInt();
+
+	const QJsonObject usage = obj.value("usage").toObject();
+	result.inputTokens = usage.value("input_tokens").toInt();
+	result.outputTokens = usage.value("output_tokens").toInt();
+	result.totalTokens = usage.value("total_tokens").toInt();
+
+	const QJsonArray pages = obj.value("pages").toArray();
+	for (const QJsonValue& value : pages)
+	{
+		const QJsonObject one = value.toObject();
+
+		OcrPage page;
+		page.index = one.value("index").toInt();
+		page.text = one.value("text").toString();
+		// finish_reason=length 说明这页输出被截断，文本不完整
+		page.complete = one.value("finish_reason").toString() != "length";
+		result.pages.append(page);
+	}
+
+	emit ocrReady(result, ocrUuid);
 }

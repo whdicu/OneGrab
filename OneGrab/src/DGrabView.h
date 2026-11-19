@@ -44,7 +44,11 @@ public:
 	void deleteHoverItem();
 	void removeBorderBright();
 	void setWindowRects(const DList<QRect>& rects);
-	void coverText(const QRect& rect, const QString& text, QColor bgColor, QColor textColor);
+	void addTextRects(const DList<QRectF>& rects, const QColor& color);
+	void clearTextRects();
+	// fontFamily 为空或本机没装时，回退到 Microsoft YaHei UI
+	void coverText(const QRect& rect, const QString& text, QColor bgColor
+		, QColor textColor, const QString& fontFamily = QString());
 
 	virtual void wheelEvent(QWheelEvent* event);
 	virtual void mousePressEvent(QMouseEvent* event);
@@ -82,6 +86,7 @@ private:
 	QPoint selectionStart_;
 	QPoint mousePosBeforeMove_;
 	int choosedBorder_;
+	DList<QGraphicsRectItem*> textRects_;
 
 	// 窗口矩形吸附选择
 	DList<QRect> windowRects_;

@@ -382,9 +382,30 @@ QPair<cv::Scalar, cv::Scalar> ImageHandler::guessBgAndTextColor(const cv::Mat& m
 
 	const cv::Mat region = mat(cv::Rect(left, top, right - left, bottom - top));
 
-	// 统计每种 RGB 出现的次数（OpenCV 里 3/4 通道的字节序是 BGR/BGRA）
+	// 精确 RGB 统计：文字通常是纯色，用它来挑文字色
 	QHash<quint32, int> histogram;
 	histogram.reserve((right - left) * (bottom - top) / 2 + 16);
+
+	// 量化到 4 bit/通道的统计：渐变背景的相邻色会被并到一个桶里，
+	// 不然每种渐变色的计数都很小，背景主色会被纯色文字抢走
+	struct ColorStat
+	{
+		int count = 0;
+		qint64 r = 0;
+		qint64 g = 0;
+		qint64 b = 0;
+	};
+	QHash<quint32, ColorStat> coarse;
+	QHash<quint32, ColorStat> border;
+
+	auto addStat = [](QHash<quint32, ColorStat>& stats, quint32 key, int r, int g, int b)
+	{
+		ColorStat& stat = stats[key];
+		++stat.count;
+		stat.r += r;
+		stat.g += g;
+		stat.b += b;
+	};
 
 	for (int y = 0; y < region.rows; ++y)
 	{
@@ -413,6 +434,14 @@ QPair<cv::Scalar, cv::Scalar> ImageHandler::guessBgAndTextColor(const cv::Mat& m
 
 			const quint32 key = (static_cast<quint32>(r) << 16) | (static_cast<quint32>(g) << 8) | b;
 			++histogram[key];
+
+			const quint32 coarseKey = (static_cast<quint32>(r >> 4) << 8)
+				| (static_cast<quint32>(g >> 4) << 4) | (b >> 4);
+			addStat(coarse, coarseKey, r, g, b);
+
+			// 文字一般贴不到 2px 边框上，边框多数是背景，渐变也更容易在这里收敛
+			if (x < 2 || y < 2 || x >= region.cols - 2 || y >= region.rows - 2)
+				addStat(border, coarseKey, r, g, b);
 		}
 	}
 
@@ -428,17 +457,45 @@ QPair<cv::Scalar, cv::Scalar> ImageHandler::guessBgAndTextColor(const cv::Mat& m
 			, 255);
 	};
 
-	// 出现次数最多的颜色当背景（次数相同时取更暗的，保证结果稳定）
-	quint32 bgKey = 0;
-	int bgCount = -1;
-	for (auto it = histogram.constBegin(); it != histogram.constEnd(); ++it)
+	auto dominantKey = [](const QHash<quint32, ColorStat>& stats, int* total = nullptr)
 	{
-		if (it.value() > bgCount || (it.value() == bgCount && it.key() < bgKey))
+		quint32 bestKey = 0;
+		int bestCount = -1;
+		int sum = 0;
+		for (auto it = stats.constBegin(); it != stats.constEnd(); ++it)
 		{
-			bgKey = it.key();
-			bgCount = it.value();
+			sum += it.value().count;
+			if (it.value().count > bestCount || (it.value().count == bestCount && it.key() < bestKey))
+			{
+				bestKey = it.key();
+				bestCount = it.value().count;
+			}
 		}
-	}
+
+		if (total)
+			*total = sum;
+		return bestKey;
+	};
+
+	// 边框里出现最多的量化色大概率是背景；整块统计则用来兜底
+	int borderTotal = 0;
+	const quint32 borderKey = dominantKey(border, &borderTotal);
+	const int borderCount = border.value(borderKey).count;
+
+	quint32 bgCoarseKey = dominantKey(coarse);
+	if (borderTotal > 0 && borderCount * 3 >= borderTotal)
+		bgCoarseKey = borderKey;
+
+	const ColorStat bgStat = coarse.value(bgCoarseKey);
+	if (bgStat.count <= 0)
+		return QPair<cv::Scalar, cv::Scalar>(cv::Scalar(), cv::Scalar());
+
+	// 背景取该量化桶内所有像素的平均值，而不是量化格子的角点，颜色更接近肉眼看到的那一档
+	const int bgR = qRound(static_cast<double>(bgStat.r) / bgStat.count);
+	const int bgG = qRound(static_cast<double>(bgStat.g) / bgStat.count);
+	const int bgB = qRound(static_cast<double>(bgStat.b) / bgStat.count);
+	const quint32 bgKey = (static_cast<quint32>(bgR) << 16)
+		| (static_cast<quint32>(bgG) << 8) | static_cast<quint32>(bgB);
 
 	// RGB 曼哈顿距离，用来区分背景和文字
 	auto distanceToBg = [bgKey](quint32 key)

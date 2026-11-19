@@ -65,6 +65,7 @@ const static QString SYSTEM_STR =
 	"   rect：[x, y, w, h]，该块所有文字在图片中的像素矩形；\n"
 	"   bg_color：[r, g, b]，该块的背景色（0~255）；\n"
 	"   text_color：[r, g, b]，该块的文字颜色（0~255）；\n"
+	"   font：原文字体族名称的字符串（例如 \"Microsoft YaHei UI\"、\"SimSun\"、\"HeiTi\"），无法判断返回空字符串；\n"
 	"   draw_rect：[x, y, w, h]，译文最终绘制的区域，默认等于 rect；译文比原文短时不要缩小，\n"
 	"     需要更多空间时可以向右、向下扩展，但不能压到其他文字块，也不能超出图片；\n"
 	"   translation：中文译文。\n"
@@ -79,7 +80,7 @@ const static QString SYSTEM_STR =
 	"7. 只输出 JSON 数组，不要 markdown 代码块、不要解释或多余文字。\n"
 	"格式示例：\n"
 	"{\"text\":\"Hello world\",\"rect\":[10,20,142,30],\"bg_color\":[255,255,255],"
-	"\"text_color\":[30,30,30],\"draw_rect\":[10,20,142,30],\"translation\":\"你好，世界\"}\n"
+	"\"text_color\":[30,30,30],\"font\":\"Microsoft YaHei UI\",\"draw_rect\":[10,20,142,30],\"translation\":\"你好，世界\"}\n"
 	"多个块就是这样的对象组成的数组。";
 
 // Windows OCR 路径：本地先识别文字和矩形，模型只负责翻译和排版
@@ -836,8 +837,11 @@ void OneGrab::translateByAI(const QPixmap& croppedPixmap, const QRect& croppedRe
 			const QPoint viewTopLeft = croppedRect.topLeft() + drawRect.topLeft().toPoint();
 			const QRect sceneRect(ui.view->mapToScene(viewTopLeft).toPoint(), drawRect.size().toSize());
 
-			qDebug() << "[translate]" << rect << "draw:" << drawRect << sourceText << "->" << translation;
-			ui.view->coverText(sceneRect, translation, bgColor, textColor);
+			const QString fontFamily = one.value("font").toString().trimmed();
+
+			qDebug() << "[translate]" << rect << "draw:" << drawRect << fontFamily
+				<< sourceText << "->" << translation;
+			ui.view->coverText(sceneRect, translation, bgColor, textColor, fontFamily);
 		}
 
 		finishGrabOnce();
@@ -890,7 +894,8 @@ void OneGrab::translateByWindowsOcr(const QPixmap& croppedPixmap, const QRect& c
 			return;
 
 		QJsonArray linesJson;
-		QList<QRectF> rects;
+		DList<QRectF> rects;
+		DList<QRectF> globalRects;
 		QStringList texts;
 		for (const WindowsOcr::Line& line : r.lines)
 		{
@@ -915,8 +920,15 @@ void OneGrab::translateByWindowsOcr(const QPixmap& croppedPixmap, const QRect& c
 
 			linesJson.append(item);
 			rects.append(line.rect);
+			globalRects.append(QRectF(line.rect.topLeft() +  croppedRect.topLeft()
+				, line.rect.bottomRight() + croppedRect.topLeft()));
 			texts.append(text);
+
+			qDebug() << "windwos ORC" << line.rect << line.text;
 		}
+
+		// OCR识别完了先把文字rect显示上去
+		ui.view->addTextRects(globalRects, SETTING_HANDLER->getMainColor());
 
 		if (linesJson.isEmpty())
 		{
@@ -957,6 +969,7 @@ void OneGrab::translateByWindowsOcr(const QPixmap& croppedPixmap, const QRect& c
 			, [translator, rects, texts, imageWidth, imageHeight, baseMat, croppedRect, finishGrabOnce, this](const QString& reply, const QString&)
 		{
 			translator->deleteLater();
+			ui.view->clearTextRects();
 
 			// 等待期间用户可能已经退出截图，结果直接丢掉
 			if (!isVisible())
@@ -1059,9 +1072,10 @@ void OneGrab::translateByWindowsOcr(const QPixmap& croppedPixmap, const QRect& c
 				const QPoint viewTopLeft = croppedRect.topLeft() + drawRect.topLeft().toPoint();
 				const QRect sceneRect(ui.view->mapToScene(viewTopLeft).toPoint(), drawRect.size().toSize());
 
-				qDebug() << "[translate-ocr]" << ids << "draw:" << drawRect << "src:" << unionRect
-					<< sourceText << "->" << translation;
-				ui.view->coverText(sceneRect, translation, bgColor, textColor);
+				qDebug() << "[translate-ocr]" << ids << "draw:" << drawRect
+					<< "src:" << unionRect << sourceText << "->" << translation;
+				// Windows OCR 不识别字体，统一用 Microsoft YaHei
+				ui.view->coverText(sceneRect, translation, bgColor, textColor, QString("Microsoft YaHei"));
 			}
 
 			finishGrabOnce();

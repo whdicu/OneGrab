@@ -3,6 +3,7 @@
 #include "HDCore/DGlobal.h"
 #include "MaskItem.h"
 #include <QDebug>
+#include <QFontDatabase>
 #include <QGraphicsRectItem>
 #include <QGraphicsTextItem>
 #include <QRectF>
@@ -56,11 +57,50 @@ void DGrabView::setWindowRects(const DList<QRect>& rects)
 	selectionConfirmed_ = false;
 }
 
-void DGrabView::coverText(const QRect& rect, const QString& text, QColor bgColor, QColor textColor)
+void DGrabView::addTextRects(const DList<QRectF>& rects, const QColor& color)
+{
+	if (!scene() || rects.isEmpty())
+		return;
+
+	for (const QRectF rect : rects)
+	{
+		auto* rectItem = new QGraphicsRectItem(rect);
+		rectItem->setPen(QPen(color, 1));
+		rectItem->setFlag(QGraphicsItem::ItemIsMovable, false);
+		rectItem->setFlag(QGraphicsItem::ItemIsSelectable, false);
+		rectItem->setAcceptedMouseButtons(Qt::NoButton);
+		rectItem->setZValue(1);
+		scene()->addItem(rectItem);
+		textRects_.pushBack(rectItem);
+	}
+}
+
+void DGrabView::clearTextRects()
+{
+	for (QGraphicsRectItem* rectItem : textRects_)
+	{
+		scene()->removeItem(rectItem);
+		delete rectItem;
+	}
+	textRects_.clear();
+	update();
+}
+
+void DGrabView::coverText(const QRect& rect, const QString& text, QColor bgColor
+	, QColor textColor, const QString& fontFamily)
 {
 	if (!scene() || rect.isEmpty() || text.isEmpty())
 		return;
 
+	// 字体：优先用 AI 识别出的字体族，识别不到或本机没装就回退
+	QString family = fontFamily.trimmed();
+	if (family.size() > 1 && family.startsWith('"') && family.endsWith('"'))
+		family = family.mid(1, family.size() - 2).trimmed();
+
+	static const QString defaultFamily = "Microsoft YaHei UI";
+	if (family.isEmpty() || !QFontDatabase().families().contains(family, Qt::CaseInsensitive))
+		family = defaultFamily;
+	
 	// 背景块：盖住原文，不可移动/选中，也不拦鼠标
 	auto* bgItem = new QGraphicsRectItem(QRectF(rect));
 	bgItem->setPen(Qt::NoPen);
@@ -80,13 +120,13 @@ void DGrabView::coverText(const QRect& rect, const QString& text, QColor bgColor
 	textItem->setAcceptedMouseButtons(Qt::NoButton);
 	textItem->setZValue(2);
 
-	const int padding = qMax(1, qRound(rect.height() * 0.1));
-	const int contentWidth = qMax(1, rect.width() - padding * 2);
-	const int contentHeight = qMax(1, rect.height() - padding * 2);
+	const int contentWidth = rect.width();
+	const int contentHeight = rect.height();
 	textItem->setTextWidth(contentWidth);
 
 	// 二分字号，保证整段文字能塞进 rect 高度里
 	QFont font = textItem->font();
+	font.setFamily(family);
 	int low = 6;
 	int high = qMax(low, contentHeight);
 	int best = low;
@@ -111,7 +151,7 @@ void DGrabView::coverText(const QRect& rect, const QString& text, QColor bgColor
 
 	// 水平左对齐、垂直居中
 	const qreal textHeight = textItem->boundingRect().height();
-	textItem->setPos(rect.left() + padding, rect.top() + (rect.height() - textHeight) / 2.0);
+	textItem->setPos(rect.left(), rect.top() + (rect.height() - textHeight) / 2.0);
 
 	scene()->addItem(textItem);
 }
@@ -600,6 +640,7 @@ void DGrabView::clearItems()
 	maskItem_ = nullptr;
 	itemList_.clear();
 	removedList_.clear();
+	textRects_.clear();
 	//for (auto item : itemList_)
 	//{
 	//	if (nullptr == item)

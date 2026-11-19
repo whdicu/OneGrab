@@ -42,7 +42,10 @@ QGraphicsPixmapItem* DGrabView::setImg(const QPixmap& img)
 	imgItem_ = scene()->addPixmap(img);
 
 	if (nullptr == maskItem_)
+	{
 		maskItem_ = new MaskItem(scene()->sceneRect().toRect());
+		maskItem_->setZValue(4);  // 应该在最顶部
+	}
 	scene()->addItem(maskItem_);
 
 	return imgItem_;
@@ -109,7 +112,11 @@ void DGrabView::coverText(const QRect& rect, const QString& text, QColor bgColor
 	bgItem->setFlag(QGraphicsItem::ItemIsSelectable, false);
 	bgItem->setAcceptedMouseButtons(Qt::NoButton);
 	bgItem->setZValue(1);
-	scene()->addItem(bgItem);
+
+	// 必须挂到图片 item 下面：addRect 的标注是 imgItem_ 的子项，z 只在同一父项内排序。
+	// 如果这里直接加进 scene（顶层），整个图片子树都会被它压住，标注的 z=3 也救不回来。
+	if (imgItem_)
+		bgItem->setParentItem(imgItem_);
 
 	auto* textItem = new QGraphicsTextItem;
 	textItem->setPlainText(text);
@@ -119,6 +126,8 @@ void DGrabView::coverText(const QRect& rect, const QString& text, QColor bgColor
 	textItem->setFlag(QGraphicsItem::ItemIsSelectable, false);
 	textItem->setAcceptedMouseButtons(Qt::NoButton);
 	textItem->setZValue(2);
+	if (imgItem_)
+		textItem->setParentItem(imgItem_);
 
 	const int contentWidth = rect.width();
 	const int contentHeight = rect.height();
@@ -601,6 +610,7 @@ void DGrabView::closeEvent(QCloseEvent *evt)
 void DGrabView::addRect(const QRect& rect, const QColor& color)
 {
 	editingItem_ = new DGraphicsRectItem(rect, color, SETTING_HANDLER->getRectLineWidth(), this, imgItem_);
+	editingItem_->setZValue(3);
 	itemList_.enqueue(editingItem_);
 	removedList_.clear();
 }
@@ -608,6 +618,7 @@ void DGrabView::addRect(const QRect& rect, const QColor& color)
 void DGrabView::addLine(const QPoint& point, const QColor& color)
 {
 	editingItem_ = new DGraphicsLineItem(point, color, SETTING_HANDLER->getLineLineWidth(), this, imgItem_);
+	editingItem_->setZValue(3);
 	itemList_.enqueue(editingItem_);
 	removedList_.clear();
 }
@@ -615,6 +626,7 @@ void DGrabView::addLine(const QPoint& point, const QColor& color)
 void DGrabView::addArrow(const QRect& rect, const QColor& color)
 {
 	editingItem_ = new DGraphicsArrowItem(rect, color, SETTING_HANDLER->getArrowLineWidth(), this, imgItem_);
+	editingItem_->setZValue(3);
 	itemList_.enqueue(editingItem_);
 	removedList_.clear();
 }
@@ -622,6 +634,7 @@ void DGrabView::addArrow(const QRect& rect, const QColor& color)
 void DGrabView::addLines(const QPoint& point, const QColor& color)
 {
 	editingItem_ = new DGraphicsLinesItem(point, color, SETTING_HANDLER->getPenLineWidth(), this, imgItem_);
+	editingItem_->setZValue(3);
 	itemList_.enqueue(editingItem_);
 	removedList_.clear();
 }
@@ -629,6 +642,7 @@ void DGrabView::addLines(const QPoint& point, const QColor& color)
 void DGrabView::addText(const QPoint& point, const QColor& color)
 {
 	editingItem_ = new DGraphicsTextItem(QRect(point, point), color, this, imgItem_);
+	editingItem_->setZValue(3);
 	itemList_.enqueue(editingItem_);
 	removedList_.clear();
 }

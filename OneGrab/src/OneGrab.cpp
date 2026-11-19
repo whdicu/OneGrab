@@ -690,31 +690,11 @@ void OneGrab::translateByAI(const QPixmap& croppedPixmap, const QRect& croppedRe
 	const int imageWidth = croppedPixmap.width();
 	const int imageHeight = croppedPixmap.height();
 
-	// 翻译成功、失败、没结果都要收尾，而且只能收一次
-	auto finalized = QSharedPointer<bool>::create(false);
-	auto finishGrabOnce = [this, finalized]()
-	{
-		if (*finalized)
-			return;
-
-		*finalized = true;
-
-		// 翻译期间用户可能已经退出了截图（Esc/其它快捷键），这时场景里的 mask 已经没了
-		if (!isVisible())
-		{
-			qWarning() << "[translate] grab already finished, skip slotFixed";
-			return;
-		}
-
-		slotFixed(false);
-	};
-
 	// 直接把截图交给多模态模型：让它自己找文字、定矩形、取背景色/文字色、翻译并做排版
 	const QString imageDataUrl = AIHandler::imageFileToDataUrl(croppedPixmap);
 	if (imageDataUrl.isEmpty())
 	{
 		qWarning() << "[translate] convert image to data url failed";
-		finishGrabOnce();
 		return;
 	}
 
@@ -742,7 +722,7 @@ void OneGrab::translateByAI(const QPixmap& croppedPixmap, const QRect& croppedRe
 	translator->setParent(this);
 
 	connect(translator, &AIHandler::replyReady, this
-		, [translator, croppedRect, imageWidth, imageHeight, finishGrabOnce, this](const QString& reply, const QString&)
+		, [translator, croppedRect, imageWidth, imageHeight, this](const QString& reply, const QString&)
 	{
 		translator->deleteLater();
 
@@ -759,7 +739,6 @@ void OneGrab::translateByAI(const QPixmap& croppedPixmap, const QRect& croppedRe
 		if (begin < 0 || end <= begin)
 		{
 			qWarning() << "[translate] parse failed, raw reply:" << reply;
-			finishGrabOnce();
 			return;
 		}
 
@@ -768,7 +747,6 @@ void OneGrab::translateByAI(const QPixmap& croppedPixmap, const QRect& croppedRe
 		if (err.error != QJsonParseError::NoError || !doc.isArray())
 		{
 			qWarning() << "[translate] invalid json:" << err.errorString() << "raw:" << reply;
-			finishGrabOnce();
 			return;
 		}
 
@@ -843,15 +821,12 @@ void OneGrab::translateByAI(const QPixmap& croppedPixmap, const QRect& croppedRe
 				<< sourceText << "->" << translation;
 			ui.view->coverText(sceneRect, translation, bgColor, textColor, fontFamily);
 		}
-
-		finishGrabOnce();
 	});
 
-	connect(translator, &AIHandler::errorOccured, this, [translator, finishGrabOnce](const QString& error, const QString&)
+	connect(translator, &AIHandler::errorOccured, this, [translator](const QString& error, const QString&)
 	{
 		translator->deleteLater();
 		qWarning() << "[translate] request failed:" << error;
-		finishGrabOnce();
 	});
 
 	translator->callDeepSeek(aiParams);
@@ -866,26 +841,9 @@ void OneGrab::translateByWindowsOcr(const QPixmap& croppedPixmap, const QRect& c
 	// 颜色估算用原图
 	const cv::Mat baseMat = ImageHandler::QImageToCvMat(croppedPixmap.toImage());
 
-	auto finalized = QSharedPointer<bool>::create(false);
-	auto finishGrabOnce = [this, finalized]()
-	{
-		if (*finalized)
-			return;
-
-		*finalized = true;
-
-		if (!isVisible())
-		{
-			qWarning() << "[translate-ocr] grab already finished, skip slotFixed";
-			return;
-		}
-
-		slotFixed(false);
-	};
-
 	auto* ocr = new WindowsOcr(this);
 	connect(ocr, &WindowsOcr::finished, this
-		, [ocr, apiKey, croppedRect, imageWidth, imageHeight, baseMat, finishGrabOnce, this](const WindowsOcr::Result& r)
+		, [ocr, apiKey, croppedRect, imageWidth, imageHeight, baseMat, this](const WindowsOcr::Result& r)
 	{
 		ocr->deleteLater();
 
@@ -933,7 +891,6 @@ void OneGrab::translateByWindowsOcr(const QPixmap& croppedPixmap, const QRect& c
 		if (linesJson.isEmpty())
 		{
 			qDebug() << "[translate-ocr] nothing to translate";
-			finishGrabOnce();
 			return;
 		}
 
@@ -966,7 +923,7 @@ void OneGrab::translateByWindowsOcr(const QPixmap& croppedPixmap, const QRect& c
 		translator->setParent(this);
 
 		connect(translator, &AIHandler::replyReady, this
-			, [translator, rects, texts, imageWidth, imageHeight, baseMat, croppedRect, finishGrabOnce, this](const QString& reply, const QString&)
+			, [translator, rects, texts, imageWidth, imageHeight, baseMat, croppedRect, this](const QString& reply, const QString&)
 		{
 			translator->deleteLater();
 			ui.view->clearTextRects();
@@ -983,7 +940,6 @@ void OneGrab::translateByWindowsOcr(const QPixmap& croppedPixmap, const QRect& c
 			if (begin < 0 || end <= begin)
 			{
 				qWarning() << "[translate-ocr] parse failed, raw reply:" << reply;
-				finishGrabOnce();
 				return;
 			}
 
@@ -992,7 +948,6 @@ void OneGrab::translateByWindowsOcr(const QPixmap& croppedPixmap, const QRect& c
 			if (err.error != QJsonParseError::NoError || !doc.isArray())
 			{
 				qWarning() << "[translate-ocr] invalid json:" << err.errorString() << "raw:" << reply;
-				finishGrabOnce();
 				return;
 			}
 
@@ -1077,25 +1032,21 @@ void OneGrab::translateByWindowsOcr(const QPixmap& croppedPixmap, const QRect& c
 				// Windows OCR 不识别字体，统一用 Microsoft YaHei
 				ui.view->coverText(sceneRect, translation, bgColor, textColor, QString("Microsoft YaHei"));
 			}
-
-			finishGrabOnce();
 		});
 
-		connect(translator, &AIHandler::errorOccured, this, [translator, finishGrabOnce](const QString& error, const QString&)
+		connect(translator, &AIHandler::errorOccured, this, [translator](const QString& error, const QString&)
 		{
 			translator->deleteLater();
 			qWarning() << "[translate-ocr] request failed:" << error;
-			finishGrabOnce();
 		});
 
 		translator->callDeepSeek(aiParams);
 	});
 
-	connect(ocr, &WindowsOcr::failed, this, [ocr, finishGrabOnce](const QString& error)
+	connect(ocr, &WindowsOcr::failed, this, [ocr](const QString& error)
 	{
 		ocr->deleteLater();
 		qWarning() << "[translate-ocr] windows ocr failed:" << error;
-		finishGrabOnce();
 	});
 
 	ocr->recognize(croppedPixmap);

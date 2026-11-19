@@ -6,9 +6,12 @@
 #include <QFontDatabase>
 #include <QGraphicsRectItem>
 #include <QGraphicsTextItem>
+#include <QImage>
+#include <QPainter>
 #include <QRectF>
 #include <QTextDocument>
 #include <QWheelEvent>
+#include <QtMath>
 #include "SettingHandler.h"
 
 
@@ -89,10 +92,73 @@ void DGrabView::clearTextRects()
 	update();
 }
 
+namespace
+{
+	struct InkInfo
+	{
+		QRectF rect;          // 墨迹包围盒，相对文档左上角
+		bool valid = false;
+	};
+
+	// 按给定宽度排一遍，再把文字画到透明图上，取非透明像素的包围盒。
+	// 拟合字号必须用墨迹高度：QTextDocument 的行高含 leading，按行高算会把字压小。
+	InkInfo measureTextInk(const QString& text, const QFont& baseFont, int pixelSize, int textWidth)
+	{
+		QFont font = baseFont;
+		font.setPixelSize(pixelSize);
+
+		QTextDocument doc;
+		doc.setDocumentMargin(0);
+		doc.setDefaultFont(font);
+		doc.setPlainText(text);
+		doc.setTextWidth(textWidth);
+
+		const QSizeF docSize = doc.size();
+		const int margin = qMax(2, pixelSize / 2);
+		const int imageWidth = qMax(1, qCeil(docSize.width()) + margin * 2);
+		const int imageHeight = qMax(1, qCeil(docSize.height()) + margin * 2);
+
+		QImage image(imageWidth, imageHeight, QImage::Format_ARGB32_Premultiplied);
+		image.fill(Qt::transparent);
+
+		QPainter painter(&image);
+		painter.translate(margin, margin);
+		doc.drawContents(&painter, QRectF(-margin, -margin
+			, docSize.width() + margin * 2, docSize.height() + margin * 2));
+		painter.end();
+
+		int minX = imageWidth, minY = imageHeight, maxX = -1, maxY = -1;
+		for (int y = 0; y < imageHeight; ++y)
+		{
+			const QRgb* line = reinterpret_cast<const QRgb*>(image.constScanLine(y));
+			for (int x = 0; x < imageWidth; ++x)
+			{
+				if (qAlpha(line[x]) < 8)
+					continue;
+
+				if (x < minX) minX = x;
+				if (x > maxX) maxX = x;
+				if (y < minY) minY = y;
+				if (y > maxY) maxY = y;
+			}
+		}
+
+		InkInfo info;
+		if (maxX < minX || maxY < minY)
+			return info;
+
+		info.rect = QRectF(minX - margin, minY - margin
+			, maxX - minX + 1, maxY - minY + 1);
+		info.valid = true;
+		return info;
+	}
+}
+
+
 void DGrabView::coverText(const QRect& rect, const QString& text, QColor bgColor
 	, QColor textColor, const QString& fontFamily)
 {
-	if (!scene() || rect.isEmpty() || text.isEmpty())
+	if (!scene() || !imgItem_ || rect.isEmpty() || text.isEmpty())
 		return;
 
 	// 字体：优先用 AI 识别出的字体族，识别不到或本机没装就回退
@@ -115,8 +181,7 @@ void DGrabView::coverText(const QRect& rect, const QString& text, QColor bgColor
 
 	// 必须挂到图片 item 下面：addRect 的标注是 imgItem_ 的子项，z 只在同一父项内排序。
 	// 如果这里直接加进 scene（顶层），整个图片子树都会被它压住，标注的 z=3 也救不回来。
-	if (imgItem_)
-		bgItem->setParentItem(imgItem_);
+	bgItem->setParentItem(imgItem_);
 
 	auto* textItem = new QGraphicsTextItem;
 	textItem->setPlainText(text);
@@ -126,27 +191,29 @@ void DGrabView::coverText(const QRect& rect, const QString& text, QColor bgColor
 	textItem->setFlag(QGraphicsItem::ItemIsSelectable, false);
 	textItem->setAcceptedMouseButtons(Qt::NoButton);
 	textItem->setZValue(2);
-	if (imgItem_)
-		textItem->setParentItem(imgItem_);
+	textItem->setParentItem(imgItem_);
 
 	const int contentWidth = rect.width();
 	const int contentHeight = rect.height();
 	textItem->setTextWidth(contentWidth);
 
-	// 二分字号，保证整段文字能塞进 rect 高度里
+	// 按实际墨迹高度二分字号：行高含 leading，按行高拟合会让字明显偏小
 	QFont font = textItem->font();
 	font.setFamily(family);
 	int low = 6;
-	int high = qMax(low, contentHeight);
+	int high = qMax(low, contentHeight * 2);
 	int best = low;
+	QRectF bestInk;
+	bool hasInk = false;
 	while (low <= high)
 	{
 		const int mid = (low + high) / 2;
-		font.setPixelSize(mid);
-		textItem->setFont(font);
-		if (textItem->boundingRect().height() <= contentHeight + 0.5)
+		const InkInfo ink = measureTextInk(text, font, mid, contentWidth);
+		if (ink.valid && ink.rect.height() <= contentHeight)
 		{
 			best = mid;
+			bestInk = ink.rect;
+			hasInk = true;
 			low = mid + 1;
 		}
 		else
@@ -158,11 +225,16 @@ void DGrabView::coverText(const QRect& rect, const QString& text, QColor bgColor
 	font.setPixelSize(best);
 	textItem->setFont(font);
 
-	// 水平左对齐、垂直居中
-	const qreal textHeight = textItem->boundingRect().height();
-	textItem->setPos(rect.left(), rect.top() + (rect.height() - textHeight) / 2.0);
-
-	scene()->addItem(textItem);
+	if (hasInk)
+	{
+		// 用墨迹偏移对齐：水平贴左，垂直居中，避免行高留白造成的视觉偏移
+		textItem->setPos(rect.left() - bestInk.left()
+			, rect.top() + (rect.height() - bestInk.height()) / 2.0 - bestInk.top());
+	}
+	else
+	{
+		textItem->setPos(rect.left(), rect.top());
+	}
 }
 
 void DGrabView::onFinishGrab()
